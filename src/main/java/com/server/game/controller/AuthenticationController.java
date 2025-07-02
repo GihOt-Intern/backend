@@ -8,12 +8,17 @@ import com.server.game.dto.request.AuthenticationRequest;
 import com.server.game.dto.request.IntrospectRequest;
 import com.server.game.dto.request.LogoutRequest;
 import com.server.game.dto.request.RefreshTokenRequest;
+import com.server.game.dto.request.RegisterRequest;
 import com.server.game.dto.response.AuthenticationResponse;
 import com.server.game.dto.response.IntrospectResponse;
+import com.server.game.dto.response.LoginResponse;
 import com.server.game.dto.response.RefreshTokenResponse;
+import com.server.game.dto.response.RegisterResponse;
 import com.server.game.mapper.AuthenticationMapper;
+import com.server.game.mapper.UserMapper;
 import com.server.game.model.User;
 import com.server.game.service.AuthenticationService;
+import com.server.game.service.UserService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -41,17 +46,27 @@ public class AuthenticationController {
 
     AuthenticationService authenticationService;
     AuthenticationMapper authenticationMapper;
+    UserService userService;
+    UserMapper userMapper;
 
     SimpMessagingTemplate messagingTemplate;
 
-    
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest request) {
+        User user = userService.register(request);
+        RegisterResponse response = userMapper.toRegisterResponse(user);
+        ApiResponse<RegisterResponse> apiResponse =
+            new ApiResponse<>(HttpStatus.CREATED.value(), "User created successfully", response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
+    }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticate(@Valid @RequestBody AuthenticationRequest request) {
+    public ResponseEntity<ApiResponse<LoginResponse>> authenticate(@Valid @RequestBody AuthenticationRequest request) {
         User user = authenticationService.authenticate(request);
         String token = authenticationService.generateToken(user);
-        AuthenticationResponse response = authenticationMapper.toAuthenticationResponse(user, token);
-        ApiResponse<AuthenticationResponse> apiResponse =
+        LoginResponse response = new LoginResponse();
+        response.setToken(token);
+        ApiResponse<LoginResponse> apiResponse =
             new ApiResponse<>(HttpStatus.OK.value(), "Authentication successful", response);
         return ResponseEntity.ok(apiResponse);
     }
@@ -85,7 +100,7 @@ public class AuthenticationController {
     @MessageMapping("/login")
     public void authenticateWebSocket(@Valid @Payload AuthenticationRequest request, 
                                     Principal principal) throws Exception {
-        System.out.println("Received login via WS: " + request.getEmail());
+        System.out.println("Received login via WS: " + request.getUsername());
         System.out.println("Principal = " + principal.getName());
 
         try {

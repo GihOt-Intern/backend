@@ -73,7 +73,7 @@ public class AuthenticationService {
     
     public User authenticate(AuthenticationRequest request) {
         // System.out.println(">>> SIGNER KEY: " + this.signerKey);
-        return userService.validateCredentials(request.getEmail(), request.getPassword());
+        return userService.validateCredentials(request.getUsername(), request.getPassword());
     }
 
     private SignedJWT verifyToken(String token, boolean isRefresh) {

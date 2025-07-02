@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.server.game.dto.request.CreateUserRequest;
+import com.server.game.dto.request.RegisterRequest;
 import com.server.game.exception.*;
 import com.server.game.mapper.UserMapper;
 import com.server.game.model.User;
@@ -61,8 +62,15 @@ public class UserService {
     }
 
     public User createUser(CreateUserRequest createUserRequest) {
+        String username = createUserRequest.getUsername();
         String email = createUserRequest.getEmail();
 
+        // Check if username already exists
+        if (userRepository.existsByUsername(username)) {
+            throw new FieldExistedExeption("User with username " + username + " already exists");
+        }
+
+        // Check if email already exists
         if (userRepository.existsByEmail(email)) {
             throw new FieldExistedExeption("User with email " + email + " already exists");
         }
@@ -79,9 +87,34 @@ public class UserService {
         return user;
     }
 
-    public User validateCredentials(String email, String password) {
-        User user =  userRepository.findByEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Incorrect email"));
+    public User register(RegisterRequest registerRequest) {
+        String username = registerRequest.getUsername();
+        String email = registerRequest.getEmail();
+
+        // Check if username already exists
+        if (userRepository.existsByUsername(username)) {
+            throw new FieldExistedExeption("User with username " + username + " already exists");
+        }
+
+        // Check if email already exists
+        if (userRepository.existsByEmail(email)) {
+            throw new FieldExistedExeption("User with email " + email + " already exists");
+        }
+
+        String password = registerRequest.getPassword();
+        String encodedPassword = passwordEncoder.encode(password);
+
+        User user = userMapper.toUser(registerRequest);
+        user.setPassword(encodedPassword);
+        user.setRole("USER"); // Default role for registration
+
+        userRepository.save(user);
+        return user;
+    }
+
+    public User validateCredentials(String username, String password) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UnauthorizedException("Incorrect username"));
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new UnauthorizedException("Incorrect password");
         }

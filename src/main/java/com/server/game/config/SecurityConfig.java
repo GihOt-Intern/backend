@@ -77,7 +77,7 @@ public class SecurityConfig {
                 //     "/", "/index.html",
                 //     "/js/**", "/css/**", "/images/**"
                 // ).permitAll()
-                // .anyRequest().authenticated()
+                .requestMatchers("/api/matchmaking/queue/**").authenticated()
                 .anyRequest().permitAll()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
