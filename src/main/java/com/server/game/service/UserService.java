@@ -13,7 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.stereotype.Service;
 
-import com.server.game.dto.request.CreateUserRequest;
+import com.server.game._dto.request.CreateUserRequest;
 import com.server.game.exception.*;
 import com.server.game.mapper.UserMapper;
 import com.server.game.model.User;

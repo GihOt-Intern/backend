@@ -3,14 +3,14 @@ package com.server.game.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.server.game._dto.request.AuthenticationRequest;
+import com.server.game._dto.request.IntrospectRequest;
+import com.server.game._dto.request.LogoutRequest;
+import com.server.game._dto.request.RefreshTokenRequest;
+import com.server.game._dto.response.AuthenticationResponse;
+import com.server.game._dto.response.IntrospectResponse;
+import com.server.game._dto.response.RefreshTokenResponse;
 import com.server.game.apiResponse.ApiResponse;
-import com.server.game.dto.request.AuthenticationRequest;
-import com.server.game.dto.request.IntrospectRequest;
-import com.server.game.dto.request.LogoutRequest;
-import com.server.game.dto.request.RefreshTokenRequest;
-import com.server.game.dto.response.AuthenticationResponse;
-import com.server.game.dto.response.IntrospectResponse;
-import com.server.game.dto.response.RefreshTokenResponse;
 import com.server.game.mapper.AuthenticationMapper;
 import com.server.game.model.User;
 import com.server.game.service.AuthenticationService;
@@ -20,13 +20,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.security.Principal;
 
 // import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
@@ -42,7 +38,7 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
     AuthenticationMapper authenticationMapper;
 
-    SimpMessagingTemplate messagingTemplate;
+    // SimpMessagingTemplate messagingTemplate;
 
     
 
@@ -82,38 +78,38 @@ public class AuthenticationController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @MessageMapping("/login")
-    public void authenticateWebSocket(@Valid @Payload AuthenticationRequest request, 
-                                    Principal principal) throws Exception {
-        System.out.println("Received login via WS: " + request.getEmail());
-        System.out.println("Principal = " + principal.getName());
+    // @MessageMapping("/login")
+    // public void authenticateWebSocket(@Valid @Payload AuthenticationRequest request, 
+    //                                 Principal principal) throws Exception {
+    //     System.out.println("Received login via WS: " + request.getEmail());
+    //     System.out.println("Principal = " + principal.getName());
 
-        try {
-            User user = authenticationService.authenticate(request);
-            String token = authenticationService.generateToken(user);
-            AuthenticationResponse response = authenticationMapper.toAuthenticationResponse(user, token);
+    //     try {
+    //         User user = authenticationService.authenticate(request);
+    //         String token = authenticationService.generateToken(user);
+    //         AuthenticationResponse response = authenticationMapper.toAuthenticationResponse(user, token);
 
-            // Simulate sending a response back to the user
-            messagingTemplate.convertAndSendToUser(
-                principal.getName(),
-                "/queue/login-response",
-                new ApiResponse<>(HttpStatus.OK.value(), "WebSocket authentication successful", response)
-            );
-        } catch (Exception e) {
-            System.out.println("WebSocket authentication failed: " + e.getMessage());
-            // messagingTemplate.convertAndSendToUser(
-            //     request.getEmail(),
-            //     "/queue/login-response",
-            //     new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "WebSocket authentication failed: " + e.getMessage(), null)
-            // );
-            messagingTemplate.convertAndSendToUser(
-                principal.getName(),
-                "/queue/login-response",
-                new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "WebSocket authentication failed: " + e.getMessage(), null)
-            );
-            // throw new Exception("WebSocket authentication failed: " + e.getMessage());
-        }
-    }
+    //         // Simulate sending a response back to the user
+    //         messagingTemplate.convertAndSendToUser(
+    //             principal.getName(),
+    //             "/queue/login-response",
+    //             new ApiResponse<>(HttpStatus.OK.value(), "WebSocket authentication successful", response)
+    //         );
+    //     } catch (Exception e) {
+    //         System.out.println("WebSocket authentication failed: " + e.getMessage());
+    //         // messagingTemplate.convertAndSendToUser(
+    //         //     request.getEmail(),
+    //         //     "/queue/login-response",
+    //         //     new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "WebSocket authentication failed: " + e.getMessage(), null)
+    //         // );
+    //         messagingTemplate.convertAndSendToUser(
+    //             principal.getName(),
+    //             "/queue/login-response",
+    //             new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "WebSocket authentication failed: " + e.getMessage(), null)
+    //         );
+    //         // throw new Exception("WebSocket authentication failed: " + e.getMessage());
+    //     }
+    // }
 
 
     // @EventListener

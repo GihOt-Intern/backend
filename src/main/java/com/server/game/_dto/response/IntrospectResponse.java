@@ -1,0 +1,13 @@
+package com.server.game._dto.response;
+
+import lombok.Data;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class IntrospectResponse {
+    boolean valid;
+}

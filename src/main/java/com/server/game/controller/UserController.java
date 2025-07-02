@@ -11,11 +11,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.server.game._dto.request.CreateUserRequest;
+import com.server.game._dto.request.GetUserByEmailRequest;
+import com.server.game._dto.response.CreateUserResponse;
+import com.server.game._dto.response.GetUserResponse;
 import com.server.game.apiResponse.ApiResponse;
-import com.server.game.dto.request.CreateUserRequest;
-import com.server.game.dto.request.GetUserByEmailRequest;
-import com.server.game.dto.response.CreateUserResponse;
-import com.server.game.dto.response.GetUserResponse;
 import com.server.game.mapper.UserMapper;
 import com.server.game.model.User;
 import com.server.game.service.UserService;
