@@ -11,11 +11,11 @@ import com.server.game.model.User;
 
 @Mapper(componentModel = "spring")
 public interface AuthenticationMapper  { 
-    @Mapping(target = "token", ignore = true) // Set token later in controller or service
-    AuthenticationResponse toAuthenticationResponse(User user, @Context String token);
+    // @Mapping(target = "token", expression = "java(setToken(token))") // Set token later below
+    // AuthenticationResponse toAuthenticationResponse(String token);
 
-    @AfterMapping
-    default void setToken(@MappingTarget AuthenticationResponse response, @Context String token) {
-        response.setToken(token);
-    }
+    // @AfterMapping
+    // default void setToken(@MappingTarget AuthenticationResponse response, String token) {
+    //     response.setToken(token);
+    // }
 }

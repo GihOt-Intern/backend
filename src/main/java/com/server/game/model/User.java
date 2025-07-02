@@ -18,10 +18,10 @@ public class User {
     @Id
     String id;
     String username;
-    String name;
-    String email;
+    // String name;
+    // String email;
     String password;
-    String role;
+    // String role;
 }
 
 

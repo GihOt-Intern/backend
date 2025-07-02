@@ -56,7 +56,8 @@ public class AuthenticationService {
             .issuer("myapp.example.com")
             .issueTime(new Date())
             .jwtID(UUID.randomUUID().toString())
-            .claim("scope", user.getRole())
+            // .claim("scope", user.getRole())
+            .claim("scope", "USER")
             .expirationTime(Date.from(Instant.now().plusSeconds(validDuration)))
             .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());

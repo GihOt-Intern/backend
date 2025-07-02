@@ -71,20 +71,20 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("")
-    public ResponseEntity<ApiResponse<GetUserResponse>> getUserByEmail(@Valid @RequestBody GetUserByEmailRequest emailRequest) {
-        User user = userService.getUserByEmail(emailRequest.getEmail());
-        GetUserResponse userResponse = userMapper.toGetUserResponse(user);
-        ApiResponse<GetUserResponse> response = new ApiResponse<>(HttpStatus.OK.value(), "User found", userResponse);
-        return ResponseEntity.ok(response);
-    }
+    // @PostMapping("")
+    // public ResponseEntity<ApiResponse<GetUserResponse>> getUserByEmail(@Valid @RequestBody GetUserByEmailRequest emailRequest) {
+    //     User user = userService.getUserByEmail(emailRequest.getEmail());
+    //     GetUserResponse userResponse = userMapper.toGetUserResponse(user);
+    //     ApiResponse<GetUserResponse> response = new ApiResponse<>(HttpStatus.OK.value(), "User found", userResponse);
+    //     return ResponseEntity.ok(response);
+    // }
 
-    @PostMapping("/create")
-    public ResponseEntity<ApiResponse<CreateUserResponse>> createUser(@Valid @RequestBody CreateUserRequest createUserRequest) {
-        User user = userService.createUser(createUserRequest);
-        CreateUserResponse createUserResponse = userMapper.toCreateUserResponse(user);
-        ApiResponse<CreateUserResponse> response =
-            new ApiResponse<>(HttpStatus.CREATED.value(), "User created successfully", createUserResponse);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+    // @PostMapping("/create")
+    // public ResponseEntity<ApiResponse<CreateUserResponse>> createUser(@Valid @RequestBody CreateUserRequest createUserRequest) {
+    //     User user = userService.createUser(createUserRequest);
+    //     CreateUserResponse createUserResponse = userMapper.toCreateUserResponse(user);
+    //     ApiResponse<CreateUserResponse> response =
+    //         new ApiResponse<>(HttpStatus.CREATED.value(), "User created successfully", createUserResponse);
+    //     return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    // }
 }

@@ -26,14 +26,14 @@ public class MyappApplication {
     }
 
 
-	@Autowired
-	private RedisTemplate<String, String> redisTemplate;
+	// @Autowired
+	// private RedisTemplate<String, String> redisTemplate;
 
-	@PostConstruct
-	public void testRedis() {
-		redisTemplate.opsForValue().set("test_key", "Hello Redis!");
-		String val = redisTemplate.opsForValue().get("test_key");
-		System.out.println("Giá trị đọc từ Redis: " + val);
-	}
+	// @PostConstruct
+	// public void testRedis() {
+	// 	redisTemplate.opsForValue().set("test_key", "Hello Redis!");
+	// 	String val = redisTemplate.opsForValue().get("test_key");
+	// 	System.out.println("Giá trị đọc từ Redis: " + val);
+	// }
 
 }
