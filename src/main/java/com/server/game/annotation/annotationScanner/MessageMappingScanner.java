@@ -8,15 +8,16 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
-import com.server.game.messageMapping.MessageDispatcher;
+import com.server.game.messageMapping.DispatcherHolder;
+// import com.server.game.messageMapping.MessageDispatcher;
 
 import java.lang.reflect.Method;
 
 @Component
 public class MessageMappingScanner implements ApplicationListener<ApplicationReadyEvent> {
 
-    @Autowired
-    private MessageDispatcher dispatcher;
+    // @Autowired
+    // private MessageDispatcher dispatcher;
 
     @Autowired
     private ApplicationContext context;
@@ -28,7 +29,8 @@ public class MessageMappingScanner implements ApplicationListener<ApplicationRea
             for (Method method : bean.getClass().getDeclaredMethods()) {
                 MessageMapping mapping = method.getAnnotation(MessageMapping.class);
                 if (mapping != null) {
-                    dispatcher.register(mapping.value(), bean, method);
+                    DispatcherHolder.INSTANCE.register(mapping.value(), bean, method);
+                    // dispatcher.register(mapping.value(), bean, method);
                 }
             }
         }

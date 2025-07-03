@@ -17,10 +17,10 @@ import io.netty.handler.ssl.SslContext;
 public class WebSocketChannelInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
-        SslContext sslCtx = SslContextProvider.createSslContext("src/main/resources/keystore.p12", "password");
+        // SslContext sslCtx = SslContextProvider.createSslContext("src/main/resources/keystore.p12", "password");
 
         ch.pipeline()
-                .addLast(sslCtx.newHandler(ch.alloc()))
+                // .addLast(sslCtx.newHandler(ch.alloc()))
                 .addLast(new HttpServerCodec()) // 1. HTTP codec
                 .addLast(new HttpObjectAggregator(65536)) // 2. Aggregate HTTP messages
                 .addLast(new WebSocketServerProtocolHandler("/ws")) // 3. WebSocket protocol handler

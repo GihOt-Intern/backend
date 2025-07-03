@@ -13,6 +13,7 @@ public class TLVMessageDecoder extends MessageToMessageDecoder<BinaryWebSocketFr
 
     @Override
     protected void decode(ChannelHandlerContext ctx, BinaryWebSocketFrame frame, List<Object> out) throws Exception {
+        System.out.println("Decoding BinaryWebSocketFrame to TLVDecodable object");
 
         ByteBuf buf = frame.content();
 
@@ -33,5 +34,7 @@ public class TLVMessageDecoder extends MessageToMessageDecoder<BinaryWebSocketFr
 
         TLVDecodable receiveObject = TLVDecoder.byte2Object(type, value);
         out.add(receiveObject);
+
+        System.out.println("Decoded TLVDecodable object: " + receiveObject.getClass().getSimpleName());
     }
 }

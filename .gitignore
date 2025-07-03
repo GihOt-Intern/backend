@@ -46,4 +46,5 @@ logs/
 .env
 test.cs 
 hex2double.py
+WebSocketClientTest/
 
