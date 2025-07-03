@@ -10,7 +10,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.server.game._dto.request.AuthenticationRequest;
+import com.server.game.dto.request.AuthenticationRequest;
 import com.server.game.exception.UnauthorizedException;
 import com.server.game.model.InvalidatedToken;
 import com.server.game.model.User;
@@ -56,7 +56,8 @@ public class AuthenticationService {
             .issuer("myapp.example.com")
             .issueTime(new Date())
             .jwtID(UUID.randomUUID().toString())
-            .claim("scope", user.getRole())
+            // .claim("scope", user.getRole())
+            .claim("scope", "USER")
             .expirationTime(Date.from(Instant.now().plusSeconds(validDuration)))
             .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -73,7 +74,7 @@ public class AuthenticationService {
     
     public User authenticate(AuthenticationRequest request) {
         // System.out.println(">>> SIGNER KEY: " + this.signerKey);
-        return userService.validateCredentials(request.getEmail(), request.getPassword());
+        return userService.validateCredentials(request.getUsername(), request.getPassword());
     }
 
     private SignedJWT verifyToken(String token, boolean isRefresh) {

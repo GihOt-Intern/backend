@@ -13,7 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.stereotype.Service;
 
-import com.server.game._dto.request.CreateUserRequest;
+import com.server.game.dto.request.RegisterRequest;
 import com.server.game.exception.*;
 import com.server.game.mapper.UserMapper;
 import com.server.game.model.User;
@@ -48,40 +48,29 @@ public class UserService {
     }
 
     // Expose this method with security check
-    @PostAuthorize("hasRole('ADMIN') or returnObject.id == authentication.name") // authentication.name is the ID of the authenticated user
+    // @PostAuthorize("hasRole('ADMIN') or returnObject.id == authentication.name") // authentication.name is the ID of the authenticated user
     public User getUserById(String id) {
         return getUserByIdInternal(id);
     }
 
 
-    @PostAuthorize("hasRole('ADMIN') or returnObject.id == authentication.name") // authentication.name is the ID of the authenticated user
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new DataNotFoundException("User with email " + email + " not found"));
-    }
 
-    public User createUser(CreateUserRequest createUserRequest) {
-        String email = createUserRequest.getEmail();
-
-        if (userRepository.existsByEmail(email)) {
-            throw new FieldExistedExeption("User with email " + email + " already exists");
+    public User register(RegisterRequest registerRequest) {
+        String username = registerRequest.getUsername();
+        if (userRepository.existsByUsername(username)) {
+            throw new FieldExistedExeption("User with username " + username + " already exists");
         }
-
-        String password = createUserRequest.getPassword();
-        String encodePassword =  passwordEncoder.encode(password);
-        // System.out.println(">>>>>>" + encodePassword);
-
-
-        User user = userMapper.toUser(createUserRequest);
-        user.setPassword(encodePassword);
-
+        String password = registerRequest.getPassword();
+        String encodedPassword = passwordEncoder.encode(password);
+        User user = userMapper.toUser(registerRequest);
+        user.setPassword(encodedPassword);
         userRepository.save(user);
         return user;
     }
 
-    public User validateCredentials(String email, String password) {
-        User user =  userRepository.findByEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Incorrect email"));
+    public User validateCredentials(String username, String password) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UnauthorizedException("Username does not exist"));
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new UnauthorizedException("Incorrect password");
         }

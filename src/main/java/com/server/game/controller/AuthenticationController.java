@@ -3,17 +3,20 @@ package com.server.game.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.server.game._dto.request.AuthenticationRequest;
-import com.server.game._dto.request.IntrospectRequest;
-import com.server.game._dto.request.LogoutRequest;
-import com.server.game._dto.request.RefreshTokenRequest;
-import com.server.game._dto.response.AuthenticationResponse;
-import com.server.game._dto.response.IntrospectResponse;
-import com.server.game._dto.response.RefreshTokenResponse;
-import com.server.game.apiResponse.ApiResponse;
-import com.server.game.mapper.AuthenticationMapper;
+import com.server.game.dto.request.AuthenticationRequest;
+import com.server.game.dto.request.IntrospectRequest;
+import com.server.game.dto.request.LogoutRequest;
+import com.server.game.dto.request.RefreshTokenRequest;
+import com.server.game.dto.request.RegisterRequest;
+import com.server.game.dto.response.AuthenticationResponse;
+import com.server.game.dto.response.IntrospectResponse;
+import com.server.game.dto.response.RefreshTokenResponse;
+import com.server.game.dto.response.RegisterResponse;
+import com.server.game.mapper.UserMapper;
 import com.server.game.model.User;
 import com.server.game.service.AuthenticationService;
+import com.server.game.service.UserService;
+import com.server.game.apiResponse.ApiResponse;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -36,17 +39,25 @@ import jakarta.validation.Valid;
 public class AuthenticationController {
 
     AuthenticationService authenticationService;
-    AuthenticationMapper authenticationMapper;
+    UserService userService;
+    UserMapper userMapper;
 
     // SimpMessagingTemplate messagingTemplate;
 
-    
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest request) {
+        User user = userService.register(request);
+        RegisterResponse response = userMapper.toRegisterResponse(user);
+        ApiResponse<RegisterResponse> apiResponse =
+            new ApiResponse<>(HttpStatus.CREATED.value(), "User created successfully", response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticate(@Valid @RequestBody AuthenticationRequest request) {
         User user = authenticationService.authenticate(request);
         String token = authenticationService.generateToken(user);
-        AuthenticationResponse response = authenticationMapper.toAuthenticationResponse(user, token);
+        AuthenticationResponse response = new AuthenticationResponse(user.getId(), user.getUsername(), token);
         ApiResponse<AuthenticationResponse> apiResponse =
             new ApiResponse<>(HttpStatus.OK.value(), "Authentication successful", response);
         return ResponseEntity.ok(apiResponse);
@@ -81,7 +92,7 @@ public class AuthenticationController {
     // @MessageMapping("/login")
     // public void authenticateWebSocket(@Valid @Payload AuthenticationRequest request, 
     //                                 Principal principal) throws Exception {
-    //     System.out.println("Received login via WS: " + request.getEmail());
+    //     System.out.println("Received login via WS: " + request.getUsername());
     //     System.out.println("Principal = " + principal.getName());
 
     //     try {
@@ -97,17 +108,11 @@ public class AuthenticationController {
     //         );
     //     } catch (Exception e) {
     //         System.out.println("WebSocket authentication failed: " + e.getMessage());
-    //         // messagingTemplate.convertAndSendToUser(
-    //         //     request.getEmail(),
-    //         //     "/queue/login-response",
-    //         //     new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "WebSocket authentication failed: " + e.getMessage(), null)
-    //         // );
     //         messagingTemplate.convertAndSendToUser(
     //             principal.getName(),
     //             "/queue/login-response",
     //             new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "WebSocket authentication failed: " + e.getMessage(), null)
     //         );
-    //         // throw new Exception("WebSocket authentication failed: " + e.getMessage());
     //     }
     // }
 

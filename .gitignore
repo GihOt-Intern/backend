@@ -42,10 +42,8 @@ node_modules/
 **/src/main/resources/env.properties
 **/src/main/resources/META-INF/
 **/src/main/resources/static/
-Dockerfile
 logs/
 .env
 test.cs 
 hex2double.py
-
 

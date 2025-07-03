@@ -8,7 +8,5 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GetUserResponse {
     String id;
-    String name;
-    String email;
-    String role;
+    String username;
 }

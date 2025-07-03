@@ -22,9 +22,9 @@
 // import com.server.game.dto.response.ChatResponse;
 // import com.server.game.mapper.ChatMessageMapper;
 // import com.server.game.model.ChatMessage;
-// // import com.server.game.protobuf.ChatPrivateRequest;
-// // import com.server.game.protobuf.ChatPrivateResponse;
-// // import com.server.game.protobuf.ChatPrivateResponseList;
+// import com.server.game.protobuf.ChatPrivateRequest;
+// import com.server.game.protobuf.ChatPrivateResponse;
+// import com.server.game.protobuf.ChatPrivateResponseList;
 // import com.server.game.service.ChatService;
 // import com.server.game.service.WSService;
 
