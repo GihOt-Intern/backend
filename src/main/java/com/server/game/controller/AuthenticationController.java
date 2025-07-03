@@ -3,7 +3,6 @@ package com.server.game.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.server.game.apiResponse.ApiResponse;
 import com.server.game.dto.request.AuthenticationRequest;
 import com.server.game.dto.request.IntrospectRequest;
 import com.server.game.dto.request.LogoutRequest;
@@ -17,19 +16,16 @@ import com.server.game.mapper.UserMapper;
 import com.server.game.model.User;
 import com.server.game.service.AuthenticationService;
 import com.server.game.service.UserService;
+import com.server.game.apiResponse.ApiResponse;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.security.Principal;
 
 // import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
@@ -46,7 +42,7 @@ public class AuthenticationController {
     UserService userService;
     UserMapper userMapper;
 
-    SimpMessagingTemplate messagingTemplate;
+    // SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest request) {
@@ -61,7 +57,7 @@ public class AuthenticationController {
     public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticate(@Valid @RequestBody AuthenticationRequest request) {
         User user = authenticationService.authenticate(request);
         String token = authenticationService.generateToken(user);
-        AuthenticationResponse response = new AuthenticationResponse(user.getId(), user.getUsername(), "USER", token);
+        AuthenticationResponse response = new AuthenticationResponse(user.getId(), user.getUsername(), token);
         ApiResponse<AuthenticationResponse> apiResponse =
             new ApiResponse<>(HttpStatus.OK.value(), "Authentication successful", response);
         return ResponseEntity.ok(apiResponse);
@@ -112,17 +108,11 @@ public class AuthenticationController {
     //         );
     //     } catch (Exception e) {
     //         System.out.println("WebSocket authentication failed: " + e.getMessage());
-    //         // messagingTemplate.convertAndSendToUser(
-    //         //     request.getEmail(),
-    //         //     "/queue/login-response",
-    //         //     new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "WebSocket authentication failed: " + e.getMessage(), null)
-    //         // );
     //         messagingTemplate.convertAndSendToUser(
     //             principal.getName(),
     //             "/queue/login-response",
     //             new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "WebSocket authentication failed: " + e.getMessage(), null)
     //         );
-    //         // throw new Exception("WebSocket authentication failed: " + e.getMessage());
     //     }
     // }
 

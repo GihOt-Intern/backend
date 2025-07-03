@@ -16,8 +16,6 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     // Password is assigned by service logic, after hashing
     @Mapping(target = "password", ignore = true)
-    // Role is set to USER by default for registration
-    @Mapping(target = "role", ignore = true)
     User toUser(RegisterRequest registerRequest);
     
     GetUserResponse toGetUserResponse(User user);

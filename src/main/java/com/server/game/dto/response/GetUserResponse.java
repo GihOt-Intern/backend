@@ -9,5 +9,4 @@ import lombok.experimental.FieldDefaults;
 public class GetUserResponse {
     String id;
     String username;
-    String role;
 }
