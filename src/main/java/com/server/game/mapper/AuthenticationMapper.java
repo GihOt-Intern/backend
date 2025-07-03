@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-import com.server.game.dto.response.AuthenticationResponse;
+import com.server.game._dto.response.AuthenticationResponse;
 import com.server.game.model.User;
 
 @Mapper(componentModel = "spring")

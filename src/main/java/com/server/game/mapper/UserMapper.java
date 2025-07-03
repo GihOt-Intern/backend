@@ -2,9 +2,9 @@ package com.server.game.mapper;
 
 import org.mapstruct.Mapping;
 
-import com.server.game.dto.request.CreateUserRequest;
-import com.server.game.dto.response.CreateUserResponse;
-import com.server.game.dto.response.GetUserResponse;
+import com.server.game._dto.request.CreateUserRequest;
+import com.server.game._dto.response.CreateUserResponse;
+import com.server.game._dto.response.GetUserResponse;
 import com.server.game.model.User;
 
 import org.mapstruct.Mapper;

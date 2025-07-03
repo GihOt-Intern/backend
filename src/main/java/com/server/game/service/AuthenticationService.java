@@ -10,7 +10,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.server.game.dto.request.AuthenticationRequest;
+import com.server.game._dto.request.AuthenticationRequest;
 import com.server.game.exception.UnauthorizedException;
 import com.server.game.model.InvalidatedToken;
 import com.server.game.model.User;
