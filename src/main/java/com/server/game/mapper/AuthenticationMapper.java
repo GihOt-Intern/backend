@@ -9,7 +9,6 @@ import org.mapstruct.MappingTarget;
 import com.server.game.dto.response.AuthenticationResponse;
 import com.server.game.model.User;
 
-@Mapper(componentModel = "spring")
 public interface AuthenticationMapper  { 
     // @Mapping(target = "token", expression = "java(setToken(token))") // Set token later below
     // AuthenticationResponse toAuthenticationResponse(String token);

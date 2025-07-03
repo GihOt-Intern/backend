@@ -13,7 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.stereotype.Service;
 
-import com.server.game.dto.request.CreateUserRequest;
+
 import com.server.game.dto.request.RegisterRequest;
 import com.server.game.exception.*;
 import com.server.game.mapper.UserMapper;
@@ -54,15 +54,7 @@ public class UserService {
         return getUserByIdInternal(id);
     }
 
-    public User createUser(CreateUserRequest createUserRequest) {
-        String username = createUserRequest.getUsername();
-        String password = createUserRequest.getPassword();
-        String encodePassword =  passwordEncoder.encode(password);
-        User user = userMapper.toUser(createUserRequest);
-        user.setPassword(encodePassword);
-        userRepository.save(user);
-        return user;
-    }
+
 
     public User register(RegisterRequest registerRequest) {
         String username = registerRequest.getUsername();
