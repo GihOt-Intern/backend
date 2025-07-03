@@ -63,7 +63,7 @@ public class AuthenticationController {
     public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticate(@Valid @RequestBody AuthenticationRequest request) {
         User user = authenticationService.authenticate(request);
         String token = authenticationService.generateToken(user);
-        AuthenticationResponse response = new AuthenticationResponse(token);
+        AuthenticationResponse response = new AuthenticationResponse(user.getId(), user.getUsername(), "USER", token);
         ApiResponse<AuthenticationResponse> apiResponse =
             new ApiResponse<>(HttpStatus.OK.value(), "Authentication successful", response);
         return ResponseEntity.ok(apiResponse);

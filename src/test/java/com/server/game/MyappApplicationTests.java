@@ -1,4 +1,4 @@
-package com.example.myapp;
+package com.server.game;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
