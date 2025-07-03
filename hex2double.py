@@ -1,7 +1,7 @@
 import struct
 
 # Chuỗi hex dạng string
-hex_str = "40 1A 96 53 B8 6F 19 77"
+hex_str = "40 18 F5 E8 92 EC 3E 05"
 
 # Bước 1: Chuyển từ hex string sang bytes
 hex_bytes = bytes.fromhex(hex_str)
