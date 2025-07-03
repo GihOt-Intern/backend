@@ -13,7 +13,6 @@ import com.server.game.dto.response.AuthenticationResponse;
 import com.server.game.dto.response.IntrospectResponse;
 import com.server.game.dto.response.RefreshTokenResponse;
 import com.server.game.dto.response.RegisterResponse;
-import com.server.game.mapper.AuthenticationMapper;
 import com.server.game.mapper.UserMapper;
 import com.server.game.model.User;
 import com.server.game.service.AuthenticationService;
@@ -44,7 +43,6 @@ import jakarta.validation.Valid;
 public class AuthenticationController {
 
     AuthenticationService authenticationService;
-    AuthenticationMapper authenticationMapper;
     UserService userService;
     UserMapper userMapper;
 
