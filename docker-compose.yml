@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    image: leminhthe04/game-server:0.0.1
+    image: leminhthe04/game-server:0.0.2
     volumes:
       - ~/.m2:/root/.m2
     ports:
