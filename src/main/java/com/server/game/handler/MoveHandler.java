@@ -2,9 +2,9 @@ package com.server.game.handler;
 
 import org.springframework.stereotype.Component;
 
+import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.message.receive.DistanceReceive;
 import com.server.game.message.send.DistanceSend;
-import com.server.game.ws.messageMapping.MessageMapping;
 
 // import com.server.game.ws.messageMapping.MessageMapping;
 

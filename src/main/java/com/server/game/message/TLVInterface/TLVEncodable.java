@@ -1,4 +1,4 @@
-package com.server.game.message.send;
+package com.server.game.message.TLVInterface;
 
 
 public interface TLVEncodable {

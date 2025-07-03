@@ -1,4 +1,4 @@
-package com.server.game.ws.messageMapping;
+package com.server.game.annotation.annotationScanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -7,10 +7,13 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import com.server.game.annotation.customAnnotation.MessageMapping;
+import com.server.game.ws.messageMapping.MessageDispatcher;
+
 import java.lang.reflect.Method;
 
 @Component
-public class MessageHandlerScanner implements ApplicationListener<ApplicationReadyEvent> {
+public class MessageMappingScanner implements ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired
     private MessageDispatcher dispatcher;

@@ -3,6 +3,8 @@ package com.server.game.message.send;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import com.server.game.message.TLVInterface.TLVEncodable;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,7 +18,7 @@ public class DistanceSend implements TLVEncodable {
 
     @Override
     public short getType() {
-        return 0x0002;
+        return 2;
     }
 
     @Override

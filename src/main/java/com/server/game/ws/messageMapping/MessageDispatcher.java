@@ -1,8 +1,9 @@
 package com.server.game.ws.messageMapping;
 
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.web.socket.WebSocketSession;
 
 import lombok.AllArgsConstructor;
 
@@ -36,5 +37,22 @@ public class MessageDispatcher {
         public Object invoke(Object message) throws Exception {
             return method.invoke(handler, message); // method phải trả về Object (DTO response)
         }
+    }
+}
+
+
+
+
+class MethodHandler {
+    private final Object controller;
+    private final Method method;
+
+    public MethodHandler(Object controller, Method method) {
+        this.controller = controller;
+        this.method = method;
+    }
+
+    public void invoke(WebSocketSession session, Object message) throws Exception {
+        method.invoke(controller, session, message);
     }
 }

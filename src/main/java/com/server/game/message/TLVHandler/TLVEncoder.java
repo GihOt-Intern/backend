@@ -1,12 +1,13 @@
-package com.server.game.util;
+package com.server.game.message.TLVHandler;
 
-import com.server.game.message.send.TLVEncodable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import com.server.game.message.TLVInterface.TLVEncodable;
+
 public class TLVEncoder {
 
-    public static byte[] encode(TLVEncodable sendObj) {
+    public static byte[] object2Byte(TLVEncodable sendObj) {
         byte[] valueBytes = sendObj.encode();
         short type = sendObj.getType();
         int length = valueBytes.length;
