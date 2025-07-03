@@ -28,7 +28,7 @@ public interface UserMapper { // sometimes this class is showed error, but it wo
     @Mapping(target = "password", ignore = true)
     // Role is set to USER by default for registration
     // @Mapping(target = "role", ignore = true)
-    User toUser(RegisterRequest registerRequest);
+    User toUser(CreateUserRequest createUserRequest);
     
     GetUserResponse toGetUserResponse(User user);
     // CreateUserResponse toCreateUserResponse(User user);

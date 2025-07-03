@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
@@ -17,8 +17,8 @@ public class MatchmakingController {
     private final MatchmakingService matchmakingService;
 
     @PostMapping
-    public ResponseEntity<?> joinQueue(@AuthenticationPrincipal UserDetails userDetails) {
-        String userId = userDetails.getUsername();
+    public ResponseEntity<?> joinQueue(@AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         String result = matchmakingService.joinQueue(userId);
         if ("ALREADY_IN_QUEUE".equals(result)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -30,8 +30,8 @@ public class MatchmakingController {
     }
 
     @GetMapping("/status")
-    public ResponseEntity<?> getStatus(@AuthenticationPrincipal UserDetails userDetails) {
-        String userId = userDetails.getUsername();
+    public ResponseEntity<?> getStatus(@AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         String status = matchmakingService.getStatus(userId);
         if ("MATCH_FOUND".equals(status)) {
             Map<String, Object> matchInfo = matchmakingService.getMatchInfo(userId);
@@ -49,8 +49,8 @@ public class MatchmakingController {
     }
 
     @DeleteMapping
-    public ResponseEntity<?> leaveQueue(@AuthenticationPrincipal UserDetails userDetails) {
-        String userId = userDetails.getUsername();
+    public ResponseEntity<?> leaveQueue(@AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         matchmakingService.leaveQueue(userId);
         return ResponseEntity.ok(Map.of("message", "You have been removed from the matchmaking queue."));
     }

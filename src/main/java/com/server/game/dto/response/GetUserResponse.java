@@ -9,7 +9,5 @@ import lombok.experimental.FieldDefaults;
 public class GetUserResponse {
     String id;
     String username;
-    // String name;
-    // String email;
-    // String role;
+    String role;
 }

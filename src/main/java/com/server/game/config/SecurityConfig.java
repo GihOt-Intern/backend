@@ -82,7 +82,7 @@ public class SecurityConfig {
             )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.decoder(this.customJwtDecoder)
-                .jwtAuthenticationConverter(this.jwtAuthenticationConverter())) // convert "SCOPE_" to "ROLE_"
+                .jwtAuthenticationConverter(this.customJwtAuthenticationConverter())) // convert "SCOPE_" to "ROLE_"
                 .authenticationEntryPoint(authenticationEntryPoint)
             );
 
@@ -98,12 +98,13 @@ public class SecurityConfig {
 
 
     @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+    public JwtAuthenticationConverter customJwtAuthenticationConverter() {
         // Convert JWT scopes to authorities with "ROLE_" prefix
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+        jwtAuthenticationConverter.setPrincipalClaimName("sub"); // Use the subject as the principal
         return jwtAuthenticationConverter;
     }
 }
