@@ -2,6 +2,7 @@ package com.server.game.controller;
 
 import com.server.game.apiResponse.ApiResponse;
 import com.server.game.dto.request.CreateRoomRequest;
+import com.server.game.dto.request.JoinRoomRequest;
 import com.server.game.dto.response.RoomResponse;
 import com.server.game.service.RoomService;
 import jakarta.validation.Valid;
@@ -44,8 +45,12 @@ public class RoomController {
     }
 
     @PostMapping("/{roomId}/join")
-    public ResponseEntity<ApiResponse<RoomResponse>> joinRoom(@PathVariable String roomId) {
-        RoomResponse roomResponse = roomService.joinRoom(roomId);
+    public ResponseEntity<ApiResponse<RoomResponse>> joinRoom(
+        @PathVariable String roomId,
+        @RequestBody(required = false) JoinRoomRequest joinRequest
+    ) {
+        String password = joinRequest != null ? joinRequest.getPassword() : null;
+        RoomResponse roomResponse = roomService.joinRoom(roomId, password);
         ApiResponse<RoomResponse> response = new ApiResponse<>(HttpStatus.OK.value(), "Joined room successfully", roomResponse);
         return ResponseEntity.ok(response);
     }

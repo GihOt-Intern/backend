@@ -34,6 +34,7 @@ public class RoomService {
         room.setHost(host);
         room.getPlayers().add(host);
         room.setStatus(RoomStatus.WAITING);
+        room.setMaxPlayers(request.getMaxPlayers());
 
         room = roomRepository.save(room);
 
@@ -46,7 +47,7 @@ public class RoomService {
                 .collect(Collectors.toList());
     }
 
-    public RoomResponse joinRoom(String roomId) {
+    public RoomResponse joinRoom(String roomId, String password) {
         User user = userService.getUserInfo();
         Room room = getRoomById(roomId);
 
@@ -60,6 +61,12 @@ public class RoomService {
 
         if (room.getPlayers().stream().anyMatch(p -> p.getId().equals(user.getId()))) {
             throw new IllegalArgumentException("User is already in the room");
+        }
+
+        if (room.getPassword() != null && !room.getPassword().isBlank()) {
+            if (password == null || !room.getPassword().equals(password)) {
+                throw new IllegalArgumentException("Incorrect room password");
+            }
         }
 
         room.getPlayers().add(user);
@@ -80,7 +87,11 @@ public class RoomService {
             roomRepository.delete(room);
         } else {
             room.getPlayers().removeIf(p -> p.getId().equals(user.getId()));
-            roomRepository.save(room);
+            if (room.getPlayers().isEmpty()) {
+                roomRepository.delete(room);
+            } else {
+                roomRepository.save(room);
+            }
         }
     }
     

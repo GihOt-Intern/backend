@@ -28,4 +28,6 @@ public class Room {
     int maxPlayers = 2;
 
     RoomStatus status = RoomStatus.WAITING;
+
+    String password; // null or blank means public room
 } 
