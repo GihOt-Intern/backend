@@ -17,7 +17,7 @@ public class TLVDecoder {
         // typeMap.put((short) 0x0002, AnotherDTO.class);
     }
 
-    public static Object decode(short type, byte[] value) {
+    public static TLVDecodable decode(short type, byte[] value) {
         Class<? extends TLVDecodable> clazz = typeMap.get(type);
         if (clazz == null) {
             throw new IllegalArgumentException("Unknown type: " + type);

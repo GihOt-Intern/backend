@@ -11,6 +11,8 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
 import com.server.game.util.TLVEncoder;
+import com.server.game.message.receive.TLVDecodable;
+import com.server.game.message.send.TLVEncodable;
 import com.server.game.util.TLVDecoder;
 import com.server.game.ws.messageMapping.MessageDispatcher;
 
@@ -43,12 +45,12 @@ public class BinarySocketHandler extends BinaryWebSocketHandler {
         byte[] value = new byte[length];
         buffer.get(value);
 
-        Object messageReceive = TLVDecoder.decode(type, value);
+        TLVDecodable receiveObj = TLVDecoder.decode(type, value);
         // Object messageSend = dispatcher.dispatch(messageReceive);
-        Object messageSend = dispatcher.dispatch(messageReceive);
+        TLVEncodable sendObj = (TLVEncodable) dispatcher.dispatch(receiveObj);
 
-        if (messageSend != null) {
-            byte[] response = TLVEncoder.encode((short) 2, messageSend);
+        if (sendObj != null) {
+            byte[] response = TLVEncoder.encode(sendObj);
 
             StringBuilder sb = new StringBuilder();
             for (byte b : response) {

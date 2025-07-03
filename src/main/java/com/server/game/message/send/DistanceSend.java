@@ -15,7 +15,12 @@ public class DistanceSend implements TLVEncodable {
     Double distance;
 
     @Override
-    public byte[] encode(short type) {
+    public short getType() {
+        return 0x0002;
+    }
+
+    @Override
+    public byte[] encode() {
         ByteBuffer buf = ByteBuffer.allocate(8).order(ByteOrder.BIG_ENDIAN);
         System.out.println("Encoding distance: " + distance);
         buf.putDouble(distance);

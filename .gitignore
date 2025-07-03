@@ -45,5 +45,7 @@ node_modules/
 Dockerfile
 logs/
 .env
+test.cs 
+hex2double.py
 
 
