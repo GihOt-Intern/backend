@@ -1,8 +1,10 @@
 package com.server.game.controller;
 
 import com.server.game.apiResponse.ApiResponse;
+import com.server.game.dto.response.JoinQueueResponse;
 import com.server.game.service.MatchmakingService;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,15 +26,17 @@ public class MatchmakingController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new ApiResponse<>(409, "You are already in the matchmaking queue.", null));
         }
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(new ApiResponse<>(202, "You have been added to the matchmaking queue.",
-                        Map.of("status", "SEARCHING", "estimatedWaitTime", matchmakingService.getEstimatedWaitTime())));
+        // Should use a DTO for the response instead of a Map.of()
+        JoinQueueResponse response = new JoinQueueResponse("SEARCHING", matchmakingService.getEstimatedWaitTime());
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(
+            new ApiResponse<>(202, "You have been added to the matchmaking queue.", response));
     }
 
     @GetMapping("/status")
     public ResponseEntity<?> getStatus(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         String status = matchmakingService.getStatus(userId);
+        
         if ("MATCH_FOUND".equals(status)) {
             Map<String, Object> matchInfo = matchmakingService.getMatchInfo(userId);
             return ResponseEntity.ok(Map.of(
@@ -40,18 +44,21 @@ public class MatchmakingController {
                     "matchId", matchInfo.get("matchId"),
                     "gameServer", matchInfo.get("gameServer")
             ));
-        } else if ("SEARCHING".equals(status)) {
-            return ResponseEntity.ok(Map.of("status", "SEARCHING"));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("status", "NOT_IN_QUEUE"));
         }
+        
+        if ("SEARCHING".equals(status)) {
+            return ResponseEntity.ok(Map.of("status", "SEARCHING"));
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "NOT_IN_QUEUE"));
     }
 
     @DeleteMapping
     public ResponseEntity<?> leaveQueue(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         matchmakingService.leaveQueue(userId);
-        return ResponseEntity.ok(Map.of("message", "You have been removed from the matchmaking queue."));
+        // return ResponseEntity.ok(Map.of("message", "You have been removed from the matchmaking queue."));
+        return ResponseEntity.ok(new ApiResponse<>(200, "You have been removed from the matchmaking queue.", null));
     }
 } 

@@ -1,7 +1,11 @@
 package com.server.game.ws;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import com.server.game.message.TLVHandler.TLVDecoder;
+import com.server.game.message.TLVHandler.TLVEncoder;
+import com.server.game.message.TLVInterface.TLVDecodable;
+import com.server.game.message.TLVInterface.TLVEncodable;
+import com.server.game.ws.messageMapping.MessageDispatcher;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -10,9 +14,10 @@ import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
-import com.server.game.util.TLVEncoder;
-import com.server.game.util.TLVDecoder;
-import com.server.game.ws.messageMapping.MessageDispatcher;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 
 @Component
 public class BinarySocketHandler extends BinaryWebSocketHandler {
@@ -43,12 +48,12 @@ public class BinarySocketHandler extends BinaryWebSocketHandler {
         byte[] value = new byte[length];
         buffer.get(value);
 
-        Object messageReceive = TLVDecoder.decode(type, value);
+        TLVDecodable receiveObj = TLVDecoder.byte2Object(type, value);
         // Object messageSend = dispatcher.dispatch(messageReceive);
-        Object messageSend = dispatcher.dispatch(messageReceive);
+        TLVEncodable sendObj = (TLVEncodable) dispatcher.dispatch(receiveObj);
 
-        if (messageSend != null) {
-            byte[] response = TLVEncoder.encode((short) 2, messageSend);
+        if (sendObj != null) {
+            byte[] response = TLVEncoder.object2Byte(sendObj);
 
             StringBuilder sb = new StringBuilder();
             for (byte b : response) {
@@ -56,13 +61,7 @@ public class BinarySocketHandler extends BinaryWebSocketHandler {
             }
             System.out.println("Sending binary message: " + sb.toString().trim());
 
-
-            
             session.sendMessage(new BinaryMessage(response));
-
-
-
-
         }
     }
 }

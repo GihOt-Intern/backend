@@ -2,16 +2,21 @@ package com.server.game.message.receive;
 
 import java.nio.ByteBuffer;
 
+import org.springframework.stereotype.Component;
+
+import com.server.game.annotation.customAnnotation.ReceiveType;
+import com.server.game.message.TLVInterface.TLVDecodable;
+
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@ReceiveType(1)
+@Component
 public class DistanceReceive implements TLVDecodable {
     Double x1;
     Double y1;
