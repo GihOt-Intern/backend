@@ -146,6 +146,15 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+
+        <!-- Netty for WebSocket -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.109.Final</version>
+        </dependency>
+        
+
     </dependencies>
 
     <build>

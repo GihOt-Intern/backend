@@ -1,4 +1,4 @@
-package com.server.game.message.TLVInterface;
+package com.server.game.tlv.serializationable;
 
 
 public interface TLVDecodable {

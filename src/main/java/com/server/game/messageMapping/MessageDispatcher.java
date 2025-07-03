@@ -1,4 +1,4 @@
-package com.server.game.ws.messageMapping;
+package com.server.game.messageMapping;
 
 import java.util.HashMap;
 import java.util.Map;

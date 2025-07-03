@@ -8,7 +8,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
-import com.server.game.ws.messageMapping.MessageDispatcher;
+import com.server.game.messageMapping.MessageDispatcher;
 
 import java.lang.reflect.Method;
 

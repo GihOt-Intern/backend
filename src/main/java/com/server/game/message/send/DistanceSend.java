@@ -3,7 +3,7 @@ package com.server.game.message.send;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import com.server.game.message.TLVInterface.TLVEncodable;
+import com.server.game.tlv.serializationable.TLVEncodable;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

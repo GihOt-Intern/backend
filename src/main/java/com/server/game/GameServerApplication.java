@@ -10,10 +10,10 @@ import jakarta.annotation.PostConstruct;
 
 @SpringBootApplication
 @EnableScheduling
-public class MyappApplication {
+public class GameServerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MyappApplication.class, args);
+		SpringApplication.run(GameServerApplication.class, args);
 	}
 
 	@PostConstruct

@@ -1,9 +1,9 @@
-package com.server.game.message.TLVHandler;
+package com.server.game.tlv.codec;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.server.game.message.TLVInterface.TLVDecodable;
+import com.server.game.tlv.serializationable.TLVDecodable;
 
 public class TLVDecoder {
 

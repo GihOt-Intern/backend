@@ -5,7 +5,8 @@ import java.nio.ByteBuffer;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.ReceiveType;
-import com.server.game.message.TLVInterface.TLVDecodable;
+import com.server.game.tlv.serializationable.TLVDecodable;
+import com.server.game.tlv.type.ClientMessageType;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -15,7 +16,7 @@ import lombok.experimental.FieldDefaults;
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@ReceiveType(1)
+@ReceiveType(ClientMessageType.DISTANCE_RECEIVE)
 @Component
 public class DistanceReceive implements TLVDecodable {
     Double x1;
