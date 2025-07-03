@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    image: leminhthe04/game-server:0.0.1
+    volumes:
+      - ~/.m2:/root/.m2
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+      - redis
+
+  mongo:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"

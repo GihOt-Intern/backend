@@ -1,11 +1,11 @@
-package com.server.game._dto.response;
+package com.server.game.dto.response;
 
-import lombok.Data;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CreateUserResponse {
+public class RegisterResponse {
     String id;
-}
+} 

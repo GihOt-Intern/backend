@@ -16,6 +16,7 @@
 // import com.server.game.model.ChatPrivateMessage;
 // import com.server.game.protobuf.ChatPrivateRequest;
 // import com.server.game.protobuf.ChatPrivateResponse;
+// import com.server.game.protobuf.ChatPrivateResponseList;
 // import com.server.game.repository.ChatMessageRepository;
 // import com.server.game.repository.ChatPrivateMessageRepository;
 
@@ -78,4 +79,3 @@
 //                 .toList();
 //     }
 // }
-

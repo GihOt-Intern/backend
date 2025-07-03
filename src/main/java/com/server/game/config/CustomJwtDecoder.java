@@ -38,6 +38,7 @@ public class CustomJwtDecoder implements JwtDecoder {
         }
         catch (UnauthorizedException e) {
             System.out.println(">>> UnauthorizedException: " + e.getMessage());
+            throw new JwtException("Token validation failed: " + e.getMessage());
         }
 
         System.out.println(">>> HEREEEE");

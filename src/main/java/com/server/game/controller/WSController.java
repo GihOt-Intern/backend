@@ -12,9 +12,9 @@
 // import org.springframework.messaging.simp.SimpMessagingTemplate;
 // import org.springframework.stereotype.Controller;
 
-// import com.server.game._dto.response.GetMyIdResponse;
-// import com.server.game._dto.response.GetUserResponse;
 // import com.server.game.apiResponse.ApiResponse;
+// import com.server.game.dto.response.GetMyIdResponse;
+// import com.server.game.dto.response.GetUserResponse;
 // import com.server.game.service.WSService;
 
 
@@ -23,7 +23,7 @@
 // @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 // public class WSController {
 
-//     // SimpMessagingTemplate simpMessageTemplate;
+//     SimpMessagingTemplate simpMessageTemplate;
 //     WSService wsService;
 
 //     @MessageMapping("/myid")
