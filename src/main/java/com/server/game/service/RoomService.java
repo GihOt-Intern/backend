@@ -50,6 +50,10 @@ public class RoomService {
         User user = userService.getUserInfo();
         Room room = getRoomById(roomId);
 
+        if (room == null) {
+            throw new DataNotFoundException("Room not found");
+        }
+
         if (room.getPlayers().size() >= room.getMaxPlayers()) {
             throw new IllegalArgumentException("Room is full");
         }
