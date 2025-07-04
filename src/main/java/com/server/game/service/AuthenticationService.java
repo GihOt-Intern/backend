@@ -14,7 +14,7 @@ import com.server.game.dto.request.AuthenticationRequest;
 import com.server.game.exception.UnauthorizedException;
 import com.server.game.model.InvalidatedToken;
 import com.server.game.model.User;
-import com.server.game.repository.InvalidatedTokenRepository;
+import com.server.game.repository.mongo.InvalidatedTokenRepository;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

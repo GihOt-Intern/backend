@@ -8,7 +8,8 @@ import com.server.game.mapper.RoomMapper;
 import com.server.game.model.Room;
 import com.server.game.model.RoomStatus;
 import com.server.game.model.User;
-import com.server.game.repository.RoomRepository;
+import com.server.game.repository.mongo.RoomRepository;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
