@@ -8,7 +8,6 @@ import com.server.game.mapper.RoomMapper;
 import com.server.game.model.Room;
 import com.server.game.model.RoomStatus;
 import com.server.game.model.User;
-import com.server.game.repository.RoomRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -22,7 +21,7 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoomService {
 
-    RoomRepository roomRepository;
+    RoomRedisService roomRedisService;
     UserService userService;
     RoomMapper roomMapper;
 
@@ -36,13 +35,13 @@ public class RoomService {
         room.setStatus(RoomStatus.WAITING);
         room.setMaxPlayers(request.getMaxPlayers());
 
-        room = roomRepository.save(room);
+        room = roomRedisService.save(room);
 
         return roomMapper.toRoomResponse(room);
     }
 
     public List<RoomResponse> getAvailableRooms() {
-        return roomRepository.findByStatus(RoomStatus.WAITING).stream()
+        return roomRedisService.findByStatus(RoomStatus.WAITING).stream()
                 .map(roomMapper::toRoomResponse)
                 .collect(Collectors.toList());
     }
@@ -50,6 +49,10 @@ public class RoomService {
     public RoomResponse joinRoom(String roomId, String password) {
         User user = userService.getUserInfo();
         Room room = getRoomById(roomId);
+
+        if (room == null) {
+            throw new DataNotFoundException("Room not found");
+        }
 
         if (room.getPlayers().size() >= room.getMaxPlayers()) {
             throw new IllegalArgumentException("Room is full");
@@ -70,7 +73,7 @@ public class RoomService {
         }
 
         room.getPlayers().add(user);
-        room = roomRepository.save(room);
+        room = roomRedisService.save(room);
 
         return roomMapper.toRoomResponse(room);
     }
@@ -84,13 +87,13 @@ public class RoomService {
         }
 
         if (room.getHost().getId().equals(user.getId())) {
-            roomRepository.delete(room);
+            roomRedisService.delete(room);
         } else {
             room.getPlayers().removeIf(p -> p.getId().equals(user.getId()));
             if (room.getPlayers().isEmpty()) {
-                roomRepository.delete(room);
+                roomRedisService.delete(room);
             } else {
-                roomRepository.save(room);
+                roomRedisService.save(room);
             }
         }
     }
@@ -101,7 +104,6 @@ public class RoomService {
     }
 
     private Room getRoomById(String id) {
-        return roomRepository.findById(id)
-            .orElseThrow(() -> new DataNotFoundException("Room with ID " + id + " not found"));
+        return roomRedisService.findById(id);
     }
 } 
