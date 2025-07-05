@@ -1,7 +1,9 @@
 package com.server.game.exception;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 
 import com.server.game.apiResponse.ApiResponse;
 
@@ -77,6 +79,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<String>> handleJwtException(JwtException ex) {
         ApiResponse<String> response = new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        ApiResponse<String> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Request body contains incorrect field(s), please re-check", null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
 

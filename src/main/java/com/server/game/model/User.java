@@ -1,21 +1,20 @@
 package com.server.game.model;
 
+import java.io.Serializable;
+
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collection = "users")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User {
-    @Id
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     String id;
     String username;
     String password;
