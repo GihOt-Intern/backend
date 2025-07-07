@@ -11,11 +11,10 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 public class BussinessHandler extends SimpleChannelInboundHandler<TLVDecodable> {
 
+    // cannot usse @Autowired here because this class is not a Spring component
     private MessageDispatcher dispatcher;
 
     public BussinessHandler(MessageDispatcher dispatcher) {
-        System.out.println(">>> Dispatcher instance id in BussinessHandler: " + System.identityHashCode(dispatcher));
-
         this.dispatcher = dispatcher;   
     }
 

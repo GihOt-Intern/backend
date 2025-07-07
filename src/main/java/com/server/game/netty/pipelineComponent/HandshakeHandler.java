@@ -1,42 +1,60 @@
 package com.server.game.netty.pipelineComponent;
 
+
 import com.server.game.exception.DataNotFoundException;
 import com.server.game.netty.UserChannelRegistry;
+import com.server.game.service.AuthenticationService;
 import com.server.game.util.Util;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.HandshakeComplete;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.FullHttpRequest;
 
-public class HandshakeHandler extends ChannelInboundHandlerAdapter {
+
+public class HandshakeHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+
+    // cannot use @Autowired here because this class is not a Spring component
+    private AuthenticationService authenticationService;
+
+    public HandshakeHandler(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
+    }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        // If it's not a handshake event, pass it to the next handler in the pipeline
-        if (!(evt instanceof HandshakeComplete)) {
-            super.userEventTriggered(ctx, evt);
+    public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
+        
+        System.out.println(">>> HTTP Request: " + request);
+
+
+        if (!request.uri().contains("token=")) {
+            System.out.println(">>> No token found in request URI, closing channel.");
+            ctx.close(); // Close the channel if no token is found
             return;
         }
 
-        HandshakeComplete handshake = (HandshakeComplete) evt;
 
-        System.out.println(">>> WebSocket Handshake completed. Channel: " + ctx.channel().id());
-
-        String token = null;
+        String token = null;        
         try {
-            String uri = handshake.requestUri();
-            System.out.println("Request URI: " + uri);
-            // Parse the request URI to get token in uri
-            token = Util.getTokenFromUri(uri);
+            token = Util.getTokenFromUri(request.uri());
         } catch (DataNotFoundException e) {
             System.out.println("Error: " + e.getMessage());
             ctx.close(); // Close the channel if token is not found
             return;
         }
-        
-        System.out.println(">>> Handshake token: " + token);
 
-        UserChannelRegistry.register(token, ctx.channel());
+        // System.out.println(">>> Token: " + token);
+
+        String userId = authenticationService.getJWTSubject(token);
+
+        UserChannelRegistry.register(userId, ctx.channel());
+
+
+        FullHttpRequest newRequest = request.replace(request.content().retain());
+        newRequest.setUri("/ws");
+
+        System.out.println("Continue to next handler in pipeline...");
+        System.out.println(">>> Request after: " + newRequest);
+        ctx.fireChannelRead(newRequest);
     }
 
     @Override

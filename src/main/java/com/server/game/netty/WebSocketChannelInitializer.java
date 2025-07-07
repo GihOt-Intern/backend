@@ -1,7 +1,7 @@
 package com.server.game.netty;
 
 import com.server.game.netty.pipelineComponent.*;
-
+import com.server.game.service.AuthenticationService;
 import com.server.game.netty.messageMapping.MessageDispatcher;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,15 +20,20 @@ public class WebSocketChannelInitializer extends ChannelInitializer<SocketChanne
     @Autowired
     private MessageDispatcher dispatcher;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
 
         ch.pipeline()
                 .addLast(new HttpServerCodec()) // 1. HTTP codec
                 .addLast(new HttpObjectAggregator(65536)) // 2. Aggregate HTTP messages
-                .addLast(new WebSocketServerProtocolHandler("/ws")) // 3. WebSocket protocol handler
 
-                .addLast(new HandshakeHandler())
+                .addLast(new HandshakeHandler(authenticationService)) // Parse the request parameters and extract token to identify user
+                // Upgrade from HTTP to WebSocket
+                .addLast(new WebSocketServerProtocolHandler("/ws", null, true))
+
 
                 // Handle WebSocket frames
                 .addLast(new Reader()) // Receive BinaryWebSocketFrame and convert to ByteBuf       I
@@ -37,7 +42,8 @@ public class WebSocketChannelInitializer extends ChannelInitializer<SocketChanne
                 .addLast(new Writer()) // Receive ByteBuf, convert it to BinaryWebSocketFrame and send it to the client  O
                 .addLast(new TLVMessageEncoder()) // Receive TLVEncodable objects and convert them to ByteBuf   O
                 .addLast(new BussinessHandler(dispatcher)) // Business logic handler, receives TLVDecodable objects and creates TLVEncodable objects  I
-                
+
+                .addLast(new DisconnectHandler()) // Handle channel disconnection and unregister user channel
                 ;
     }
 }
