@@ -1,5 +1,6 @@
 package com.server.game.dto.request;
 
+import com.server.game.model.RoomVisibility;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -21,5 +22,6 @@ public class CreateRoomRequest {
     @Max(value = 4, message = "Maximum number of players is 4")
     int maxPlayers;
 
+    RoomVisibility visibility = RoomVisibility.PUBLIC; // Default to public
     String password; // Optional, can be blank
 } 

@@ -1,6 +1,7 @@
 package com.server.game.controller;
 
 import com.server.game.apiResponse.ApiResponse;
+import com.server.game.dto.request.ChangeHostRequest;
 import com.server.game.dto.request.CreateRoomRequest;
 import com.server.game.dto.request.JoinRoomRequest;
 import com.server.game.dto.response.RoomResponse;
@@ -55,10 +56,37 @@ public class RoomController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/{roomId}/invite/{userId}")
+    public ResponseEntity<ApiResponse<RoomResponse>> inviteUser(
+        @PathVariable String roomId,
+        @PathVariable String userId
+    ) {
+        RoomResponse roomResponse = roomService.inviteUser(roomId, userId);
+        ApiResponse<RoomResponse> response = new ApiResponse<>(HttpStatus.OK.value(), "User invited successfully", roomResponse);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/{roomId}/leave")
     public ResponseEntity<ApiResponse<Void>> leaveRoom(@PathVariable String roomId) {
         roomService.leaveRoom(roomId);
         ApiResponse<Void> response = new ApiResponse<>(HttpStatus.OK.value(), "Left room successfully", null);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{roomId}/start")
+    public ResponseEntity<ApiResponse<RoomResponse>> startGame(@PathVariable String roomId) {
+        RoomResponse roomResponse = roomService.startGame(roomId);
+        ApiResponse<RoomResponse> response = new ApiResponse<>(HttpStatus.OK.value(), "Game started successfully", roomResponse);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{roomId}/change-host")
+    public ResponseEntity<ApiResponse<RoomResponse>> changeHost(
+        @PathVariable String roomId,
+        @Valid @RequestBody ChangeHostRequest request
+    ) {
+        RoomResponse roomResponse = roomService.changeHost(roomId, request.getNewHostId());
+        ApiResponse<RoomResponse> response = new ApiResponse<>(HttpStatus.OK.value(), "Host changed successfully", roomResponse);
         return ResponseEntity.ok(response);
     }
 } 
