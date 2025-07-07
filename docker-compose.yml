@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    image: leminhthe04/game-server:0.0.2
+    image: leminhthe04/game-server:0.0.3
     ports:
       - "8080:8080"
     depends_on:
