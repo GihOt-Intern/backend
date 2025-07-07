@@ -19,5 +19,7 @@ public class Room implements Serializable {
     Set<User> players = new HashSet<>();
     int maxPlayers = 2;
     RoomStatus status = RoomStatus.WAITING;
+    RoomVisibility visibility = RoomVisibility.PUBLIC; // Default to public
     String password; // null or blank means public room
+    String gameServerUrl; // WebSocket server URL for the game
 } 
