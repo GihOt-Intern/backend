@@ -14,7 +14,7 @@ import com.server.game.dto.request.AuthenticationRequest;
 import com.server.game.exception.UnauthorizedException;
 import com.server.game.model.InvalidatedToken;
 import com.server.game.model.User;
-import com.server.game.repository.InvalidatedTokenRepository;
+import com.server.game.repository.mongo.InvalidatedTokenRepository;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -171,12 +171,7 @@ public class AuthenticationService {
         this.addInvalidatedToken(jti, expirationTime);
         
         // Generate a new token with the same user ID and updated expiration time
-        String userId;
-        try {
-            userId = signedJWT.getJWTClaimsSet().getSubject();
-        } catch (ParseException e) {
-            throw new RuntimeException("Failed to refresh token: cannot parse user ID", e);
-        }
+        String userId = this.getJWTSubject(token);
 
         User user = userService.getUserByIdInternal(userId); // data not found is handled in getUserById method
         String newToken = generateToken(user);
@@ -189,7 +184,7 @@ public class AuthenticationService {
         try {
             subject = signedJWT.getJWTClaimsSet().getSubject();
         } catch (ParseException e) {
-            throw new RuntimeException("Failed to get JWT subject", e);
+            throw new RuntimeException("Failed to get JWT subject (user id)", e);
         }
         return subject;
     }

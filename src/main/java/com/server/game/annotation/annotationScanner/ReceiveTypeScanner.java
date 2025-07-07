@@ -1,8 +1,8 @@
 package com.server.game.annotation.annotationScanner;
 
 import com.server.game.annotation.customAnnotation.ReceiveType;
-import com.server.game.message.TLVHandler.TLVDecoder;
-import com.server.game.message.TLVInterface.TLVDecodable;
+import com.server.game.netty.tlv.codec.TLVDecoder;
+import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -27,12 +27,11 @@ public class ReceiveTypeScanner implements ApplicationListener<ApplicationReadyE
 
             ReceiveType annotation = clazz.getAnnotation(ReceiveType.class);
             if (annotation != null && TLVDecodable.class.isAssignableFrom(clazz)) {
-                short type = annotation.value();
+                short type = annotation.value().getType();
                 
                 @SuppressWarnings("unchecked")
                 Class<? extends TLVDecodable> dtoClass = (Class<? extends TLVDecodable>) clazz;
                 TLVDecoder.register(type, dtoClass);
-                System.out.println(">>> Registered TLVDecodable: " + clazz.getSimpleName() + " (type=" + type + ")");
             }
         }
     }

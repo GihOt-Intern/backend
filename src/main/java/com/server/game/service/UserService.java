@@ -17,7 +17,7 @@ import com.server.game.dto.request.RegisterRequest;
 import com.server.game.exception.*;
 import com.server.game.mapper.UserMapper;
 import com.server.game.model.User;
-import com.server.game.repository.UserRepository;
+import com.server.game.repository.mongo.UserRepository;
 
 import java.util.List;
 

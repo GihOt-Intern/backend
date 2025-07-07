@@ -1,0 +1,33 @@
+package com.server.game.netty.messageObject.receiveObject;
+
+import java.nio.ByteBuffer;
+
+import org.springframework.stereotype.Component;
+
+import com.server.game.annotation.customAnnotation.ReceiveType;
+import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
+import com.server.game.netty.tlv.typeDefine.ClientMessageType;
+import com.server.game.util.Util;
+
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@ReceiveType(ClientMessageType.MESSAGE_RECEIVE)
+@Component
+public class MessageReceive implements TLVDecodable {
+    String message;
+
+    @Override
+    public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
+        int messageLength = buffer.getInt();
+        byte[] messageBytes = new byte[Util.STRING_BYTE_SIZE(messageLength)];
+        buffer.get(messageBytes);
+        this.message = Util.bytesToString(messageBytes);
+        System.out.println(">>> Server Decoded Message: " + this.message);
+    }
+}

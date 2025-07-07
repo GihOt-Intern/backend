@@ -8,7 +8,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
-import com.server.game.ws.messageMapping.MessageDispatcher;
+import com.server.game.netty.messageMapping.MessageDispatcher;
 
 import java.lang.reflect.Method;
 
@@ -23,7 +23,7 @@ public class MessageMappingScanner implements ApplicationListener<ApplicationRea
 
     @Override
     public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
-        System.out.println(">>> Scanning for message handler methods...");
+        System.out.println(">>> Scanning for @MessageMapping methods...");
         for (Object bean : context.getBeansWithAnnotation(Component.class).values()) {
             for (Method method : bean.getClass().getDeclaredMethods()) {
                 MessageMapping mapping = method.getAnnotation(MessageMapping.class);

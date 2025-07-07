@@ -34,7 +34,9 @@ async def receive_response(websocket):
     # Giải mã tùy theo TLV response nếu cần ở đây
 
 async def main():
-    uri = "ws://localhost:8386/ws?token=2326"
+    uri = "ws://localhost:8386/ws"
+    uri += "?token=eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsInN1YiI6IjY4NmIzMTA0YWQ4YWNjNTRjMDhhZjQxZiIsImV4cCI6Mjc1MTg1NTM4NywiaWF0IjoxNzUxODU1Mzg3LCJqdGkiOiIwNTdlYzg3ZC05MjI0LTQzNDItOTE1ZC0wOGZjYWY5ZmE0OTMiLCJzY29wZSI6IlVTRVIifQ.L2i68ThIs9bAGUOaaCuX9YwZpSTNK3lm3_XIeZEwuiE"
+    
     try:
         async with websockets.connect(uri) as websocket:
             print("Connected to WebSocket server.")
