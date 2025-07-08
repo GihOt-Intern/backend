@@ -27,8 +27,14 @@ public class BussinessHandler extends SimpleChannelInboundHandler<TLVDecodable> 
 
         System.out.println(">>> Server Received TLVDecodable object: " + receiveObject.getClass().getSimpleName());
 
+        // Just add known things to contextParams, dispatcher will traverse them and select needed ones
+        // to invoke the method
         Map<Class<?>, Object> contextParams = new HashMap<>();
         contextParams.put(String.class, ChannelRegistry.getUserIdByChannel(ctx.channel()));
+        // Add more context parameters as needed
+        // ...
+
+        // Use polymorphic dispatching to find the right method to handle the message
         TLVEncodable sendObject = (TLVEncodable) dispatcher.dispatch(receiveObject, contextParams);
 
         if (sendObject == null) {

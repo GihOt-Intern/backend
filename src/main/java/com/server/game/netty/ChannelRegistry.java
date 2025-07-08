@@ -78,6 +78,10 @@ public class ChannelRegistry {
         }
     }
 
+    public static Set<Channel> getAllChannels() {
+        return Set.copyOf(userChannels.values());
+    }
+
     public static Channel getChannelByUserId(String userId) {
         return userChannels.get(userId);
     }

@@ -2,8 +2,12 @@ package com.server.game.netty.messageObject.sendObject;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import io.netty.channel.Channel;
 import java.nio.charset.Charset;
 
+import com.server.game.netty.ChannelRegistry;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTargetInterface;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.RoomBroadcastTarget;
 import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.ServerMessageType;
 import com.server.game.util.Util;
@@ -43,5 +47,10 @@ public class ChooseChampionSend implements TLVEncodable {
 
         Util.printHex(buf);
         return buf.array();
+    }
+
+    @Override
+    public SendTargetInterface getSendTarget(Channel channel) {
+        return new RoomBroadcastTarget(channel);
     }
 }

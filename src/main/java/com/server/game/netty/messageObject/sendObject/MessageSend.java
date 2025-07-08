@@ -4,10 +4,13 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
+import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTargetInterface;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.ServerMessageType;
 import com.server.game.util.Util;
 
+import io.netty.channel.Channel;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -35,4 +38,9 @@ public class MessageSend implements TLVEncodable {
         return buf.array();
     }
 
+
+    @Override
+    public SendTargetInterface getSendTarget(Channel channel) {
+        return new UnicastTarget(channel);
+    }
 }
