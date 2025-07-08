@@ -26,7 +26,7 @@ public class WebSocketChannelInitializer extends ChannelInitializer<SocketChanne
     private AuthenticationService authenticationService;
 
     @Override
-    public void initChannel(SocketChannel ch) throws Exception {
+    public void initChannel(SocketChannel ch) throws Exception { 
 
         ch.pipeline()
             .addLast(new HttpServerCodec()) // HTTP codec

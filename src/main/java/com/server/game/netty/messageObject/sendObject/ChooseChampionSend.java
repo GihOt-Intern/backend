@@ -5,7 +5,6 @@ import java.nio.ByteOrder;
 import io.netty.channel.Channel;
 import java.nio.charset.Charset;
 
-import com.server.game.netty.ChannelRegistry;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTargetInterface;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.RoomBroadcastTarget;
 import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
