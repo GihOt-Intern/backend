@@ -1,7 +1,7 @@
 package com.server.game.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.server.game.netty.UserChannelRegistry;
+import com.server.game.netty.ChannelRegistry;
 import com.server.game.netty.messageObject.sendObject.MessageSend;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +75,7 @@ public class NotificationService {
         MessageSend messageSend = new MessageSend(message);
         
         for (String playerId : playerIds) {
-            Channel channel = UserChannelRegistry.getChannel(playerId);
+            Channel channel = ChannelRegistry.getChannelByUserId(playerId);
             if (channel != null && channel.isActive()) {
                 try {
                     channel.writeAndFlush(messageSend);
@@ -96,8 +96,8 @@ public class NotificationService {
      */
     public void sendToPlayer(String playerId, String message) {
         MessageSend messageSend = new MessageSend(message);
-        Channel channel = UserChannelRegistry.getChannel(playerId);
-        
+        Channel channel = ChannelRegistry.getChannelByUserId(playerId);
+
         if (channel != null && channel.isActive()) {
             try {
                 channel.writeAndFlush(messageSend);
