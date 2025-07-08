@@ -35,8 +35,12 @@ public class RoomService {
         room.getPlayers().add(host);
         room.setStatus(RoomStatus.WAITING);
         room.setMaxPlayers(request.getMaxPlayers());
-        room.setVisibility(request.getVisibility());
         room.setPassword(request.getPassword());
+        if (request.getPassword() != null && request.getVisibility() != RoomVisibility.HIDDEN) {
+            room.setVisibility(RoomVisibility.LOCKED);
+        } else {
+            room.setVisibility(RoomVisibility.PUBLIC);
+        }
 
         room = roomRedisService.save(room);
 
