@@ -2,6 +2,7 @@ package com.server.game.controller;
 
 import com.server.game.apiResponse.ApiResponse;
 import com.server.game.dto.response.JoinQueueResponse;
+import com.server.game.dto.response.MatchmakingStatusResponse;
 import com.server.game.service.MatchmakingService;
 import lombok.RequiredArgsConstructor;
 
@@ -39,19 +40,26 @@ public class MatchmakingController {
         
         if ("MATCH_FOUND".equals(status)) {
             Map<String, Object> matchInfo = matchmakingService.getMatchInfo(userId);
-            return ResponseEntity.ok(Map.of(
-                    "status", "MATCH_FOUND",
-                    "matchId", matchInfo.get("matchId"),
-                    "gameServer", matchInfo.get("gameServer")
-            ));
+            @SuppressWarnings("unchecked")
+            Map<String, Object> gameServer = (Map<String, Object>) matchInfo.get("gameServer");
+            String websocketUrl = (String) gameServer.get("websocketUrl");
+            
+            MatchmakingStatusResponse response = new MatchmakingStatusResponse(
+                "MATCH_FOUND",
+                (String) matchInfo.get("matchId"),
+                websocketUrl
+            );
+            return ResponseEntity.ok(new ApiResponse<>(200, "Match found", response));
         }
         
         if ("SEARCHING".equals(status)) {
-            return ResponseEntity.ok(Map.of("status", "SEARCHING"));
+            MatchmakingStatusResponse response = new MatchmakingStatusResponse("SEARCHING", null, null);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Searching for match", response));
         }
 
+        MatchmakingStatusResponse response = new MatchmakingStatusResponse("NOT_IN_QUEUE", null, null);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("status", "NOT_IN_QUEUE"));
+                    .body(new ApiResponse<>(404, "Not in queue", response));
     }
 
     @DeleteMapping
