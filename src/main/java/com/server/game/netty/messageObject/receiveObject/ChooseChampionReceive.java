@@ -16,19 +16,13 @@ import lombok.experimental.FieldDefaults;
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@ReceiveType(ClientMessageType.DISTANCE_RECEIVE) // Custom annotation to define the type of this message
+@ReceiveType(ClientMessageType.CHOOSE_CHAMPION_RECEIVE) // Custom annotation to define the type of this message
 @Component // Register this class as a Spring component to be scanned in ReceiveTypeScanner when the application starts
-public class DistanceReceive implements TLVDecodable {
-    Double x1;
-    Double y1;
-    Double x2;
-    Double y2;
+public class ChooseChampionReceive implements TLVDecodable {
+    Integer championId;
 
     @Override // must override this method of TLVDecodable interface
     public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
-        x1 = buffer.getDouble();
-        y1 = buffer.getDouble();
-        x2 = buffer.getDouble();
-        y2 = buffer.getDouble();
+        championId = buffer.getInt();
     }
 }

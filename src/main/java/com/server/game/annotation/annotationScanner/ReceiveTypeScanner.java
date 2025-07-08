@@ -30,8 +30,8 @@ public class ReceiveTypeScanner implements ApplicationListener<ApplicationReadyE
                 short type = annotation.value().getType();
                 
                 @SuppressWarnings("unchecked")
-                Class<? extends TLVDecodable> dtoClass = (Class<? extends TLVDecodable>) clazz;
-                TLVDecoder.register(type, dtoClass);
+                Class<? extends TLVDecodable> receiveClazz = (Class<? extends TLVDecodable>) clazz;
+                TLVDecoder.register(type, receiveClazz);
             }
         }
     }

@@ -17,22 +17,31 @@ import lombok.experimental.FieldDefaults;
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MessageSend implements TLVEncodable {
-    String message;
+public class ChooseChampionSend implements TLVEncodable {
+    String userId;
+    Integer championId;
 
     @Override
     public ServerMessageType getType() {
-        return ServerMessageType.MESSAGE_SEND;
+        return ServerMessageType.CHOOSE_CHAMPION_SEND;
     }
 
     @Override
     public byte[] encode() { // only return the [value] part of the TLV message
-        byte[] messageBytes = message.getBytes(Charset.forName("UTF-32BE"));
-        int messageLength = messageBytes.length;
-        ByteBuffer buf = ByteBuffer.allocate(Util.STRING_BYTE_SIZE(messageLength)).order(ByteOrder.BIG_ENDIAN);
-        buf.putInt(messageLength);
-        buf.put(messageBytes);
+        int userIdLength = this.userId.length();
+        
+        ByteBuffer buf = ByteBuffer
+            .allocate(Util.INT_SIZE + Util.STRING_BYTE_SIZE(userIdLength) + Util.INT_SIZE)
+            .order(ByteOrder.BIG_ENDIAN);
+        byte[] userIdBytes = this.userId.getBytes(Charset.forName("UTF-32BE"));
+        // print userIdBytes in hex
+        Util.printHex(ByteBuffer.wrap(userIdBytes));
+
+        buf.putInt(userIdLength);
+        buf.put(userIdBytes);
+        buf.putInt(this.championId);
+
+        Util.printHex(buf);
         return buf.array();
     }
-
 }

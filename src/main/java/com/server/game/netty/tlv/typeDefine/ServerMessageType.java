@@ -10,8 +10,8 @@ import lombok.Getter;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ServerMessageType {
     DISTANCE_SEND((short) 2),
-    MESSAGE_SEND((short) 4);
-
+    MESSAGE_SEND((short) 4),
+    CHOOSE_CHAMPION_SEND((short) 6);
 
     short type;
 
