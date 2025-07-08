@@ -10,7 +10,8 @@ import lombok.Getter;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ClientMessageType {
     DISTANCE_RECEIVE((short) 1),
-    MESSAGE_RECEIVE((short) 3);
+    MESSAGE_RECEIVE((short) 3),
+    CHOOSE_CHAMPION_RECEIVE((short) 5);
 
 
     short type;

@@ -22,6 +22,7 @@ public class TLVDecoder {
 
 
     public static TLVDecodable byte2Object(short type, ByteBuffer buffer) {
+        // OOP polymorphism: use interface to polymorphically create an instance base on [type]
         Class<? extends TLVDecodable> clazz = registry.get(type);
         if (clazz == null) {
             System.out.println(">>> No class registered for type: " + type);
@@ -29,8 +30,6 @@ public class TLVDecoder {
         }
 
         try {
-            // Util.printHex(buffer); // Print the hex representation of the ByteBuffer
-
             TLVDecodable instance = clazz.getDeclaredConstructor().newInstance();
             instance.decode(buffer);
             return instance;

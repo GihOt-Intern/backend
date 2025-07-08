@@ -17,9 +17,11 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 @Component
 public class WebSocketChannelInitializer extends ChannelInitializer<SocketChannel> {
 
+    // Will be talked later
     @Autowired
     private MessageDispatcher dispatcher;
 
+    // This service will be talked later
     @Autowired
     private AuthenticationService authenticationService;
 
@@ -27,23 +29,31 @@ public class WebSocketChannelInitializer extends ChannelInitializer<SocketChanne
     public void initChannel(SocketChannel ch) throws Exception {
 
         ch.pipeline()
-                .addLast(new HttpServerCodec()) // 1. HTTP codec
-                .addLast(new HttpObjectAggregator(65536)) // 2. Aggregate HTTP messages
+            .addLast(new HttpServerCodec()) // HTTP codec
+            .addLast(new HttpObjectAggregator(65536)) // Aggregate HTTP messages
 
-                .addLast(new HandshakeHandler(authenticationService)) // Parse the request parameters and extract token to identify user
-                // Upgrade from HTTP to WebSocket
-                .addLast(new WebSocketServerProtocolHandler("/ws", null, true))
+            // Parse the request parameters and extract token to identify user (inbound)
+            .addLast(new HandshakeHandler(authenticationService)) 
+            // Upgrade from HTTP to WebSocket (inbound)
+            .addLast(new WebSocketServerProtocolHandler(""))
 
 
-                // Handle WebSocket frames
-                .addLast(new Reader()) // Receive BinaryWebSocketFrame and convert to ByteBuf       I
-                .addLast(new TLVMessageDecoder()) // Receive ByteBuf and convert to TLVDecodable objects  I
+            // Handle WebSocket frames: 
 
-                .addLast(new Writer()) // Receive ByteBuf, convert it to BinaryWebSocketFrame and send it to the client  O
-                .addLast(new TLVMessageEncoder()) // Receive TLVEncodable objects and convert them to ByteBuf   O
-                .addLast(new BussinessHandler(dispatcher)) // Business logic handler, receives TLVDecodable objects and creates TLVEncodable objects  I
+            // Receive BinaryWebSocketFrame and convert to ByteBuf  (inbound)
+            .addLast(new Reader()) 
+            // Receive ByteBuf and convert to TLVDecodable objects  (inbound)
+            .addLast(new TLVMessageDecoder()) 
+            // Receive ByteBuf, convert it to BinaryWebSocketFrame and send it to the client  (outbound)
+            
+            .addLast(new Writer()) 
+            // Receive TLVEncodable objects and convert them to ByteBuf   (outbound)
+            .addLast(new TLVMessageEncoder()) 
+            // Business logic handler, receives TLVDecodable objects and creates TLVEncodable objects  (inbound)
+            .addLast(new BussinessHandler(dispatcher)) 
 
-                .addLast(new DisconnectHandler()) // Handle channel disconnection and unregister user channel
-                ;
+            // Handle channel disconnection and unregister user channel (inbound)
+            .addLast(new DisconnectHandler()) 
+        ;
     }
 }

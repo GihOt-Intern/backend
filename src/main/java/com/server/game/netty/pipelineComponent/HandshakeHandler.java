@@ -1,11 +1,16 @@
 package com.server.game.netty.pipelineComponent;
 
 
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Map;
+
 import com.server.game.exception.DataNotFoundException;
-import com.server.game.netty.UserChannelRegistry;
+import com.server.game.netty.ChannelRegistry;
 import com.server.game.service.AuthenticationService;
 import com.server.game.util.Util;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -23,38 +28,62 @@ public class HandshakeHandler extends SimpleChannelInboundHandler<FullHttpReques
     @Override
     public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         
-        System.out.println(">>> HTTP Request: " + request);
+  
+        URI uri = new URI(request.uri());   // "ws://localhost:8386/ws?token=<jwt_token>"   or   "ws://localhost:8386/game/{gameId}?token=<jwt_token>"
+        String path = uri.getPath();  
 
-
-        if (!request.uri().contains("token=")) {
-            System.out.println(">>> No token found in request URI, closing channel.");
-            ctx.close(); // Close the channel if no token is found
-            return;
+        // System.out.println(">>> PATH: " + path);
+        String[] segments = Arrays.stream(path.split("/"))
+                                .filter(s -> !s.isEmpty()) // Filter out empty segments
+                                .toArray(String[]::new);
+        
+        String gameId = null;
+        if (segments[0].equals("game")) {
+            System.out.println(">>> Game request detected.");
+            try {
+                gameId = segments[1]; // Get the second segment as gameId
+                System.out.println(">>> Game ID: " + gameId);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.out.println(">>> Invalid request URI, closing channel.");
+                ctx.close(); // Close the channel if the URI is invalid
+                return;
+            }
+        } else if (segments[0].equals("ws")) {
+            System.out.println(">>> WebSocket request detected.");
+        } else {
+            System.out.println(">>> Invalid request URI, closing channel.");
+            ctx.close(); // Close the channel if the URI is invalid
+            throw new IllegalArgumentException("Invalid request URI: " + request.uri());
         }
 
+        String query = uri.getQuery();
 
-        String token = null;        
-        try {
-            token = Util.getTokenFromUri(request.uri());
-        } catch (DataNotFoundException e) {
-            System.out.println("Error: " + e.getMessage());
+        Map<String, String> queryParams = Util.handleQueryString(query);
+        if (!queryParams.containsKey("token")) {
+            System.out.println(">>> Token not found in query parameters, closing channel.");
             ctx.close(); // Close the channel if token is not found
             return;
         }
-
-        // System.out.println(">>> Token: " + token);
+        String token = queryParams.get("token");
 
         String userId = authenticationService.getJWTSubject(token);
 
-        UserChannelRegistry.register(userId, ctx.channel());
+        Channel channel = ctx.channel();
+        ChannelRegistry.userRegister(userId, channel);
+
+        if (gameId != null) {
+            ChannelRegistry.gameRegister(gameId, channel);
+        }
 
 
+        System.out.println(">>> Handshake successful for userId: " + userId);
+
+        // Clean path and query parameters to send to next handler in pipeline
         FullHttpRequest newRequest = request.replace(request.content().retain());
-        newRequest.setUri("/ws");
+        newRequest.setUri("");
 
         System.out.println("Continue to next handler in pipeline...");
-        System.out.println(">>> Request after: " + newRequest);
-        ctx.fireChannelRead(newRequest);
+        ctx.fireChannelRead(newRequest); 
     }
 
     @Override

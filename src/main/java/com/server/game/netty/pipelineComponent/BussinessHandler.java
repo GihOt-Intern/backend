@@ -1,6 +1,10 @@
 package com.server.game.netty.pipelineComponent;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.server.game.netty.ChannelRegistry;
 import com.server.game.netty.messageMapping.MessageDispatcher;
 import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
 import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
@@ -23,8 +27,10 @@ public class BussinessHandler extends SimpleChannelInboundHandler<TLVDecodable> 
 
         System.out.println(">>> Server Received TLVDecodable object: " + receiveObject.getClass().getSimpleName());
 
-        TLVEncodable sendObject = (TLVEncodable) dispatcher.dispatch(receiveObject);
-        
+        Map<Class<?>, Object> contextParams = new HashMap<>();
+        contextParams.put(String.class, ChannelRegistry.getUserIdByChannel(ctx.channel()));
+        TLVEncodable sendObject = (TLVEncodable) dispatcher.dispatch(receiveObject, contextParams);
+
         if (sendObject == null) {
             System.out.println(">>> This message no need to send back response to client, stop pipeline.");
             return;

@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.server.game.netty.tlv.codec.TLVDecoder;
 import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
+import com.server.game.util.Util;
 
 public class TLVMessageDecoder extends MessageToMessageDecoder<ByteBuf> {
 
@@ -18,6 +19,8 @@ public class TLVMessageDecoder extends MessageToMessageDecoder<ByteBuf> {
 
         // while (buf.readableBytes() >= 6) {
         //     buf.markReaderIndex();
+        System.out.println(">>> Server received ByteBuf:");
+        Util.printHex(buf.nioBuffer());
 
         short type = buf.readShort();
         int length = buf.readInt();
@@ -32,6 +35,8 @@ public class TLVMessageDecoder extends MessageToMessageDecoder<ByteBuf> {
 
         // byte[] value = new byte[length];
         // buf.readBytes(value);
+
+        // Convert from io.netty.buffer.ByteBuf to java.nio.ByteBuffer
         ByteBuffer buffer = buf.nioBuffer();
 
         TLVDecodable receiveObject = TLVDecoder.byte2Object(type, buffer);

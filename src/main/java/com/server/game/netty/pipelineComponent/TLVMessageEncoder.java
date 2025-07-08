@@ -24,7 +24,7 @@ public class TLVMessageEncoder extends MessageToByteEncoder<TLVEncodable> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         System.out.println(">>> Server Exception: " + cause.getMessage());
-        cause.printStackTrace();
+        cause.printStackTrace(); 
         ctx.close(); // Close the channel on exception
     }
 }
