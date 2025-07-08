@@ -13,9 +13,8 @@ public class LobbyHandler {
 
     @MessageMapping(ChooseChampionReceive.class)
     public ChooseChampionSend handleChooseChampion(ChooseChampionReceive receiveObject, String userId) {
-        Integer championId = receiveObject.getChampionId();
+        int championId = receiveObject.getChampionEnum().getChampionId();
         System.out.println("Chosen Champion ID: " + championId);
         return new ChooseChampionSend(userId, championId);
     }
-
 }
