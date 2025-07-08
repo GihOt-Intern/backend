@@ -38,8 +38,10 @@ public class RoomService {
         room.setPassword(request.getPassword());
         if (request.getPassword() != null && request.getVisibility() != RoomVisibility.HIDDEN) {
             room.setVisibility(RoomVisibility.LOCKED);
-        } else {
+        } else if (request.getPassword() == null && request.getVisibility() != RoomVisibility.HIDDEN) {
             room.setVisibility(RoomVisibility.PUBLIC);
+        } else {
+            room.setVisibility(RoomVisibility.HIDDEN);
         }
 
         room = roomRedisService.save(room);
