@@ -3,6 +3,7 @@ package com.server.game.netty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.server.game.util.Util;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -17,6 +18,7 @@ public class NettyWebSocketServer {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
+    // This class will be talked specifically in Server-Side-Only documentation
     @Autowired
     private WebSocketChannelInitializer webSocketChannelInitializer;
 
@@ -27,8 +29,8 @@ public class NettyWebSocketServer {
             System.out.println("WebSocket server is already running.");
             return;
         }
-        
-        int port = 8386;
+
+        int port = Util.getNettyServerPort(); // Get the port from .properties or environment variable
 
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
@@ -39,7 +41,8 @@ public class NettyWebSocketServer {
                      .channel(NioServerSocketChannel.class)
                      .childHandler(webSocketChannelInitializer)
                      .option(ChannelOption.SO_BACKLOG, 128) // Set the backlog size
-                     .childOption(ChannelOption.SO_KEEPALIVE,true);
+                     .childOption(ChannelOption.SO_KEEPALIVE,true)
+            ;
 
             ChannelFuture f = bootstrap.bind(port).sync();;
 
@@ -59,7 +62,8 @@ public class NettyWebSocketServer {
         // }
     }
 
-    @PreDestroy
+    
+    @PreDestroy   // Shutdown Netty server automatically when Spring server is stopped
     private void stop() throws Exception {
         System.out.println("Shutting down Netty server...");
 

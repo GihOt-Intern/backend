@@ -25,6 +25,7 @@ public class RoomService {
     RoomRedisService roomRedisService;
     UserService userService;
     RoomMapper roomMapper;
+    NotificationService notificationService;
 
     public RoomResponse createRoom(CreateRoomRequest request) {
         User host = userService.getUserInfo();
@@ -35,8 +36,14 @@ public class RoomService {
         room.getPlayers().add(host);
         room.setStatus(RoomStatus.WAITING);
         room.setMaxPlayers(request.getMaxPlayers());
-        room.setVisibility(request.getVisibility());
         room.setPassword(request.getPassword());
+        if (request.getPassword() != null && request.getVisibility() != RoomVisibility.HIDDEN) {
+            room.setVisibility(RoomVisibility.LOCKED);
+        } else if (request.getPassword() == null && request.getVisibility() != RoomVisibility.HIDDEN) {
+            room.setVisibility(RoomVisibility.PUBLIC);
+        } else {
+            room.setVisibility(RoomVisibility.HIDDEN);
+        }
 
         room = roomRedisService.save(room);
 
@@ -141,13 +148,19 @@ public class RoomService {
         room.setStatus(RoomStatus.IN_GAME);
         room = roomRedisService.save(room);
 
+        // Send WebSocket notification to all players in the room
+        List<String> playerIds = room.getPlayers().stream()
+                .map(User::getId)
+                .toList();
+        notificationService.notifyGameStarted(playerIds, roomId, gameServerUrl);
+
         return roomMapper.toRoomResponse(room);
     }
 
     private String generateGameServerUrl(String roomId) {
         // This should be configurable via application properties
         // For now, using a default WebSocket URL pattern
-        return "ws://localhost:8081/game/" + roomId;
+        return "ws://localhost:8386/game/" + roomId;
     }
 
     public RoomResponse changeHost(String roomId, String newHostId) {

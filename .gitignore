@@ -48,5 +48,7 @@ logs/
 test.cs 
 hex2double.py
 WebSocketClient.py
+WebSocketClient1.py
+WebSocketClient2.py
 
 

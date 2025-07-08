@@ -11,6 +11,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class MatchmakingService {
     private final RedisUtil redisUtil;
+    private final NotificationService notificationService;
     private static final String QUEUE_KEY = "matchmaking:queue";
     private static final int MATCH_SIZE = 4;
     private static final int ESTIMATED_WAIT = 60;
@@ -63,14 +64,22 @@ public class MatchmakingService {
             }
             redisUtil.delete(QUEUE_KEY);
             for (Object u : queue) redisUtil.lPush(QUEUE_KEY, u);
+            
             String matchId = generateMatchId();
+            String websocketUrl = generateGameServerUrl(matchId);
+            
             Map<String, Object> matchInfo = new HashMap<>();
             matchInfo.put("matchId", matchId);
-            matchInfo.put("gameServer", Collections.singletonMap("websocketUrl", "ws://123.45.67.89:8081/game"));
+            matchInfo.put("gameServer", Collections.singletonMap("websocketUrl", websocketUrl));
+            
+            // Store match info for each player
             for (String userId : players) {
                 redisUtil.set(statusKey(userId), "MATCH_FOUND");
                 redisUtil.set(matchKey(userId), matchInfo);
             }
+            
+            // Send WebSocket notification to all matched players
+            notificationService.notifyMatchFound(players, matchId, websocketUrl);
         }
     }
 
@@ -83,6 +92,13 @@ public class MatchmakingService {
     private String generateMatchId() {
         return "match-" + UUID.randomUUID();
     }
+    
+    private String generateGameServerUrl(String matchId) {
+        // This should be configurable via application properties
+        // For now, using a default WebSocket URL pattern with match ID
+        return "ws://localhost:8386/game/" + matchId;
+    }
+    
     public int getEstimatedWaitTime() {
         return ESTIMATED_WAIT;
     }
