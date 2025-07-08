@@ -5,7 +5,6 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
 
-import com.server.game.exception.DataNotFoundException;
 import com.server.game.netty.ChannelRegistry;
 import com.server.game.service.AuthenticationService;
 import com.server.game.util.Util;

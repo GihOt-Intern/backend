@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.server.game.annotation.customAnnotation.ReceiveType;
 import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
 import com.server.game.netty.tlv.typeDefine.ClientMessageType;
+import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -19,10 +20,11 @@ import lombok.experimental.FieldDefaults;
 @ReceiveType(ClientMessageType.CHOOSE_CHAMPION_RECEIVE) // Custom annotation to define the type of this message
 @Component // Register this class as a Spring component to be scanned in ReceiveTypeScanner when the application starts
 public class ChooseChampionReceive implements TLVDecodable {
-    Integer championId;
+    ChampionEnum championEnum;
 
     @Override // must override this method of TLVDecodable interface
     public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
-        championId = buffer.getInt();
+        int championId = buffer.getInt();
+        this.championEnum = ChampionEnum.fromInt(championId);
     }
 }
