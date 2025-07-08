@@ -27,7 +27,7 @@ public class HandshakeHandler extends SimpleChannelInboundHandler<FullHttpReques
     @Override
     public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         
-  
+
         URI uri = new URI(request.uri());   // "ws://localhost:8386/ws?token=<jwt_token>"   or   "ws://localhost:8386/game/{gameId}?token=<jwt_token>"
         String path = uri.getPath();  
 
