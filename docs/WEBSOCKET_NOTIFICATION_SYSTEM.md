@@ -84,47 +84,99 @@ public class UserChannelRegistry {
 
 ## Client Integration
 
-### 1. Connect to Notification WebSocket
-```javascript
-// Connect to main WebSocket for notifications
-const notificationWs = new WebSocket(`ws://localhost:8386/ws?token=${jwtToken}`);
+### 1. Unity (C#) Client Integration
 
-notificationWs.onmessage = function(event) {
-    const notification = JSON.parse(event.data);
-    
-    switch(notification.type) {
-        case 'MATCH_FOUND':
-            console.log('Match found!', notification);
-            // Connect to game server
-            connectToGameServer(notification.websocketUrl);
-            break;
-            
-        case 'GAME_STARTED':
-            console.log('Game started!', notification);
-            // Connect to game server
-            connectToGameServer(notification.websocketUrl);
-            break;
+You can use a WebSocket library such as [NativeWebSocket](https://github.com/endel/NativeWebSocket) or [BestHTTP/2](https://assetstore.unity.com/packages/tools/network/best-http-2-155981) for Unity. Below is an example using [NativeWebSocket](https://github.com/endel/NativeWebSocket), which is free and works on most Unity platforms.
+
+#### **Install NativeWebSocket**
+- Download and import the NativeWebSocket package into your Unity project.
+
+#### **Connect to Notification WebSocket**
+```csharp
+using NativeWebSocket;
+using UnityEngine;
+using System;
+
+public class NotificationClient : MonoBehaviour
+{
+    private WebSocket websocket;
+    public string jwtToken; // Set this with your JWT token
+
+    async void Start()
+    {
+        string notificationUrl = $"ws://localhost:8386/ws?token={jwtToken}";
+        websocket = new WebSocket(notificationUrl);
+
+        websocket.OnOpen += () =>
+        {
+            Debug.Log("Connection open!");
+        };
+
+        websocket.OnError += (e) =>
+        {
+            Debug.LogError($"WebSocket Error: {e}");
+        };
+
+        websocket.OnClose += (e) =>
+        {
+            Debug.Log("Connection closed!");
+        };
+
+        websocket.OnMessage += (bytes) =>
+        {
+            string message = System.Text.Encoding.UTF8.GetString(bytes);
+            Debug.Log($"Notification: {message}");
+            HandleNotification(message);
+        };
+
+        await websocket.Connect();
     }
-};
-```
 
-### 2. Connect to Game Server
-```javascript
-function connectToGameServer(websocketUrl) {
-    // Connect to the specific game server
-    const gameWs = new WebSocket(websocketUrl);
-    
-    gameWs.onopen = function() {
-        console.log('Connected to game server');
-        // Start game logic
-    };
-    
-    gameWs.onmessage = function(event) {
-        // Handle game-specific messages
-        console.log('Game message:', event.data);
-    };
+    private void HandleNotification(string message)
+    {
+        // Parse the JSON and handle MATCH_FOUND or GAME_STARTED
+        var notification = JsonUtility.FromJson<NotificationMessage>(message);
+        if (notification.type == "MATCH_FOUND" || notification.type == "GAME_STARTED")
+        {
+            ConnectToGameServer(notification.websocketUrl);
+        }
+    }
+
+    private async void ConnectToGameServer(string websocketUrl)
+    {
+        var gameWebSocket = new WebSocket(websocketUrl);
+        gameWebSocket.OnOpen += () => Debug.Log("Connected to game server!");
+        gameWebSocket.OnMessage += (bytes) => Debug.Log($"Game message: {System.Text.Encoding.UTF8.GetString(bytes)}");
+        await gameWebSocket.Connect();
+    }
+
+    [Serializable]
+    public class NotificationMessage
+    {
+        public string type;
+        public string matchId;
+        public string roomId;
+        public string websocketUrl;
+        public string message;
+    }
+
+    private async void OnApplicationQuit()
+    {
+        if (websocket != null)
+        {
+            await websocket.Close();
+        }
+    }
 }
 ```
+
+**Notes:**
+- Replace `localhost` with your server's IP or domain in production.
+- Always use `wss://` (secure WebSocket) in production.
+- Make sure your JWT token is valid and not expired.
+- You can expand the `NotificationMessage` class to match your server's notification structure.
+
+---
 
 ## WebSocket URL Patterns
 

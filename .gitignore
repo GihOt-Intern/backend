@@ -4,7 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-
+test.py
 
 ### STS ###
 .apt_generated

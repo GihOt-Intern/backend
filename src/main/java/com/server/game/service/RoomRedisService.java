@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -23,12 +24,37 @@ public class RoomRedisService {
     private static final String ROOM_KEY_PREFIX = "room:";
     private static final String ROOM_IDS_KEY = "rooms:ids";
     private static final Duration ROOM_TTL = Duration.ofHours(1); // 1 hour TTL
+    private static final String ALPHANUMERIC_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final int ROOM_ID_LENGTH = 5;
+    private static final int MAX_ATTEMPTS = 100; // Prevent infinite loops
 
     RedisUtil redisUtil;
+    private final Random random = new Random();
+
+    /**
+     * Generates a unique 5-character alphanumeric room ID
+     * @return A unique room ID
+     */
+    private String generateUniqueRoomId() {
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+            StringBuilder roomId = new StringBuilder();
+            for (int i = 0; i < ROOM_ID_LENGTH; i++) {
+                roomId.append(ALPHANUMERIC_CHARS.charAt(random.nextInt(ALPHANUMERIC_CHARS.length())));
+            }
+            String generatedId = roomId.toString();
+            
+            // Check if this ID already exists
+            if (!existsById(generatedId)) {
+                return generatedId;
+            }
+        }
+        // If we can't find a unique ID after max attempts, fall back to UUID (truncated)
+        return UUID.randomUUID().toString().substring(0, ROOM_ID_LENGTH).toUpperCase();
+    }
 
     public Room save(Room room) {
         if (room.getId() == null) {
-            room.setId(UUID.randomUUID().toString());
+            room.setId(generateUniqueRoomId());
         }
         
         String roomKey = ROOM_KEY_PREFIX + room.getId();
