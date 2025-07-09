@@ -2,7 +2,7 @@ package com.server.game.netty.pipelineComponent;
 
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.OutboundSendMessage;
-import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTargetInterface;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.tlv.codec.TLVEncoder;
 import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
 
@@ -23,16 +23,18 @@ public class TLVMessageEncoder extends ChannelOutboundHandlerAdapter {
             return;
         }
 
-        TLVEncodable sendObject = (TLVEncodable) msg;
+        TLVEncodable sendObject = (TLVEncodable) msg; // cast msg to TLVEncodable
         System.out.println(">>> Server received TLVEncodable object: " + sendObject.getClass().getSimpleName());
         System.out.println(">>> Server Encoding TLVEncodable object to ByteBuf");
-        byte[] encoded = TLVEncoder.object2Byte(sendObject);
+        byte[] encoded = TLVEncoder.object2Bytes(sendObject);
 
-        ByteBuf encodedBuf = Unpooled.wrappedBuffer(encoded);
+        ByteBuf encodedBuf = Unpooled.wrappedBuffer(encoded); // wrap the byte array into a ByteBuf
         System.out.println(">>> Server Encoded TLVEncodable object (" + sendObject.getClass().getSimpleName() + ") to ByteBuf");
         
-        SendTargetInterface sendTarget = sendObject.getSendTarget(ctx.channel());
+        // Get send target from the TLVEncodable object
+        SendTarget sendTarget = sendObject.getSendTarget(ctx.channel());
 
+        // Wrap ByteBuf and send target into an object to send to the next handler in pipeline
         OutboundSendMessage outboundMessage = new OutboundSendMessage(encodedBuf, sendTarget);
         ctx.write(outboundMessage, promise);
     }

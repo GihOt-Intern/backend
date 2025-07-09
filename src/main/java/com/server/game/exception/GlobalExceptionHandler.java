@@ -86,7 +86,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-
     // @ExceptionHandler(Exception.class)
     // public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex) {
     //     ApiResponse<Void> response = new ApiResponse<>(500, ex.getMessage(), null);

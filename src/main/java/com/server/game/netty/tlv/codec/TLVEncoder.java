@@ -5,15 +5,16 @@ import java.nio.ByteOrder;
 
 import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.ServerMessageType;
+import com.server.game.util.Util;
 
 public class TLVEncoder {
 
-    public static byte[] object2Byte(TLVEncodable sendObj) {
+    public static byte[] object2Bytes(TLVEncodable sendObj) {
         byte[] valueBytes = sendObj.encode();
         ServerMessageType type = sendObj.getType();
         int length = valueBytes.length;
 
-        ByteBuffer buffer = ByteBuffer.allocate(2 + 4 + length).order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.allocate(Util.SHORT_SIZE + Util.INT_SIZE + length).order(ByteOrder.BIG_ENDIAN);
         buffer.putShort(type.getType());
         buffer.putInt(length);
         buffer.put(valueBytes);

@@ -11,7 +11,9 @@ import lombok.Getter;
 public enum ClientMessageType {
     DISTANCE_RECEIVE((short) 1),
     MESSAGE_RECEIVE((short) 3),
-    CHOOSE_CHAMPION_RECEIVE((short) 5);
+    CHOOSE_CHAMPION_RECEIVE((short) 5),
+    AUTHENTICATION_RECEIVE((short) 16),
+    ;
 
 
     short type;

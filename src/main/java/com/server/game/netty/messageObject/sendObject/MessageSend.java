@@ -1,10 +1,8 @@
 package com.server.game.netty.messageObject.sendObject;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 
-import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTargetInterface;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.ServerMessageType;
@@ -30,17 +28,18 @@ public class MessageSend implements TLVEncodable {
 
     @Override
     public byte[] encode() { // only return the [value] part of the TLV message
-        byte[] messageBytes = message.getBytes(Charset.forName("UTF-32BE"));
-        int messageLength = messageBytes.length;
-        ByteBuffer buf = ByteBuffer.allocate(Util.STRING_BYTE_SIZE(messageLength)).order(ByteOrder.BIG_ENDIAN);
-        buf.putInt(messageLength);
+        byte[] messageBytes = Util.stringToBytes(this.message);
+        int messageByteLength = messageBytes.length;
+        ByteBuffer buf = Util.allocateByteBuffer(Util.INT_SIZE + messageByteLength);
+        
+        buf.putInt(messageByteLength);
         buf.put(messageBytes);
         return buf.array();
     }
 
 
     @Override
-    public SendTargetInterface getSendTarget(Channel channel) {
+    public SendTarget getSendTarget(Channel channel) {
         return new UnicastTarget(channel);
     }
 }

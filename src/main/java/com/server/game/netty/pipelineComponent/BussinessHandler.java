@@ -9,6 +9,7 @@ import com.server.game.netty.messageMapping.MessageDispatcher;
 import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
 import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -31,6 +32,7 @@ public class BussinessHandler extends SimpleChannelInboundHandler<TLVDecodable> 
         // to invoke the method
         Map<Class<?>, Object> contextParams = new HashMap<>();
         contextParams.put(String.class, ChannelRegistry.getUserIdByChannel(ctx.channel()));
+        contextParams.put(Channel.class, ctx.channel());
         // Add more context parameters as needed
         // ...
 
