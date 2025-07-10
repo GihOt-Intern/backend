@@ -18,8 +18,10 @@ public class TLVMessageEncoder extends ChannelOutboundHandlerAdapter {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         // Only process TLVEncodable messages, if not, pass it to the next handler
+        
+
         if (!(msg instanceof TLVEncodable)) {
-            ctx.write(msg, promise); 
+            ctx.writeAndFlush(msg, promise); 
             return;
         }
 
@@ -36,7 +38,7 @@ public class TLVMessageEncoder extends ChannelOutboundHandlerAdapter {
 
         // Wrap ByteBuf and send target into an object to send to the next handler in pipeline
         OutboundSendMessage outboundMessage = new OutboundSendMessage(encodedBuf, sendTarget);
-        ctx.write(outboundMessage, promise);
+        ctx.writeAndFlush(outboundMessage, promise);
     }
 
     

@@ -45,10 +45,4 @@ node_modules/
 **/src/main/resources/static/
 logs/
 .env
-test.cs 
-hex2double.py
-WebSocketClient.py
-WebSocketClient1.py
-WebSocketClient2.py
 
-SocketClient.py

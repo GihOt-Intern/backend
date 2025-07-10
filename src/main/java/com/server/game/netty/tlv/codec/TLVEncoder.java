@@ -9,7 +9,7 @@ import com.server.game.util.Util;
 
 public class TLVEncoder {
 
-    public static byte[] object2Bytes(TLVEncodable sendObj) {
+    public static byte[] object2Bytes(TLVEncodable sendObj) { // return a full TLV message in byte array format
         byte[] valueBytes = sendObj.encode();
         ServerMessageType type = sendObj.getType();
         int length = valueBytes.length;

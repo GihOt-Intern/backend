@@ -9,10 +9,11 @@ import lombok.Getter;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ServerMessageType {
-    DISTANCE_SEND((short) 2),
+    AUTHENTICATION_SEND((short) 2),
     MESSAGE_SEND((short) 4),
-    CHOOSE_CHAMPION_SEND((short) 6)
+    CHOOSE_CHAMPION_SEND((short) 6),
     // Add more message types as needed
+    DISTANCE_SEND((short) 18),
     ;
 
     short type;

@@ -44,7 +44,7 @@ public class NettySocketServer {
                      .childOption(ChannelOption.SO_KEEPALIVE,true)
             ;
 
-            ChannelFuture f = bootstrap.bind(port).sync();;
+            ChannelFuture f = bootstrap.bind(port).sync(); 
 
             this.serverChannel = f.channel();
 
@@ -52,7 +52,7 @@ public class NettySocketServer {
             // String hostAddress = java.net.InetAddress.getLocalHost().getHostAddress();
             // System.out.println("WebSocket server host address: " + hostAddress);
 
-            System.out.println("WebSocket server started at ws://localhost:" + port);
+            System.out.println("WebSocket server started at host=localhost, port=" + port);
 
 
             f.channel().closeFuture().sync();

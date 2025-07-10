@@ -9,10 +9,10 @@ import lombok.Getter;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ClientMessageType {
-    DISTANCE_RECEIVE((short) 1),
+    AUTHENTICATION_RECEIVE((short) 1),
     MESSAGE_RECEIVE((short) 3),
     CHOOSE_CHAMPION_RECEIVE((short) 5),
-    AUTHENTICATION_RECEIVE((short) 16),
+    DISTANCE_RECEIVE((short) 17),
     ;
 
 

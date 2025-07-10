@@ -35,9 +35,6 @@ public class SocketChannelInitializer extends ChannelInitializer<SocketChannel> 
             // This handler will be removed after the first message is correct and the user is authenticated
             .addLast(new AuthenticationHandler()) 
 
-            // Receive BinaryWebSocketFrame and convert to ByteBuf  (inbound)
-            // .addLast(new Reader()) 
-
 
             // Receive ByteBuf and convert to TLVDecodable objects  (inbound)
             .addLast(new TLVMessageDecoder()) 
