@@ -1,9 +1,8 @@
 package com.server.game.netty.messageObject.sendObject;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
-import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTargetInterface;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.ServerMessageType;
@@ -23,19 +22,19 @@ public class DistanceSend implements TLVEncodable {
     Double distance;
 
     @Override
-    public ServerMessageType getType() {
+    public ServerMessageType getType() { // return enum defined in documentation for this message
         return ServerMessageType.DISTANCE_SEND;
     }
 
     @Override
     public byte[] encode() { // only return the [value] part of the TLV message
-        ByteBuffer buf = ByteBuffer.allocate(Util.DOUBLE_SIZE).order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer buf = Util.allocateByteBuffer(Util.DOUBLE_SIZE);
         buf.putDouble(distance);
         return buf.array();
     }
 
-    @Override
-    public SendTargetInterface getSendTarget(Channel channel) {
+    @Override     // this message is only sent to one channel.
+    public SendTarget getSendTarget(Channel channel) {
         return new UnicastTarget(channel);
     }
 }

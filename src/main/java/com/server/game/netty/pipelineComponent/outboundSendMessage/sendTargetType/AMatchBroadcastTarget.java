@@ -3,16 +3,15 @@ package com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetTy
 import java.util.Set;
 
 import com.server.game.netty.ChannelRegistry;
-import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTargetInterface;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
-public class RoomBroadcastTarget implements SendTargetInterface {
+public class AMatchBroadcastTarget implements SendTarget {
     private final String gameId;
 
-    public RoomBroadcastTarget(Channel channel) {
+    public AMatchBroadcastTarget(Channel channel) {
         this.gameId = ChannelRegistry.getGameIdByChannel(channel);
         if (this.gameId == null) {
             System.out.println(">>> Error: Channel does not belong to any game.");
@@ -20,7 +19,7 @@ public class RoomBroadcastTarget implements SendTargetInterface {
     }
 
     @Override
-    public void send(ByteBuf payload) {
+    public void send(ByteBuf message) {
         System.out.println(">>> Sending Room Broadcast for gameId: " + gameId);
 
 
@@ -32,7 +31,7 @@ public class RoomBroadcastTarget implements SendTargetInterface {
 
         for (Channel channel : channels) {
             if (channel.isActive()) {
-                channel.writeAndFlush(new BinaryWebSocketFrame(payload.retainedDuplicate()));
+                channel.writeAndFlush(message.retainedDuplicate());
                 System.out.println(">>> Server sent BinaryWebSocketFrame to user: " + ChannelRegistry.getUserIdByChannel(channel) +
                         " in game: " + gameId);
             }

@@ -3,16 +3,15 @@ package com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetTy
 import java.util.Set;
 
 import com.server.game.netty.ChannelRegistry;
-import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTargetInterface;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
-public class GlobalBroadcastTarget implements SendTargetInterface {
+public class GlobalBroadcastTarget implements SendTarget {
 
     @Override
-    public void send(ByteBuf payload) {
+    public void send(ByteBuf message) {
         System.out.println(">>> Sending Global Broadcast...");
 
 
@@ -24,7 +23,7 @@ public class GlobalBroadcastTarget implements SendTargetInterface {
 
         for (Channel channel : channels) {
             if (channel.isActive()) {
-                channel.writeAndFlush(new BinaryWebSocketFrame(payload.retainedDuplicate()));
+                channel.writeAndFlush(message.retainedDuplicate());
                 System.out.println(">>> Server sent BinaryWebSocketFrame to user: " + ChannelRegistry.getUserIdByChannel(channel));
             }
         }

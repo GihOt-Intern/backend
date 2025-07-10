@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public class OutboundSendMessage {
     ByteBuf byteBuf;
-    SendTargetInterface sendTarget;
+    SendTarget sendTarget;
 
     public void send() {
         if (sendTarget != null) {

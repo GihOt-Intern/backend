@@ -1,12 +1,10 @@
 package com.server.game.netty.messageObject.sendObject;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import io.netty.channel.Channel;
-import java.nio.charset.Charset;
 
-import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTargetInterface;
-import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.RoomBroadcastTarget;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.ServerMessageType;
 import com.server.game.util.Util;
@@ -31,25 +29,21 @@ public class ChooseChampionSend implements TLVEncodable {
 
     @Override
     public byte[] encode() { // only return the [value] part of the TLV message
-        int userIdLength = this.userId.length();
-        
-        ByteBuffer buf = ByteBuffer
-            .allocate(Util.INT_SIZE + Util.STRING_BYTE_SIZE(userIdLength) + Util.INT_SIZE)
-            .order(ByteOrder.BIG_ENDIAN);
-        byte[] userIdBytes = this.userId.getBytes(Charset.forName("UTF-32BE"));
-        // print userIdBytes in hex
-        Util.printHex(ByteBuffer.wrap(userIdBytes));
+        byte[] userIdBytes = Util.stringToBytes(this.userId);
+        int userIdByteLength = userIdBytes.length;
 
-        buf.putInt(userIdLength);
+        ByteBuffer buf = Util.allocateByteBuffer(Util.INT_SIZE + userIdByteLength + Util.INT_SIZE);
+
+        buf.putInt(userIdByteLength);
         buf.put(userIdBytes);
         buf.putInt(this.championId);
 
-        Util.printHex(buf);
+        Util.printHex(buf, true);
         return buf.array();
     }
 
     @Override
-    public SendTargetInterface getSendTarget(Channel channel) {
-        return new RoomBroadcastTarget(channel);
+    public SendTarget getSendTarget(Channel channel) {
+        return new AMatchBroadcastTarget(channel);
     }
 }

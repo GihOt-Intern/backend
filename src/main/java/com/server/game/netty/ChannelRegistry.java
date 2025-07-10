@@ -15,7 +15,18 @@ public class ChannelRegistry {
     public static final AttributeKey<String> USER_ID = AttributeKey.valueOf("USER_ID");
     public static final AttributeKey<String> GAME_ID = AttributeKey.valueOf("GAME_ID");
 
-    public static void userRegister(String userId, Channel channel) {
+
+    public static void register(String userId, String gameId, Channel channel) {
+        userRegister(userId, channel);
+        gameRegister(gameId, channel);
+    }
+
+    private static void userRegister(String userId, Channel channel) {
+        if (userId == null || userId.isEmpty()) {
+            System.out.println(">>> Cannot register channel, userId is null or empty.");
+            return; // Invalid userId, do not register
+        }
+
         if (userChannels.containsKey(userId)) {
             System.out.println(">>> UserId already registered: " + userId);
             return; // UserId already registered, do not register again
@@ -28,8 +39,12 @@ public class ChannelRegistry {
         System.out.println(">>> Registered channel for userId: " + userId);
     }
 
-    public static void gameRegister(String gameId, Channel channel) {
-        
+    private static void gameRegister(String gameId, Channel channel) {
+        if (gameId == null || gameId.isEmpty()) {
+            System.out.println(">>> Cannot register channel, gameId is null or empty.");
+            return; // Invalid gameId, do not register
+        }
+
         // Add gameId to channel attributes (to find game by channel later)
         ChannelRegistry.setGameId2Channel(gameId, channel);
 

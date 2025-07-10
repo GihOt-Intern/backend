@@ -12,7 +12,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import jakarta.annotation.PreDestroy;
 
 @Component
-public class NettyWebSocketServer {
+public class NettySocketServer {
 
     private Channel serverChannel;
     private EventLoopGroup bossGroup;
@@ -20,7 +20,7 @@ public class NettyWebSocketServer {
 
     // This class will be talked specifically in Server-Side-Only documentation
     @Autowired
-    private WebSocketChannelInitializer webSocketChannelInitializer;
+    private SocketChannelInitializer socketChannelInitializer;
 
 
     public synchronized void start() throws Exception {
@@ -39,12 +39,12 @@ public class NettyWebSocketServer {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup)
                      .channel(NioServerSocketChannel.class)
-                     .childHandler(webSocketChannelInitializer)
+                     .childHandler(socketChannelInitializer)
                      .option(ChannelOption.SO_BACKLOG, 128) // Set the backlog size
                      .childOption(ChannelOption.SO_KEEPALIVE,true)
             ;
 
-            ChannelFuture f = bootstrap.bind(port).sync();;
+            ChannelFuture f = bootstrap.bind(port).sync(); 
 
             this.serverChannel = f.channel();
 
@@ -52,7 +52,7 @@ public class NettyWebSocketServer {
             // String hostAddress = java.net.InetAddress.getLocalHost().getHostAddress();
             // System.out.println("WebSocket server host address: " + hostAddress);
 
-            System.out.println("WebSocket server started at ws://localhost:" + port);
+            System.out.println("WebSocket server started at host=localhost, port=" + port);
 
 
             f.channel().closeFuture().sync();
