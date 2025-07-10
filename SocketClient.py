@@ -18,6 +18,8 @@ AUTHENTICATION_RECEIVE = 2
 MESSAGE_SEND = 3
 MESSAGE_RECEIVE = 4
 
+isAuthenticated = False
+
 
 def build_tlv_message(type_id: int, **kwagrs) -> bytes:
     length: int = 0
@@ -69,6 +71,8 @@ def parse_tlv_message(type_id:int, buffer: io.BytesIO) -> tuple:
         message = buffer.read(message_length).decode("utf-8")
 
         print(f"[Server -> Client] Status Code: {status_code}, Message: {message}")
+        global isAuthenticated
+        isAuthenticated = True
         return status_code, message
 
 
@@ -90,7 +94,7 @@ def connect():
         with socket.create_connection((host, port)) as sock:
             print(f"Connected to server {host}:{port}")
 
-            # Gửi login TLV
+            # Create TLV message for authentication
             authentication_TLV_msg = build_tlv_message(
                 type_id=AUTHENTICATION_SEND,
                 token=token,
@@ -98,7 +102,7 @@ def connect():
             )
 
 
-            # Test first TLV message is not authentication message
+            # Create TLV message for sending a message
             other_TLV_msg = build_tlv_message(
                 type_id=MESSAGE_SEND,
                 message="Hello, this is a test message."
@@ -107,6 +111,7 @@ def connect():
 
             TLV_msg = other_TLV_msg
             # TLV_msg = authentication_TLV_msg
+
 
             print(f"[Client -> Server] Send TLV message: {TLV_msg.hex()}")
             sock.sendall(TLV_msg)
@@ -149,18 +154,19 @@ def connect():
                 elif type_id == MESSAGE_RECEIVE:
                     message = parse_tlv_message(type_id, buffer)
 
-                # type_id = struct.unpack(">h", header[:2])[0]
-                # length = struct.unpack(">i", header[2:6])[0]
 
-                # payload = b""
-                # while len(payload) < length:
-                #     chunk = sock.recv(length - len(payload))
-                #     if not chunk:
-                #         break
-                #     payload += chunk
 
-                # full_message = header + payload
-                # parse_tlv_message(full_message)
+                if isAuthenticated:
+                    print("Authenticated, sending another TLV message...")
+                    TLV_msg = other_TLV_msg
+                    print(f"[Client -> Server] Send TLV message: {TLV_msg.hex()}")
+                    sock.sendall(TLV_msg)
+                    break
+
+
+                break
+
+
 
     except Exception as e:
         print(f"Lỗi kết nối/giao tiếp: {e}")

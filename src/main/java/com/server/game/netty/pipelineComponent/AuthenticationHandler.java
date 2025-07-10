@@ -16,7 +16,6 @@ public class AuthenticationHandler extends MessageToMessageDecoder<ByteBuf> {
     @Override
     public void decode(ChannelHandlerContext ctx, ByteBuf buf, List<Object> out) throws Exception {
         
-
         // peek only, do not move the reader index
         short type = buf.getShort(buf.readerIndex());
         System.out.println(">>> Server received first message from client, type: " + type); 
@@ -34,13 +33,9 @@ public class AuthenticationHandler extends MessageToMessageDecoder<ByteBuf> {
 
         System.out.println(">>> Server received first message is the authentication message, processing...");
 
+        // Send message to next handler in pipeline, BussinessHandler will catch, dispatch this message
+        // and handle authentication later. In authenticate method, if successful, it will remove this handler from the pipeline
 
-        // Remove this handler from the pipeline.
-        // Authentication will be handled in BussinessHandler
-        ctx.pipeline().remove(this);
-
-        // Send message to next handler in pipeline, BussinessHandler will dispatch the message
-        // and handle authentication later
         out.add(buf.retain());
     }
 
