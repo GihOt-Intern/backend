@@ -19,16 +19,16 @@ import lombok.experimental.FieldDefaults;
 @ReceiveType(ClientMessageType.DISTANCE_RECEIVE) // Custom annotation to define the type of this message
 @Component // Register this class as a Spring component to be scanned in ReceiveTypeScanner when the application starts
 public class DistanceReceive implements TLVDecodable {
-    Double x1;
-    Double y1;
-    Double x2;
-    Double y2;
+    float x1;
+    float y1;
+    float x2;
+    float y2;
 
     @Override // must override this method of TLVDecodable interface
     public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
-        x1 = buffer.getDouble();
-        y1 = buffer.getDouble();
-        x2 = buffer.getDouble();
-        y2 = buffer.getDouble();
+        x1 = buffer.getFloat();
+        y1 = buffer.getFloat();
+        x2 = buffer.getFloat();
+        y2 = buffer.getFloat();
     }
 }

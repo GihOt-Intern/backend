@@ -32,7 +32,7 @@ public class BussinessHandler extends SimpleChannelInboundHandler<TLVDecodable> 
         // to invoke the method
         Map<Class<?>, Object> contextParams = new HashMap<>();
         contextParams.put(String.class, ChannelRegistry.getUserIdByChannel(ctx.channel()));
-        // contextParams.put(Channel.class, ctx.channel());
+        contextParams.put(Channel.class, ctx.channel());
         contextParams.put(ChannelHandlerContext.class, ctx);
         // Add more context parameters as needed
         // ...
