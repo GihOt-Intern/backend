@@ -24,15 +24,15 @@ public class SocketChannelInitializer extends ChannelInitializer<SocketChannel> 
         ch.pipeline()
             // Ensure the incoming ByteBuf is a complete frame
             .addLast(new LengthFieldBasedFrameDecoder(
-                65536,
-                2, // because the first 2 bytes of a TLVmessage is [type]
-                4, // [length] in TLVMessage is 4 bytes
-                0,  // 0 because [length] only length of [value], not the whole message length
+                65536, // max frame length
+                2, // offset, because the first 2 bytes of a TLVmessage is [type]
+                4, // [length] in TLVMessage is int, 4 bytes
+                0,  // 0 because [length] is only the length of [value], not the whole message length
                 0 // no strip, need to keep 3 components: [type], [length] and [value]
             )) 
 
             // Handle THE FIRST MESSAGE receive from client (must be an authentication message)
-            // This handler will be removed after the first message is correct and the user is authenticated
+            // This handler will be removed from pipeline after the first message is correct and the user is authenticated
             .addLast(new AuthenticationHandler()) 
 
 
