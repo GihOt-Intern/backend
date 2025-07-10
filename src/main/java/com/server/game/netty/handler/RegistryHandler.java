@@ -31,11 +31,12 @@ public class RegistryHandler {
         String userId = authenticationService.getJWTSubject(token);
         if (userId == null) {
             System.out.println(">>> Authentication failed for token: " + token);
-            return new AuthenticationSend(AuthenticationSend.Status.FAILURE, "Invalid token, playerId does not exist");
+            return new AuthenticationSend(AuthenticationSend.Status.FAILURE, "Invalid token, playerId does not exist or failed to register for room notifications");
         }
 
         Channel channel = ctx.channel();
         ChannelRegistry.register(userId, gameId, channel);
+        ChannelRegistry.registerToRoom(userId, gameId, channel); // Register for room notifications as well
 
         // Make sure removing is invoked in the correct thread
         ctx.channel().eventLoop().execute(() -> {
@@ -43,6 +44,6 @@ public class RegistryHandler {
             ctx.pipeline().remove(AuthenticationHandler.class);
         });
 
-        return new AuthenticationSend(AuthenticationSend.Status.SUCCESS, "Authenticated successfully!");
+        return new AuthenticationSend(AuthenticationSend.Status.SUCCESS, "Authenticated and registered to room notifications successfully!");
     }
 }
