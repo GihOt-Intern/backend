@@ -1,12 +1,35 @@
 package com.server.game.map.object;
 
-import com.server.game.map.object.abstraction.StaticMapObject;
+import com.server.game.map.MapWorld;
+import com.server.game.map.object.abstraction.HealthComponent;
+import com.server.game.map.object.abstraction.MapObject;
+import com.server.game.map.object.interf4ce.Attackable;
 
 import lombok.AllArgsConstructor;
 
 
 @AllArgsConstructor
-public class Tower extends StaticMapObject {
+public class Tower extends MapObject implements Attackable {
+
+    HealthComponent healthComponent;
+    
+
+    @Override
+    public void onTick(float deltaTime, MapWorld world) {
+        // Tower logic for each tick can be implemented here
+    }
+
+    @Override
+    public void attack(MapObject target){}
+
+    @Override
+    public int getAttackDamage() { return 0; }
+    
+    @Override
+    public float getAttackRange() { return 0.0f; }
+    
+    @Override
+    public float getAttackCooldown() { return 0.0f; }
 
     
 }

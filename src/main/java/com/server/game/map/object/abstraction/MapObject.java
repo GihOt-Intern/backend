@@ -1,5 +1,6 @@
 package com.server.game.map.object.abstraction;
 
+import com.server.game.map.MapWorld;
 import com.server.game.map.component.Vector2;
 import com.server.game.map.shape.CollisionShape;
 
@@ -14,4 +15,6 @@ import lombok.NoArgsConstructor;
 public abstract class MapObject {
     protected Vector2 position;
     protected CollisionShape shape; // height and width if rectangle, radius if circle
+
+    public abstract void onTick(float deltaTime, MapWorld world);
 }

@@ -3,8 +3,10 @@ package com.server.game.map;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.server.game.map.object.Minion;
+import com.server.game.map.object.abstraction.Minion;
 import com.server.game.map.object.Tower;
+
+import com.server.game.map.object.abstraction.Character;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
