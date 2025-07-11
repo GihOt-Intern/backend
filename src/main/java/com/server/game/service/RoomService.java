@@ -9,12 +9,19 @@ import com.server.game.model.Room;
 import com.server.game.model.RoomStatus;
 import com.server.game.model.RoomVisibility;
 import com.server.game.model.User;
+import com.server.game.netty.ChannelRegistry;
+import com.server.game.netty.messageObject.sendObject.InfoPlayersInRoomSend;
+
+import io.netty.channel.Channel;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -219,5 +226,26 @@ public class RoomService {
         room = roomRedisService.save(room);
 
         return roomMapper.toRoomResponse(room);
+    }
+
+
+    public void startGameSocket(String roomId) {
+        Set<Channel> channels = ChannelRegistry.getChannelsByGameId(roomId);
+        if (channels.isEmpty()) {
+            System.out.println("No active game channels found for room: " + roomId);
+            return;
+        }
+        Map<Short, String> players = new HashMap<>();
+        Short slot = 0;
+        for (Channel channel: channels){
+            String userId = ChannelRegistry.getUserIdByChannel(channel);
+            String username = userService.getUsernameById(userId);
+            ++slot;
+            players.put(slot, username);
+        }
+        InfoPlayersInRoomSend infoPlayerInRoomSend = new InfoPlayersInRoomSend(players);
+        // Get any Channel from the set to represent to broadcast message
+        Channel firstChannel = channels.iterator().next();
+        firstChannel.writeAndFlush(infoPlayerInRoomSend);
     }
 } 

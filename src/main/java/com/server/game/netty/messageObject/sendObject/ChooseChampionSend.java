@@ -1,6 +1,7 @@
 package com.server.game.netty.messageObject.sendObject;
 
 import java.nio.ByteBuffer;
+
 import io.netty.channel.Channel;
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
@@ -19,7 +20,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChooseChampionSend implements TLVEncodable {
-    String userId;
+    short slot;
     Integer championId;
 
     @Override
@@ -29,16 +30,20 @@ public class ChooseChampionSend implements TLVEncodable {
 
     @Override
     public byte[] encode() { // only return the [value] part of the TLV message
-        byte[] userIdBytes = Util.stringToBytes(this.userId);
-        int userIdByteLength = userIdBytes.length;
+        // byte[] userIdBytes = Util.stringToBytes(this.userId);
+        // int userIdByteLength = userIdBytes.length;
 
-        ByteBuffer buf = Util.allocateByteBuffer(Util.INT_SIZE + userIdByteLength + Util.INT_SIZE);
+        // ByteBuffer buf = Util.allocateByteBuffer(Util.INT_SIZE + userIdByteLength + Util.INT_SIZE);
 
-        buf.putInt(userIdByteLength);
-        buf.put(userIdBytes);
-        buf.putInt(this.championId);
+        // buf.putInt(userIdByteLength);
+        // buf.put(userIdBytes);
+        // buf.putInt(this.championId);
 
-        Util.printHex(buf, true);
+        // Util.printHex(buf, true);
+        
+        ByteBuffer buf = Util.allocateByteBuffer(Util.SHORT_SIZE + Util.INT_SIZE);
+        buf.putShort(slot);
+        buf.putInt(championId);
         return buf.array();
     }
 

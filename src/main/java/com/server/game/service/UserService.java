@@ -80,5 +80,11 @@ public class UserService {
     public boolean isUserExist(String id) {
         return userRepository.existsById(id);
     }
+
+    public String getUsernameById(String id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("User with ID " + id + " not found"))
+                .getUsername();
+    }
 }
 

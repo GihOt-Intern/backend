@@ -1,6 +1,7 @@
 package com.server.game.netty;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,6 +15,7 @@ public class ChannelRegistry {
 
     public static final AttributeKey<String> USER_ID = AttributeKey.valueOf("USER_ID");
     public static final AttributeKey<String> GAME_ID = AttributeKey.valueOf("GAME_ID");
+    public static final AttributeKey<Short> SLOT = AttributeKey.valueOf("SLOT");
 
 
     public static void register(String userId, String gameId, Channel channel) {
@@ -102,6 +104,10 @@ public class ChannelRegistry {
     }
 
     public static Set<Channel> getChannelsByGameId(String gameId) {
+        if (!gameChannels.containsKey(gameId)) {
+            System.out.println(">>> No channels found for gameId: " + gameId);
+            return Collections.emptySet();
+        }
         return gameChannels.get(gameId);
     }
 
@@ -113,11 +119,24 @@ public class ChannelRegistry {
         return channel.attr(GAME_ID).get();
     }
 
+    public static short getSlotByChannel(Channel channel) {
+        Short slot = channel.attr(SLOT).get();
+        if (slot == null) {
+            System.out.println(">>> Cannot get slot, it is not set for the channel.");
+            return -1; // Return -1 if slot is not set
+        }
+        return slot;
+    }
+
     private static void setUserId2Channel(String userId, Channel channel) {
         channel.attr(USER_ID).set(userId);
     }
 
     private static void setGameId2Channel(String gameId, Channel channel) {
         channel.attr(GAME_ID).set(gameId);
+    }
+
+    public static void setSlot2Channel(short slot, Channel channel) {
+        channel.attr(SLOT).set(slot);
     }
 }

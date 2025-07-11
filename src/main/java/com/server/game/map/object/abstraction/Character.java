@@ -4,31 +4,27 @@ import com.server.game.map.object.interf4ce.Attackable;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Delegate;
 
 @Getter
 @AllArgsConstructor
 public abstract class Character extends MovableObject implements Attackable {
     String name;
-    HealthComponent healthComponent;
-    Skill skill;
-    int level;
-    int experience;
-    int gold;
+    
+    @Delegate
+    protected final HealthComponent healthComponent;
+    
+    @Delegate
+    protected final Skill skill;
+
+    protected int level;
+    protected int experience;
+    protected int gold;
 
 
-    public Character(int initialHP){
+    public Character(int initialHP, Skill skill) {
         this.healthComponent = new HealthComponent(initialHP);
+        this.skill = skill;
     }
 
-    public int getCurrentHP() {
-        return healthComponent.getCurrentHP();
-    }
-
-    public void setCurrentHP(int currentHP) {
-        healthComponent.setCurrentHP(currentHP);
-    }
-
-    public void takeDamage(int amount) {
-        healthComponent.takeDamage(amount);
-    }
 }

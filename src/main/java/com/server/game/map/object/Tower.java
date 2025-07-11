@@ -5,13 +5,18 @@ import com.server.game.map.object.abstraction.HealthComponent;
 import com.server.game.map.object.abstraction.MapObject;
 import com.server.game.map.object.interf4ce.Attackable;
 
-import lombok.AllArgsConstructor;
+import lombok.experimental.Delegate;
 
 
-@AllArgsConstructor
 public class Tower extends MapObject implements Attackable {
 
-    HealthComponent healthComponent;
+    @Delegate
+    private HealthComponent healthComponent;
+
+    public Tower(int initialHP) {
+        this.healthComponent = new HealthComponent(initialHP);
+    }
+
     
 
     @Override

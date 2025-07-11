@@ -16,6 +16,14 @@ public class HealthComponent {
         this.currentHP = Math.max(0, Math.min(newHP, this.maxHP));
     }
 
+    public void setMaxHP(int newMaxHP) {
+        this.maxHP = Math.max(0, newMaxHP);
+        // Adjust current HP if it exceeds new max HP
+        if (this.currentHP > this.maxHP) {
+            this.currentHP = this.maxHP;
+        }
+    }
+
     public void takeDamage(int amount) {
         this.currentHP = Math.max(0, currentHP - amount);
     }

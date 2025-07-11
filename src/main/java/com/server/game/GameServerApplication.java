@@ -9,6 +9,7 @@ import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+
 import jakarta.annotation.PostConstruct;
 
 @SpringBootApplication

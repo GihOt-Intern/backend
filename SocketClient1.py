@@ -5,7 +5,7 @@ import time
 
 # Cấu hình thông tin kết nối
 game_id = "room123"
-token = "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsInN1YiI6IjY4NmNjN2Q5YjQ4YjJiNmE0NzhlZDNiYyIsImV4cCI6Mjc1MjA1ODYyNiwiaWF0IjoxNzUyMDU4NjI2LCJqdGkiOiIyMDdmNTYzMy0zOGU3LTQ1MjYtYmU0My0yY2FhYjk2YmExNGMiLCJzY29wZSI6IlVTRVIifQ.gvNRwc3K5KEf757DPtc6X5_xcKr2RyVgVeDt6X1FBXw"
+token = "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsInN1YiI6IjY4NmIzMTA0YWQ4YWNjNTRjMDhhZjQxZiIsImV4cCI6Mjc1MjIwODU2MCwiaWF0IjoxNzUyMjA4NTYwLCJqdGkiOiJiMzhkYWY0ZS00MjFjLTQxN2QtOTMwOC0zZjMxODhkOWE1MDgiLCJzY29wZSI6IlVTRVIifQ.LNICbsB1gMwth4_wV4nAovXD0XJbFZ0DnSPz6TywLXE"
 
 host = "localhost"
 port = 8386
@@ -17,6 +17,9 @@ AUTHENTICATION_RECEIVE = 2
 
 MESSAGE_SEND = 3
 MESSAGE_RECEIVE = 4
+
+# INFO_PLAYERS_IN_ROOM_SEND = 5
+INFO_PLAYERS_IN_ROOM_RECEIVE = 12
 
 isAuthenticated = False
 
@@ -73,7 +76,7 @@ def parse_tlv_message(type_id:int, buffer: io.BytesIO) -> tuple:
         print(f"[Server -> Client] Status Code: {status_code}, Message: {message}")
         global isAuthenticated
         isAuthenticated = True
-        return status_code, message
+        # return status_code, message
 
 
     if type_id == MESSAGE_RECEIVE:
@@ -81,10 +84,20 @@ def parse_tlv_message(type_id:int, buffer: io.BytesIO) -> tuple:
         message = buffer.read(message_byte_length).decode("utf-8")
 
         print(f"[Server -> Client] Message: {message}")
-        return message
+        # return message
 
+    if type_id == INFO_PLAYERS_IN_ROOM_RECEIVE:
+        d = dict()
+        num_players: int = struct.unpack(">h", buffer.read(2))[0]
+        for i in range(num_players):
+            usernameByteLength = struct.unpack(">i", buffer.read(4))[0]
+            usernameBytes = buffer.read(usernameByteLength)
+            username = usernameBytes.decode("utf-8")
+            slot: int = struct.unpack(">h", buffer.read(2))[0]
+            d[slot] = username
+        print(f"[Server -> Client] Players in room: {d}")
 
-    return None, None
+    # return None, None
     
 
 
@@ -109,8 +122,8 @@ def connect():
             )
 
 
-            TLV_msg = other_TLV_msg
-            # TLV_msg = authentication_TLV_msg
+            # TLV_msg = other_TLV_msg
+            TLV_msg = authentication_TLV_msg
 
 
             print(f"[Client -> Server] Send TLV message: {TLV_msg.hex()}")
@@ -149,22 +162,23 @@ def connect():
 
                 print(f"[Server -> Client] Received full message: {header.hex()}{value_bytes.hex()}")
                 buffer = io.BytesIO(value_bytes)
-                if type_id == AUTHENTICATION_RECEIVE:
-                    statusCode, message = parse_tlv_message(type_id, buffer)
-                elif type_id == MESSAGE_RECEIVE:
-                    message = parse_tlv_message(type_id, buffer)
+                parse_tlv_message(type_id, buffer)
+                # if type_id == AUTHENTICATION_RECEIVE:
+                #     statusCode, message = parse_tlv_message(type_id, buffer)
+                # elif type_id == MESSAGE_RECEIVE:
+                #     message = parse_tlv_message(type_id, buffer)
+                # elif type_id == INFO_PLAYERS_IN_ROOM_RECEIVE:
+                #     parse_tlv_message(type_id, buffer)
+
+                # if isAuthenticated:
+                #     print("Authenticated, sending another TLV message...")
+                #     TLV_msg = other_TLV_msg
+                #     print(f"[Client -> Server] Send TLV message: {TLV_msg.hex()}")
+                #     sock.sendall(TLV_msg)
+                #     break
 
 
-
-                if isAuthenticated:
-                    print("Authenticated, sending another TLV message...")
-                    TLV_msg = other_TLV_msg
-                    print(f"[Client -> Server] Send TLV message: {TLV_msg.hex()}")
-                    sock.sendall(TLV_msg)
-                    break
-
-
-                break
+                # break
 
 
 
