@@ -15,7 +15,6 @@ public enum ClientMessageType {
     DISTANCE_RECEIVE((short) 17),
     ;
 
-
     short type;
 
     public static ClientMessageType fromShort(short value) {

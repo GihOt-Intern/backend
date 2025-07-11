@@ -15,6 +15,12 @@ public class MatchmakingService {
     private static final String QUEUE_KEY = "matchmaking:queue";
     private static final int MATCH_SIZE = 4;
     private static final int ESTIMATED_WAIT = 60;
+    private static final String MATCH_KEY_PREFIX = "matchmaking:match:";
+    private static final String MATCH_IDS_KEY = "matchmaking:ids";
+    private static final String ALPHANUMERIC_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final int MATCH_ID_LENGTH = 5;
+    private static final int MAX_ATTEMPTS = 100;
+    private final Random random = new Random();
 
     public synchronized String joinQueue(String userId) {
         List<Object> queue = redisUtil.lRange(QUEUE_KEY, 0, -1);
@@ -65,21 +71,19 @@ public class MatchmakingService {
             redisUtil.delete(QUEUE_KEY);
             for (Object u : queue) redisUtil.lPush(QUEUE_KEY, u);
             
-            String matchId = generateMatchId();
-            String websocketUrl = generateGameServerUrl(matchId);
+            String matchId = generateUniqueMatchId();
+            // String websocketUrl = generateGameServerUrl(matchId); // No longer needed
             
-            Map<String, Object> matchInfo = new HashMap<>();
-            matchInfo.put("matchId", matchId);
-            matchInfo.put("gameServer", Collections.singletonMap("websocketUrl", websocketUrl));
-            
-            // Store match info for each player
+            // Notify all matched players with matchId, serverIp, serverPort
             for (String userId : players) {
                 redisUtil.set(statusKey(userId), "MATCH_FOUND");
-                redisUtil.set(matchKey(userId), matchInfo);
+                // Clean up per-user match info after notification
+                redisUtil.delete(matchKey(userId));
             }
-            
-            // Send WebSocket notification to all matched players
-            notificationService.notifyMatchFound(players, matchId, websocketUrl);
+            // Remove matchId from Redis set for uniqueness
+            redisUtil.sRemove(MATCH_IDS_KEY, matchId);
+            // Notify all matched players (implement this method to send via HTTP or notification channel)
+            notificationService.notifyMatchFoundRawSocket(players, matchId);
         }
     }
 
@@ -87,16 +91,28 @@ public class MatchmakingService {
         return "matchmaking:status:" + userId;
     }
     private String matchKey(String userId) {
-        return "matchmaking:match:" + userId;
-    }
-    private String generateMatchId() {
-        return "match-" + UUID.randomUUID();
+        return MATCH_KEY_PREFIX + userId;
     }
     
-    private String generateGameServerUrl(String matchId) {
-        // This should be configurable via application properties
-        // For now, using a default WebSocket URL pattern with match ID
-        return "ws://localhost:8386/game/" + matchId;
+    private String generateUniqueMatchId() {
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+            StringBuilder matchId = new StringBuilder();
+            for (int i = 0; i < MATCH_ID_LENGTH; i++) {
+                matchId.append(ALPHANUMERIC_CHARS.charAt(random.nextInt(ALPHANUMERIC_CHARS.length())));
+            }
+            String generatedId = matchId.toString();
+            // Check if this ID already exists
+            if (!existsByMatchId(generatedId)) {
+                return generatedId;
+            }
+        }
+        // If we can't find a unique ID after max attempts, fall back to UUID (truncated)
+        return UUID.randomUUID().toString().substring(0, MATCH_ID_LENGTH).toUpperCase();
+    }
+
+    private boolean existsByMatchId(String matchId) {
+        String matchKey = MATCH_KEY_PREFIX + matchId;
+        return redisUtil.hasKey(matchKey) || redisUtil.sMembers(MATCH_IDS_KEY).contains(matchId);
     }
     
     public int getEstimatedWaitTime() {

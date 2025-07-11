@@ -97,6 +97,9 @@ public class RoomService {
         room.getPlayers().add(user);
         room = roomRedisService.save(room);
 
+        // Notify other players in the room
+        notificationService.notifyPlayerJoinedRoom(roomId, user.getId(), user.getUsername());
+
         return roomMapper.toRoomResponse(room);
     }
 
@@ -109,13 +112,20 @@ public class RoomService {
         }
 
         if (room.getHost().getId().equals(user.getId())) {
+            // Host is leaving, delete the room
+            notificationService.notifyRoomDeleted(roomId);
             roomRedisService.delete(room);
         } else {
+            // Regular player is leaving
             room.getPlayers().removeIf(p -> p.getId().equals(user.getId()));
             if (room.getPlayers().isEmpty()) {
+                // No players left, delete the room
+                notificationService.notifyRoomDeleted(roomId);
                 roomRedisService.delete(room);
             } else {
                 roomRedisService.save(room);
+                // Notify other players that this player left
+                notificationService.notifyPlayerLeftRoom(roomId, user.getId(), user.getUsername());
             }
         }
     }
@@ -194,6 +204,9 @@ public class RoomService {
         room.setHost(newHost);
         room = roomRedisService.save(room);
 
+        // Notify players about host change
+        notificationService.notifyHostChanged(roomId, newHost.getId(), newHost.getUsername());
+
         return roomMapper.toRoomResponse(room);
     }
 
@@ -224,6 +237,9 @@ public class RoomService {
 
         room.getPlayers().add(invitedUser);
         room = roomRedisService.save(room);
+
+        // Notify other players about the invited user
+        notificationService.notifyPlayerJoinedRoom(roomId, invitedUser.getId(), invitedUser.getUsername());
 
         return roomMapper.toRoomResponse(room);
     }
