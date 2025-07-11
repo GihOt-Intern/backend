@@ -4,8 +4,8 @@ import io
 import time
 
 # Cấu hình thông tin kết nối
-game_id = "room123"
-token = "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsInN1YiI6IjY4NmIzMTA0YWQ4YWNjNTRjMDhhZjQxZiIsImV4cCI6Mjc1MjIwODU2MCwiaWF0IjoxNzUyMjA4NTYwLCJqdGkiOiJiMzhkYWY0ZS00MjFjLTQxN2QtOTMwOC0zZjMxODhkOWE1MDgiLCJzY29wZSI6IlVTRVIifQ.LNICbsB1gMwth4_wV4nAovXD0XJbFZ0DnSPz6TywLXE"
+game_id = "room-123"
+token = "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsInN1YiI6IjY4NmIzMTA0YWQ4YWNjNTRjMDhhZjQxZiIsImV4cCI6Mjc1MjIzMDk1OCwiaWF0IjoxNzUyMjMwOTU4LCJqdGkiOiJiNTExNjY4OC1lZmRiLTQ2NWYtOWY4ZS1iNzQ3Y2YwYzI3MWUiLCJzY29wZSI6IlVTRVIifQ.7dXQEsqliw7x7cwVuaFyogDFcAfRHFRnbSaP2DIVLrI"
 
 host = "localhost"
 port = 8386
@@ -20,6 +20,9 @@ MESSAGE_RECEIVE = 4
 
 # INFO_PLAYERS_IN_ROOM_SEND = 5
 INFO_PLAYERS_IN_ROOM_RECEIVE = 12
+
+PLAYER_READY_SEND = 13
+PLAYER_READY_RECEIVE = 14
 
 isAuthenticated = False
 
@@ -55,7 +58,9 @@ def build_tlv_message(type_id: int, **kwagrs) -> bytes:
         length: int = 4 + message_byte_length
         value: bytes = struct.pack(">i", message_byte_length) + message_bytes
 
-
+    elif type_id == PLAYER_READY_SEND:
+        length: int = 0
+        value: bytes = b""
 
 
 
@@ -79,14 +84,14 @@ def parse_tlv_message(type_id:int, buffer: io.BytesIO) -> tuple:
         # return status_code, message
 
 
-    if type_id == MESSAGE_RECEIVE:
+    elif type_id == MESSAGE_RECEIVE:
         message_byte_length = struct.unpack(">i", buffer.read(4))[0]
         message = buffer.read(message_byte_length).decode("utf-8")
 
         print(f"[Server -> Client] Message: {message}")
         # return message
 
-    if type_id == INFO_PLAYERS_IN_ROOM_RECEIVE:
+    elif type_id == INFO_PLAYERS_IN_ROOM_RECEIVE:
         d = dict()
         num_players: int = struct.unpack(">h", buffer.read(2))[0]
         for i in range(num_players):
@@ -96,6 +101,12 @@ def parse_tlv_message(type_id:int, buffer: io.BytesIO) -> tuple:
             slot: int = struct.unpack(">h", buffer.read(2))[0]
             d[slot] = username
         print(f"[Server -> Client] Players in room: {d}")
+
+
+    elif type_id == PLAYER_READY_RECEIVE:
+        slot: int = struct.unpack(">h", buffer.read(2))[0]
+        isAllPlayersReady: bool = True if struct.unpack(">h", buffer.read(1))[0] == 1 else False
+        print(f"[Server -> Client] Player {slot} is ready; all players are " + ("" if isAllPlayersReady else "not") + " ready.")
 
     # return None, None
     
@@ -121,6 +132,10 @@ def connect():
                 message="Hello, this is a test message."
             )
 
+            ready_TLV_msg = build_tlv_message(
+                type_id=PLAYER_READY_SEND
+            )
+
 
             # TLV_msg = other_TLV_msg
             TLV_msg = authentication_TLV_msg
@@ -128,6 +143,8 @@ def connect():
 
             print(f"[Client -> Server] Send TLV message: {TLV_msg.hex()}")
             sock.sendall(TLV_msg)
+            time.sleep(10)
+            sock.sendall(ready_TLV_msg)
 
             # print("Sleep for 10 seconds before reading response...")
             # # Delay

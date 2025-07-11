@@ -2,7 +2,7 @@ package com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetTy
 
 import java.util.Set;
 
-import com.server.game.netty.ChannelRegistry;
+import com.server.game.netty.ChannelManager;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 
 import io.netty.buffer.ByteBuf;
@@ -15,7 +15,7 @@ public class GlobalBroadcastTarget implements SendTarget {
         System.out.println(">>> Sending Global Broadcast...");
 
 
-        Set<Channel> channels = ChannelRegistry.getAllChannels();
+        Set<Channel> channels = ChannelManager.getAllChannels();
         if (channels == null || channels.isEmpty()) {
             System.out.println(">>> No active channels found.");
             return;
@@ -24,7 +24,7 @@ public class GlobalBroadcastTarget implements SendTarget {
         for (Channel channel : channels) {
             if (channel.isActive()) {
                 channel.writeAndFlush(message.retainedDuplicate());
-                System.out.println(">>> Server sent BinaryWebSocketFrame to user: " + ChannelRegistry.getUserIdByChannel(channel));
+                System.out.println(">>> Server sent BinaryWebSocketFrame to user: " + ChannelManager.getUserIdByChannel(channel));
             }
         }
     }

@@ -4,7 +4,7 @@ package com.server.game.netty.pipelineComponent;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.server.game.netty.ChannelRegistry;
+import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageMapping.MessageDispatcher;
 import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
 import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
@@ -31,7 +31,7 @@ public class BussinessHandler extends SimpleChannelInboundHandler<TLVDecodable> 
         // Just add known things to contextParams, dispatcher will traverse them and select needed ones
         // to invoke the method
         Map<Class<?>, Object> contextParams = new HashMap<>();
-        contextParams.put(String.class, ChannelRegistry.getUserIdByChannel(ctx.channel()));
+        contextParams.put(String.class, ChannelManager.getUserIdByChannel(ctx.channel()));
         contextParams.put(Channel.class, ctx.channel());
         contextParams.put(ChannelHandlerContext.class, ctx);
         // Add more context parameters as needed

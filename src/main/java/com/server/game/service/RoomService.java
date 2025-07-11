@@ -9,7 +9,7 @@ import com.server.game.model.Room;
 import com.server.game.model.RoomStatus;
 import com.server.game.model.RoomVisibility;
 import com.server.game.model.User;
-import com.server.game.netty.ChannelRegistry;
+import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.InfoPlayersInRoomSend;
 
 import io.netty.channel.Channel;
@@ -139,40 +139,40 @@ public class RoomService {
         return roomRedisService.findById(id);
     }
 
-    public RoomResponse startGame(String roomId) {
-        User user = userService.getUserInfo();
-        Room room = getRoomById(roomId);
+    // public RoomResponse startGame(String roomId) {
+    //     User user = userService.getUserInfo();
+    //     Room room = getRoomById(roomId);
 
-        if (room == null) {
-            throw new DataNotFoundException("Room not found");
-        }
+    //     if (room == null) {
+    //         throw new DataNotFoundException("Room not found");
+    //     }
 
-        if (!room.getHost().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("Only the host can start the game");
-        }
+    //     if (!room.getHost().getId().equals(user.getId())) {
+    //         throw new IllegalArgumentException("Only the host can start the game");
+    //     }
 
-        if (room.getStatus() != RoomStatus.WAITING) {
-            throw new IllegalArgumentException("Game has already started in this room");
-        }
+    //     if (room.getStatus() != RoomStatus.WAITING) {
+    //         throw new IllegalArgumentException("Game has already started in this room");
+    //     }
 
-        if (room.getPlayers().size() < 2) {
-            throw new IllegalArgumentException("Need at least 2 players to start the game");
-        }
+    //     if (room.getPlayers().size() < 2) {
+    //         throw new IllegalArgumentException("Need at least 2 players to start the game");
+    //     }
 
-        // Generate game server URL for WebSocket connection
-        String gameServerUrl = generateGameServerUrl(roomId);
-        room.setGameServerUrl(gameServerUrl);
-        room.setStatus(RoomStatus.IN_GAME);
-        room = roomRedisService.save(room);
+    //     // Generate game server URL for WebSocket connection
+    //     String gameServerUrl = generateGameServerUrl(roomId);
+    //     room.setGameServerUrl(gameServerUrl);
+    //     room.setStatus(RoomStatus.IN_GAME);
+    //     room = roomRedisService.save(room);
 
-        // Send WebSocket notification to all players in the room
-        List<String> playerIds = room.getPlayers().stream()
-                .map(User::getId)
-                .toList();
-        notificationService.notifyGameStarted(playerIds, roomId, gameServerUrl);
+    //     // Send WebSocket notification to all players in the room
+    //     List<String> playerIds = room.getPlayers().stream()
+    //             .map(User::getId)
+    //             .toList();
+    //     notificationService.notifyGameStarted(playerIds, roomId, gameServerUrl);
 
-        return roomMapper.toRoomResponse(room);
-    }
+    //     return roomMapper.toRoomResponse(room);
+    // }
 
     private String generateGameServerUrl(String roomId) {
         // This should be configurable via application properties
@@ -246,7 +246,9 @@ public class RoomService {
 
 
     public void startGameSocket(String roomId) {
-        Set<Channel> channels = ChannelRegistry.getChannelsByGameId(roomId);
+        // TODO: Handle checking the existing of room, player,...
+
+        Set<Channel> channels = ChannelManager.getChannelsByGameId(roomId);
         if (channels.isEmpty()) {
             System.out.println("No active game channels found for room: " + roomId);
             return;
@@ -254,7 +256,7 @@ public class RoomService {
         Map<Short, String> players = new HashMap<>();
         Short slot = 0;
         for (Channel channel: channels){
-            String userId = ChannelRegistry.getUserIdByChannel(channel);
+            String userId = ChannelManager.getUserIdByChannel(channel);
             String username = userService.getUsernameById(userId);
             ++slot;
             players.put(slot, username);

@@ -1,4 +1,5 @@
-package com.server.game.netty.handler;
+package com.server.game.netty.receiveMessageHandler;
+
 
 import org.springframework.stereotype.Component;
 

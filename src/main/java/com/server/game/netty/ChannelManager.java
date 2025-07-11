@@ -9,15 +9,16 @@ import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 
 
-public class ChannelRegistry {
+public class ChannelManager {
     private static final Map<String, Channel> userChannels = new ConcurrentHashMap<>();
     private static final Map<String, Set<Channel>> gameChannels = new ConcurrentHashMap<>();
     private static final Map<String, Set<Channel>> roomChannels = new ConcurrentHashMap<>();
 
     public static final AttributeKey<String> USER_ID = AttributeKey.valueOf("USER_ID");
     public static final AttributeKey<String> GAME_ID = AttributeKey.valueOf("GAME_ID");
-    public static final AttributeKey<String> ROOM_ID = AttributeKey.valueOf("ROOM_ID");
+    // public static final AttributeKey<String> ROOM_ID = AttributeKey.valueOf("ROOM_ID");
     public static final AttributeKey<Short> SLOT = AttributeKey.valueOf("SLOT");
+    public static final AttributeKey<Boolean> IS_READY = AttributeKey.valueOf("IS_READY");
 
 
     public static void register(String userId, String gameId, Channel channel) {
@@ -25,10 +26,10 @@ public class ChannelRegistry {
         gameRegister(gameId, channel);
     }
 
-    public static void registerToRoom(String userId, String roomId, Channel channel) {
-        userRegister(userId, channel);
-        roomRegister(roomId, channel);
-    }
+    // public static void registerToRoom(String userId, String roomId, Channel channel) {
+    //     userRegister(userId, channel);
+    //     roomRegister(roomId, channel);
+    // }
 
     private static void userRegister(String userId, Channel channel) {
         if (userId == null || userId.isEmpty()) {
@@ -42,7 +43,7 @@ public class ChannelRegistry {
         }
         
         // Add userId to channel attributes (to find channel by userId later)
-        ChannelRegistry.setUserId2Channel(userId, channel);
+        ChannelManager.setUserId2Channel(userId, channel);
 
         userChannels.put(userId, channel);
         System.out.println(">>> Registered channel for userId: " + userId);
@@ -55,7 +56,7 @@ public class ChannelRegistry {
         }
 
         // Add gameId to channel attributes (to find game by channel later)
-        ChannelRegistry.setGameId2Channel(gameId, channel);
+        ChannelManager.setGameId2Channel(gameId, channel);
 
         // Add the channel to the gameChannels map
         gameChannels.computeIfAbsent(gameId, k -> ConcurrentHashMap.newKeySet())
@@ -64,30 +65,30 @@ public class ChannelRegistry {
         System.out.println(">>> Registered channel for gameId: " + gameId);
     }
 
-    private static void roomRegister(String roomId, Channel channel) {
-        if (roomId == null || roomId.isEmpty()) {
-            System.out.println(">>> Cannot register channel, roomId is null or empty.");
-            return; // Invalid roomId, do not register
-        }
+    // private static void roomRegister(String roomId, Channel channel) {
+    //     if (roomId == null || roomId.isEmpty()) {
+    //         System.out.println(">>> Cannot register channel, roomId is null or empty.");
+    //         return; // Invalid roomId, do not register
+    //     }
 
-        // Add roomId to channel attributes (to find room by channel later)
-        ChannelRegistry.setRoomId2Channel(roomId, channel);
+    //     // // Add roomId to channel attributes (to find room by channel later)
+    //     // ChannelRegistry.setRoomId2Channel(roomId, channel);
 
-        // Add the channel to the roomChannels map
-        roomChannels.computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet())
-                   .add(channel);
+    //     // Add the channel to the roomChannels map
+    //     roomChannels.computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet())
+    //                .add(channel);
 
-        System.out.println(">>> Registered channel for roomId: " + roomId);
-    }
+    //     System.out.println(">>> Registered channel for roomId: " + roomId);
+    // }
 
     public static void unregister(Channel channel) {
         userUnregister(channel);
         gameUnregister(channel);
-        roomUnregister(channel);
+        // roomUnregister(channel);
     }
 
     private static void userUnregister(Channel channel) {
-       String userId = ChannelRegistry.getUserIdByChannel(channel);
+       String userId = ChannelManager.getUserIdByChannel(channel);
         if (userId == null) {
             System.out.println(">>> Cannot unregister channel, userId is null.");
             return;
@@ -98,7 +99,7 @@ public class ChannelRegistry {
     }
 
     private static void gameUnregister(Channel channel) {
-        String gameId = ChannelRegistry.getGameIdByChannel(channel);
+        String gameId = ChannelManager.getGameIdByChannel(channel);
         if (gameId == null) {
             System.out.println(">>> Cannot unregister channel, gameId is null.");
             return;
@@ -115,30 +116,33 @@ public class ChannelRegistry {
         }
     }
 
-    private static void roomUnregister(Channel channel) {
-        String roomId = ChannelRegistry.getRoomIdByChannel(channel);
-        if (roomId == null) {
-            System.out.println(">>> Cannot unregister channel, roomId is null.");
-            return;
-        }
+    // private static void roomUnregister(Channel channel) {
+    //     String roomId = ChannelRegistry.getRoomIdByChannel(channel);
+    //     if (roomId == null) {
+    //         System.out.println(">>> Cannot unregister channel, roomId is null.");
+    //         return;
+    //     }
 
-        Set<Channel> channels = roomChannels.get(roomId);
-        if (channels != null) {
-            channels.remove(channel);
-            if (channels.isEmpty()) {
-                roomChannels.remove(roomId); // Remove room entry if no channels left
-            }
+    //     Set<Channel> channels = roomChannels.get(roomId);
+    //     if (channels != null) {
+    //         channels.remove(channel);
+    //         if (channels.isEmpty()) {
+    //             roomChannels.remove(roomId); // Remove room entry if no channels left
+    //         }
 
-            System.out.println(">>> Unregistered channel for roomId: " + roomId);
-        }
-    }
+    //         System.out.println(">>> Unregistered channel for roomId: " + roomId);
+    //     }
+    // }
 
     public static Set<Channel> getAllChannels() {
         return Set.copyOf(userChannels.values());
     }
 
     public static Channel getChannelByUserId(String userId) {
-        return userChannels.get(userId);
+        Channel channel = userChannels.get(userId);
+        if (channel != null) { return channel; }
+        System.out.println(">>> No channel found for userId: " + userId);
+        return null; 
     }
 
     public static Set<Channel> getChannelsByGameId(String gameId) {
@@ -150,20 +154,31 @@ public class ChannelRegistry {
     }
 
     public static Set<Channel> getChannelsByRoomId(String roomId) {
-        return roomChannels.get(roomId);
+        Set<Channel> channelsInRoom = roomChannels.get(roomId);
+        if (channelsInRoom == null || channelsInRoom.isEmpty()) {
+            System.out.println(">>> No channels found for roomId: " + roomId);
+            return Collections.emptySet();
+        }
+        return channelsInRoom;
     }
 
     public static String getUserIdByChannel(Channel channel) {
-        return channel.attr(USER_ID).get();
+        String userId = channel.attr(USER_ID).get();
+        if (userId != null) { return userId; }
+        System.out.println(">>> Cannot get userId, it is not set for the channel.");
+        return null;
     }
 
     public static String getGameIdByChannel(Channel channel) {
-        return channel.attr(GAME_ID).get();
+        String gameId = channel.attr(GAME_ID).get();
+        if (gameId != null) { return gameId; }
+        System.out.println(">>> Cannot get gameId, it is not set for the channel.");
+        return null;
     }
 
-    public static String getRoomIdByChannel(Channel channel) {
-        return channel.attr(ROOM_ID).get();
-    }
+    // public static String getRoomIdByChannel(Channel channel) {
+    //     return channel.attr(ROOM_ID).get();
+    // }
 
     public static short getSlotByChannel(Channel channel) {
         Short slot = channel.attr(SLOT).get();
@@ -174,6 +189,10 @@ public class ChannelRegistry {
         return slot;
     }
 
+    public static Boolean isUserReady(Channel channel) {
+        return channel.attr(IS_READY).get();
+    }
+
     private static void setUserId2Channel(String userId, Channel channel) {
         channel.attr(USER_ID).set(userId);
     }
@@ -182,11 +201,19 @@ public class ChannelRegistry {
         channel.attr(GAME_ID).set(gameId);
     }
 
-    private static void setRoomId2Channel(String roomId, Channel channel) {
-        channel.attr(ROOM_ID).set(roomId);
-    }
+    // private static void setRoomId2Channel(String roomId, Channel channel) {
+    //     channel.attr(ROOM_ID).set(roomId);
+    // }
 
     public static void setSlot2Channel(short slot, Channel channel) {
         channel.attr(SLOT).set(slot);
+    }
+
+    public static void setUserReady(Channel channel) {
+        channel.attr(IS_READY).set(true);
+    }
+
+    public static void setUserNotReady(Channel channel) {
+        channel.attr(IS_READY).set(false);
     }
 }

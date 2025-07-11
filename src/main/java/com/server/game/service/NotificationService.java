@@ -1,7 +1,7 @@
 package com.server.game.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.server.game.netty.ChannelRegistry;
+import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.MessageSend;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
@@ -174,7 +174,7 @@ public class NotificationService {
      */
     private void sendToRoom(String roomId, String message) {
         MessageSend messageSend = new MessageSend(message);
-        Set<Channel> channels = ChannelRegistry.getChannelsByRoomId(roomId);
+        Set<Channel> channels = ChannelManager.getChannelsByRoomId(roomId);
         
         if (channels == null || channels.isEmpty()) {
             log.warn("No players connected to room: {}", roomId);
@@ -202,7 +202,7 @@ public class NotificationService {
         MessageSend messageSend = new MessageSend(message);
         
         for (String playerId : playerIds) {
-            Channel channel = ChannelRegistry.getChannelByUserId(playerId);
+            Channel channel = ChannelManager.getChannelByUserId(playerId);
             if (channel != null && channel.isActive()) {
                 try {
                     channel.writeAndFlush(messageSend);
@@ -223,7 +223,7 @@ public class NotificationService {
      */
     public void sendToPlayer(String playerId, String message) {
         MessageSend messageSend = new MessageSend(message);
-        Channel channel = ChannelRegistry.getChannelByUserId(playerId);
+        Channel channel = ChannelManager.getChannelByUserId(playerId);
 
         if (channel != null && channel.isActive()) {
             try {

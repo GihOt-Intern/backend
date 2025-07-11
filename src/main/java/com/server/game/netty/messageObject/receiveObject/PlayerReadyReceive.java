@@ -1,0 +1,28 @@
+package com.server.game.netty.messageObject.receiveObject;
+
+import java.nio.ByteBuffer;
+
+import org.springframework.stereotype.Component;
+
+import com.server.game.annotation.customAnnotation.ReceiveType;
+import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
+import com.server.game.netty.tlv.typeDefine.ClientMessageType;
+import com.server.game.util.ChampionEnum;
+
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@ReceiveType(ClientMessageType.PLAYER_READY_RECEIVE) // Custom annotation to define the type of this message
+@Component // Register this class as a Spring component to be scanned in ReceiveTypeScanner when the application starts
+public class PlayerReadyReceive implements TLVDecodable {
+    // No data, just a signal message
+
+    @Override // must override this method of TLVDecodable interface
+    public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
+    }
+}
