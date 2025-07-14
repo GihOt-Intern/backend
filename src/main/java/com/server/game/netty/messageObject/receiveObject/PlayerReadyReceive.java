@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import com.server.game.annotation.customAnnotation.ReceiveType;
 import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
 import com.server.game.netty.tlv.typeDefine.ClientMessageType;
-import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
 import lombok.Data;

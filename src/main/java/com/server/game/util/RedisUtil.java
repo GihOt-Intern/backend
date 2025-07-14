@@ -3,7 +3,7 @@ package com.server.game.util;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import com.server.game.exception.DataNotFoundException;
+import com.server.game.exception.http.DataNotFoundException;
 
 import java.time.Duration;
 import java.util.List;

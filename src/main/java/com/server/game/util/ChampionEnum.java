@@ -10,14 +10,14 @@ import lombok.AccessLevel;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ChampionEnum {
-    MELEE_AXE(0),
-    ASSASSIN_SWORD(1),
-    MARKSMAN_CROSSBOW(2),
-    MAGE_SCEPTER(3);
+    MELEE_AXE((short) 0),
+    ASSASSIN_SWORD((short) 1),
+    MARKSMAN_CROSSBOW((short) 2),
+    MAGE_SCEPTER((short) 3);
 
-    private final int championId;
+    private final short championId;
 
-    public static ChampionEnum fromInt(int id) {
+    public static ChampionEnum fromShort(short id) {
         for (ChampionEnum champion : values()) {
             if (champion.getChampionId() == id) {
                 return champion;

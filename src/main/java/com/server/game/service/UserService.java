@@ -14,7 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.server.game.dto.request.RegisterRequest;
-import com.server.game.exception.*;
+import com.server.game.exception.http.DataNotFoundException;
+import com.server.game.exception.http.FieldExistedExeption;
+import com.server.game.exception.http.UnauthorizedException;
 import com.server.game.mapper.UserMapper;
 import com.server.game.model.User;
 import com.server.game.repository.mongo.UserRepository;

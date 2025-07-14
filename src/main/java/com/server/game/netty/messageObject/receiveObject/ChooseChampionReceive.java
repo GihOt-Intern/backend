@@ -24,7 +24,7 @@ public class ChooseChampionReceive implements TLVDecodable {
 
     @Override // must override this method of TLVDecodable interface
     public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
-        int championId = buffer.getInt();
-        this.championEnum = ChampionEnum.fromInt(championId);
+        short championId = buffer.getShort();
+        this.championEnum = ChampionEnum.fromShort(championId);
     }
 }

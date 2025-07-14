@@ -1,6 +1,6 @@
 package com.server.game.service;
 
-import com.server.game.exception.DataNotFoundException;
+import com.server.game.exception.http.DataNotFoundException;
 import com.server.game.model.Room;
 import com.server.game.model.RoomStatus;
 import com.server.game.util.RedisUtil;
