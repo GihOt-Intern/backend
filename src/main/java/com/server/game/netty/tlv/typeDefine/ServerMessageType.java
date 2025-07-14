@@ -12,6 +12,7 @@ public enum ServerMessageType {
     AUTHENTICATION_SEND((short) 2),
     MESSAGE_SEND((short) 4),
     CHOOSE_CHAMPION_SEND((short) 6),
+    POSITION_UPDATE_SEND((short) 8),
     INFO_PLAYERS_IN_ROOM_SEND((short) 12),
     PLAYER_READY_SEND((short) 14),
     DISTANCE_SEND((short) 18),

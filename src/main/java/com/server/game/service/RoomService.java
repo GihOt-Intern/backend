@@ -253,17 +253,26 @@ public class RoomService {
             System.out.println("No active game channels found for room: " + roomId);
             return;
         }
+        
         Map<Short, String> players = new HashMap<>();
-        Short slot = 0;
+        short slot = 1; // Start from slot 1
+        
         for (Channel channel: channels){
             String userId = ChannelManager.getUserIdByChannel(channel);
             String username = userService.getUsernameById(userId);
-            ++slot;
+            
+            // Set slot for this channel and update the mapping
+            ChannelManager.setSlot2Channel(slot, channel);
+            
             players.put(slot, username);
+            slot++;
         }
+        
         InfoPlayersInRoomSend infoPlayerInRoomSend = new InfoPlayersInRoomSend(players);
         // Get any Channel from the set to represent to broadcast message
         Channel firstChannel = channels.iterator().next();
         firstChannel.writeAndFlush(infoPlayerInRoomSend);
+        
+        System.out.println(">>> Game started for room: " + roomId + " with " + (slot - 1) + " players");
     }
 } 

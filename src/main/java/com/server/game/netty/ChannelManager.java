@@ -13,6 +13,9 @@ public class ChannelManager {
     private static final Map<String, Channel> userChannels = new ConcurrentHashMap<>();
     private static final Map<String, Set<Channel>> gameChannels = new ConcurrentHashMap<>();
     private static final Map<String, Set<Channel>> roomChannels = new ConcurrentHashMap<>();
+    
+    // New map to track slot-to-userId mapping per game
+    private static final Map<String, Map<Short, String>> gameSlotToUserIdMap = new ConcurrentHashMap<>();
 
     public static final AttributeKey<String> USER_ID = AttributeKey.valueOf("USER_ID");
     public static final AttributeKey<String> GAME_ID = AttributeKey.valueOf("GAME_ID");
@@ -207,6 +210,16 @@ public class ChannelManager {
 
     public static void setSlot2Channel(short slot, Channel channel) {
         channel.attr(SLOT).set(slot);
+        
+        // Update slot-to-userId mapping
+        String gameId = getGameIdByChannel(channel);
+        String userId = getUserIdByChannel(channel);
+        
+        if (gameId != null && userId != null) {
+            gameSlotToUserIdMap.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
+                              .put(slot, userId);
+            System.out.println(">>> Mapped slot " + slot + " to userId " + userId + " in game " + gameId);
+        }
     }
 
     public static void setUserReady(Channel channel) {
@@ -215,5 +228,65 @@ public class ChannelManager {
 
     public static void setUserNotReady(Channel channel) {
         channel.attr(IS_READY).set(false);
+    }
+    
+    /**
+     * Get userId from slot for a specific game
+     */
+    public static String getUserIdFromSlot(String gameId, short slot) {
+        Map<Short, String> slotMap = gameSlotToUserIdMap.get(gameId);
+        if (slotMap != null) {
+            String userId = slotMap.get(slot);
+            if (userId != null) {
+                return userId;
+            }
+        }
+        System.out.println(">>> No userId found for slot " + slot + " in game " + gameId);
+        return null;
+    }
+    
+    /**
+     * Get slot from userId for a specific game
+     */
+    public static short getSlotFromUserId(String gameId, String userId) {
+        Map<Short, String> slotMap = gameSlotToUserIdMap.get(gameId);
+        if (slotMap != null) {
+            for (Map.Entry<Short, String> entry : slotMap.entrySet()) {
+                if (userId.equals(entry.getValue())) {
+                    return entry.getKey();
+                }
+            }
+        }
+        System.out.println(">>> No slot found for userId " + userId + " in game " + gameId);
+        return -1;
+    }
+    
+    /**
+     * Get all slot-to-userId mappings for a game
+     */
+    public static Map<Short, String> getGameSlotMappings(String gameId) {
+        Map<Short, String> slotMap = gameSlotToUserIdMap.get(gameId);
+        return slotMap != null ? new ConcurrentHashMap<>(slotMap) : new ConcurrentHashMap<>();
+    }
+    
+    /**
+     * Clear slot mappings when a game ends
+     */
+    public static void clearGameSlotMappings(String gameId) {
+        gameSlotToUserIdMap.remove(gameId);
+        System.out.println(">>> Cleared slot mappings for game " + gameId);
+    }
+    
+    /**
+     * Remove a specific slot mapping (when a player leaves)
+     */
+    public static void removeSlotMapping(String gameId, short slot) {
+        Map<Short, String> slotMap = gameSlotToUserIdMap.get(gameId);
+        if (slotMap != null) {
+            String removedUserId = slotMap.remove(slot);
+            if (removedUserId != null) {
+                System.out.println(">>> Removed slot mapping: slot " + slot + " -> userId " + removedUserId + " in game " + gameId);
+            }
+        }
     }
 }

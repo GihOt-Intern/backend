@@ -13,6 +13,14 @@ public class DisconnectHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Channel channel = ctx.channel();
 
+        // Clean up slot mapping before unregistering
+        String gameId = ChannelManager.getGameIdByChannel(channel);
+        short slot = ChannelManager.getSlotByChannel(channel);
+        
+        if (gameId != null && slot != -1) {
+            ChannelManager.removeSlotMapping(gameId, slot);
+        }
+
         ChannelManager.unregister(channel);
         super.channelInactive(ctx);
     }
