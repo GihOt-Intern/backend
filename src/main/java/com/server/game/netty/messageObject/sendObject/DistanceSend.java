@@ -19,7 +19,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DistanceSend implements TLVEncodable {
-    Double distance;
+    float distance;
 
     @Override
     public ServerMessageType getType() { // return enum defined in documentation for this message
@@ -28,8 +28,8 @@ public class DistanceSend implements TLVEncodable {
 
     @Override
     public byte[] encode() { // only return the [value] part of the TLV message
-        ByteBuffer buf = Util.allocateByteBuffer(Util.DOUBLE_SIZE);
-        buf.putDouble(distance);
+        ByteBuffer buf = Util.allocateByteBuffer(Util.FLOAT_SIZE);
+        buf.putFloat(distance);
         return buf.array();
     }
 

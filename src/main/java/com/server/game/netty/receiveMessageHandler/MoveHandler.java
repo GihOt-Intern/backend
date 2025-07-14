@@ -1,4 +1,5 @@
-package com.server.game.netty.handler;
+package com.server.game.netty.receiveMessageHandler;
+
 
 import org.springframework.stereotype.Component;
 
@@ -17,12 +18,14 @@ public class MoveHandler {
 
     @MessageMapping(DistanceReceive.class)
     public DistanceSend handleDistance(DistanceReceive receiveObject) {
-        Double x1 = receiveObject.getX1();
-        Double y1 = receiveObject.getY1();
-        Double x2 = receiveObject.getX2();
-        Double y2 = receiveObject.getY2();
+        float x1 = receiveObject.getX1();
+        float y1 = receiveObject.getY1();
+        float x2 = receiveObject.getX2();
+        float y2 = receiveObject.getY2();
         System.out.println("x1= " + x1 + ", y1= " + y1 + ", x2= " + x2 + ", y2= " + y2);
-        Double d = Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        float d = (float) Math.sqrt(dx*dx + dy*dy);
         System.out.println("Distance: " + d);
         return new DistanceSend(d); // return a sendObject
     }

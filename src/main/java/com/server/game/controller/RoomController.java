@@ -73,11 +73,16 @@ public class RoomController {
         return ResponseEntity.ok(response);
     }
 
+    // @PostMapping("/{roomId}/start")
+    // public ResponseEntity<ApiResponse<RoomResponse>> startGame(@PathVariable String roomId) {
+    //     RoomResponse roomResponse = roomService.startGame(roomId);
+    //     ApiResponse<RoomResponse> response = new ApiResponse<>(HttpStatus.OK.value(), "Game started successfully", roomResponse);
+    //     return ResponseEntity.ok(response);
+    // }
+
     @PostMapping("/{roomId}/start")
-    public ResponseEntity<ApiResponse<RoomResponse>> startGame(@PathVariable String roomId) {
-        RoomResponse roomResponse = roomService.startGame(roomId);
-        ApiResponse<RoomResponse> response = new ApiResponse<>(HttpStatus.OK.value(), "Game started successfully", roomResponse);
-        return ResponseEntity.ok(response);
+    public void startGame(@PathVariable String roomId) {
+        roomService.startGameSocket(roomId);
     }
 
     @PostMapping("/{roomId}/change-host")

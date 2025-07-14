@@ -1,7 +1,7 @@
 package com.server.game.netty.pipelineComponent;
 
 
-import com.server.game.netty.ChannelRegistry;
+import com.server.game.netty.ChannelManager;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,7 +13,7 @@ public class DisconnectHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Channel channel = ctx.channel();
 
-        ChannelRegistry.unregister(channel);
+        ChannelManager.unregister(channel);
         super.channelInactive(ctx);
     }
 
