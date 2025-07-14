@@ -12,10 +12,10 @@ public enum ServerMessageType {
     ERROR_SEND((short) 0),
     AUTHENTICATION_SEND((short) 2),
     MESSAGE_SEND((short) 4),
-    CHOOSE_CHAMPION_SEND((short) 6),
-    INFO_PLAYERS_IN_ROOM_SEND((short) 12),
-    PLAYER_READY_SEND((short) 14),
-    DISTANCE_SEND((short) 18),
+    CHOOSE_CHAMPION_SEND((short) 7),
+    INFO_PLAYERS_IN_ROOM_SEND((short) 5),
+    PLAYER_READY_SEND((short) 9),
+    DISTANCE_SEND((short) 998),
     ;
 
     short type;
