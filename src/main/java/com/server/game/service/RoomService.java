@@ -2,8 +2,7 @@ package com.server.game.service;
 
 import com.server.game.dto.request.CreateRoomRequest;
 import com.server.game.dto.response.RoomResponse;
-import com.server.game.exception.DataNotFoundException;
-import com.server.game.exception.IllegalArgumentException;
+import com.server.game.exception.http.DataNotFoundException;
 import com.server.game.mapper.RoomMapper;
 import com.server.game.model.Room;
 import com.server.game.model.RoomStatus;
@@ -18,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+// import com.server.game.exception.socket.SocketException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,11 +174,11 @@ public class RoomService {
     //     return roomMapper.toRoomResponse(room);
     // }
 
-    private String generateGameServerUrl(String roomId) {
-        // This should be configurable via application properties
-        // For now, using a default WebSocket URL pattern
-        return "ws://localhost:8386/game/" + roomId;
-    }
+    // private String generateGameServerUrl(String roomId) {
+    //     // This should be configurable via application properties
+    //     // For now, using a default WebSocket URL pattern
+    //     return "ws://localhost:8386/game/" + roomId;
+    // }
 
     public RoomResponse changeHost(String roomId, String newHostId) {
         User user = userService.getUserInfo();
@@ -246,24 +246,46 @@ public class RoomService {
 
 
     public void startGameSocket(String roomId) {
-        // TODO: Handle checking the existing of room, player,...
+        User user = userService.getUserInfo(); // get channel who sending http request
+        Channel channel = ChannelManager.getChannelByUserId(user.getId());
+
+        Room room = getRoomById(roomId);
+
+        if (room == null) {
+            throw new DataNotFoundException("Room not found");
+            // throw new SocketException("Room not found", channel);
+        }
+
+        if (!room.getHost().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("Only the host can start the game");
+            // throw new SocketException("Only the host can start the game", channel);
+        }
+
+        if (room.getStatus() != RoomStatus.WAITING) {
+            throw new IllegalArgumentException("Game has already started in this room");
+            // throw new SocketException("Game has already started in this room", channel);
+        }
+
+        if (room.getPlayers().size() < 2) {
+            throw new IllegalArgumentException("Need at least 2 players to start the game");
+            // throw new SocketException("Need at least 2 players to start the game", channel);
+        }
 
         Set<Channel> channels = ChannelManager.getChannelsByGameId(roomId);
         if (channels.isEmpty()) {
             System.out.println("No active game channels found for room: " + roomId);
             return;
         }
+  
         Map<Short, String> players = new HashMap<>();
         Short slot = 0;
-        for (Channel channel: channels){
-            String userId = ChannelManager.getUserIdByChannel(channel);
-            String username = userService.getUsernameById(userId);
+        for (Channel ch : channels) {
+            String username = ChannelManager.getUsernameByChannel(ch);
             ++slot;
+            ChannelManager.setSlot2Channel(slot, ch);
             players.put(slot, username);
         }
         InfoPlayersInRoomSend infoPlayerInRoomSend = new InfoPlayersInRoomSend(players);
-        // Get any Channel from the set to represent to broadcast message
-        Channel firstChannel = channels.iterator().next();
-        firstChannel.writeAndFlush(infoPlayerInRoomSend);
+        channel.writeAndFlush(infoPlayerInRoomSend);
     }
 } 

@@ -110,7 +110,7 @@ public class NotificationService {
      * @param roomId The room ID
      * @param playerId The player ID who left
      * @param playerName The player name
-     */
+     */  
     public void notifyPlayerLeftRoom(String roomId, String playerId, String playerName) {
         try {
             Map<String, Object> notification = Map.of(
@@ -174,7 +174,7 @@ public class NotificationService {
      */
     private void sendToRoom(String roomId, String message) {
         MessageSend messageSend = new MessageSend(message);
-        Set<Channel> channels = ChannelManager.getChannelsByRoomId(roomId);
+        Set<Channel> channels = ChannelManager.getChannelsByGameId(roomId);
         
         if (channels == null || channels.isEmpty()) {
             log.warn("No players connected to room: {}", roomId);

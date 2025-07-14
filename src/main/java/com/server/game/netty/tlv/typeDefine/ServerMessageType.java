@@ -9,6 +9,7 @@ import lombok.Getter;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ServerMessageType {
+    ERROR_SEND((short) 0),
     AUTHENTICATION_SEND((short) 2),
     MESSAGE_SEND((short) 4),
     CHOOSE_CHAMPION_SEND((short) 6),

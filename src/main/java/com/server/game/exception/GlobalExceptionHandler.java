@@ -6,6 +6,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.server.game.apiResponse.ApiResponse;
 
+import com.server.game.exception.http.*;
+import com.server.game.exception.socket.*;
+import com.server.game.netty.messageObject.sendObject.ErrorSend;
+
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -23,7 +27,7 @@ import org.springframework.http.HttpStatus;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataNotFoundException.class)
-    public ResponseEntity<ApiResponse<String>> handleUserNotFoundException(DataNotFoundException ex) {
+    public ResponseEntity<ApiResponse<String>> handleDataNotFoundException(DataNotFoundException ex) {
         ApiResponse<String> response = new ApiResponse<>(HttpStatus.NOT_FOUND.value(), ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
@@ -91,4 +95,12 @@ public class GlobalExceptionHandler {
     //     ApiResponse<Void> response = new ApiResponse<>(500, ex.getMessage(), null);
     //     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     // }
+
+
+    @ExceptionHandler(SocketException.class)
+    public void handleSocketException(SocketException ex) {
+        ex.getChannel().writeAndFlush(
+            new ErrorSend(ex.getMessage())
+        );
+    }
 }

@@ -2,8 +2,7 @@ package com.server.game.service;
 
 import com.server.game.dto.request.CreateRoomRequest;
 import com.server.game.dto.response.RoomResponse;
-import com.server.game.exception.DataNotFoundException;
-import com.server.game.exception.IllegalArgumentException;
+import com.server.game.exception.http.DataNotFoundException;
 import com.server.game.mapper.RoomMapper;
 import com.server.game.model.Room;
 import com.server.game.model.RoomStatus;

@@ -8,6 +8,7 @@ import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
+
 public class AMatchBroadcastTarget implements SendTarget {
     private final String gameId;
 
@@ -32,7 +33,7 @@ public class AMatchBroadcastTarget implements SendTarget {
         for (Channel channel : channels) {
             if (channel.isActive()) {
                 channel.writeAndFlush(message.retainedDuplicate());
-                System.out.println(">>> Server sent BinaryWebSocketFrame to user: " + ChannelManager.getUserIdByChannel(channel) +
+                System.out.println(">>> Server sent message to user: " + ChannelManager.getUserIdByChannel(channel) +
                         " in game: " + gameId);
             }
         }
