@@ -14,12 +14,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 
-public class BussinessHandler extends SimpleChannelInboundHandler<TLVDecodable> {
+public class BusinessHandler extends SimpleChannelInboundHandler<TLVDecodable> {
 
     // cannot usse @Autowired here because this class is not a Spring component
     private MessageDispatcher dispatcher;
 
-    public BussinessHandler(MessageDispatcher dispatcher) {
+    public BusinessHandler(MessageDispatcher dispatcher) {
         this.dispatcher = dispatcher;   
     }
 

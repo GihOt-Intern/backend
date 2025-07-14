@@ -5,9 +5,9 @@ import time
 
 # Cấu hình thông tin kết nối
 game_id = "room-123"
-token = "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsInN1YiI6IjY4NmIzMTA0YWQ4YWNjNTRjMDhhZjQxZiIsImV4cCI6Mjc1MjIzMDk1OCwiaWF0IjoxNzUyMjMwOTU4LCJqdGkiOiJiNTExNjY4OC1lZmRiLTQ2NWYtOWY4ZS1iNzQ3Y2YwYzI3MWUiLCJzY29wZSI6IlVTRVIifQ.7dXQEsqliw7x7cwVuaFyogDFcAfRHFRnbSaP2DIVLrI"
+token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2ODcxMjJlY2M4ZmJiOTQzMmE5MTI3MzUiLCJzY29wZSI6IlVTRVIiLCJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsImV4cCI6Mjc1MjI0NDk4MywiaWF0IjoxNzUyMjQ0OTgzLCJqdGkiOiIyNTEwNjRkNS1iNDc3LTRkN2YtOTBhOS1jYWQzMTc0NGI5YjUifQ.N-jewVrSvqTxDmf4OYXfzKoweDtkvo_dhdcwSDSIgpE"
 
-host = "localhost"
+host = "13.113.89.215"
 port = 8386
 
 
@@ -116,6 +116,8 @@ def parse_tlv_message(type_id:int, buffer: io.BytesIO) -> tuple:
 def connect():
     try:
         with socket.create_connection((host, port)) as sock:
+            sock.settimeout(3.0) 
+
             print(f"Connected to server {host}:{port}")
 
             # Create TLV message for authentication
@@ -143,8 +145,8 @@ def connect():
 
             print(f"[Client -> Server] Send TLV message: {TLV_msg.hex()}")
             sock.sendall(TLV_msg)
-            time.sleep(10)
-            sock.sendall(ready_TLV_msg)
+            # time.sleep(10)
+            # sock.sendall(ready_TLV_msg)
 
             # print("Sleep for 10 seconds before reading response...")
             # # Delay
@@ -157,51 +159,57 @@ def connect():
 
             # Đọc phản hồi
             while True:
-                header = sock.recv(6)
-                if not header:
-                    print("Server đã đóng kết nối.")
-                    break
-
-                print(f"[Server -> Client] Nhận header: {header.hex()}")
-
-                buffer = io.BytesIO(header)
-                type_id = struct.unpack(">h", buffer.read(2))[0]
-                length = struct.unpack(">i", buffer.read(4))[0]
-                
-                value_bytes = b""
-                while len(value_bytes) < length:
-                    chunk = sock.recv(length - len(value_bytes))
-                    if not chunk:
-                        print("Server đóng kết nối giữa chừng khi nhận Value.")
+                try:
+                    header = sock.recv(6)
+                    if not header:
+                        print("Server đã đóng kết nối.")
                         break
-                    value_bytes += chunk
+
+                    print(f"[Server -> Client] Nhận header: {header.hex()}")
+
+                    buffer = io.BytesIO(header)
+                    type_id = struct.unpack(">h", buffer.read(2))[0]
+                    length = struct.unpack(">i", buffer.read(4))[0]
+                    
+                    value_bytes = b""
+                    while len(value_bytes) < length:
+                        chunk = sock.recv(length - len(value_bytes))
+                        if not chunk:
+                            print("Server đóng kết nối giữa chừng khi nhận Value.")
+                            break
+                        value_bytes += chunk
 
 
-                print(f"[Server -> Client] Received full message: {header.hex()}{value_bytes.hex()}")
-                buffer = io.BytesIO(value_bytes)
-                parse_tlv_message(type_id, buffer)
-                # if type_id == AUTHENTICATION_RECEIVE:
-                #     statusCode, message = parse_tlv_message(type_id, buffer)
-                # elif type_id == MESSAGE_RECEIVE:
-                #     message = parse_tlv_message(type_id, buffer)
-                # elif type_id == INFO_PLAYERS_IN_ROOM_RECEIVE:
-                #     parse_tlv_message(type_id, buffer)
+                    print(f"[Server -> Client] Received full message: {header.hex()}{value_bytes.hex()}")
+                    buffer = io.BytesIO(value_bytes)
+                    parse_tlv_message(type_id, buffer)
+                    # if type_id == AUTHENTICATION_RECEIVE:
+                    #     statusCode, message = parse_tlv_message(type_id, buffer)
+                    # elif type_id == MESSAGE_RECEIVE:
+                    #     message = parse_tlv_message(type_id, buffer)
+                    # elif type_id == INFO_PLAYERS_IN_ROOM_RECEIVE:
+                    #     parse_tlv_message(type_id, buffer)
 
-                # if isAuthenticated:
-                #     print("Authenticated, sending another TLV message...")
-                #     TLV_msg = other_TLV_msg
-                #     print(f"[Client -> Server] Send TLV message: {TLV_msg.hex()}")
-                #     sock.sendall(TLV_msg)
-                #     break
-
-
-                # break
+                    # if isAuthenticated:
+                    #     print("Authenticated, sending another TLV message...")
+                    #     TLV_msg = other_TLV_msg
+                    #     print(f"[Client -> Server] Send TLV message: {TLV_msg.hex()}")
+                    #     sock.sendall(TLV_msg)
+                    #     break
 
 
-
+                    # break
+                except socket.timeout:
+                    continue
+    
+    except KeyboardInterrupt: 
+        print("Terminating...")
     except Exception as e:
         print(f"Lỗi kết nối/giao tiếp: {e}")
 
 
 if __name__ == "__main__":
-    connect()
+    try:
+        connect()
+    except KeyboardInterrupt: pass
+        # print(")
