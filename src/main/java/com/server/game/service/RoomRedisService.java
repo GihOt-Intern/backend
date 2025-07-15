@@ -62,7 +62,7 @@ public class RoomRedisService {
         
         // Add room ID to the set of all room IDs
         redisUtil.sAdd(ROOM_IDS_KEY, room.getId());
-        
+        System.out.println(">>> Room with ID " + room.getId() + " saved to Redis with TTL of " + ROOM_TTL.toHours() + " hours.");
         return room;
     }
 
@@ -71,6 +71,7 @@ public class RoomRedisService {
         try {
             return redisUtil.get(roomKey, Room.class);
         } catch (DataNotFoundException e) {
+            System.out.println(">>> [Log in findById()] Room with ID " + id + " not found!");
             throw new DataNotFoundException("Room with ID " + id + " not found");
         }
     }
@@ -96,15 +97,27 @@ public class RoomRedisService {
     }
 
     public void delete(Room room) {
-        String roomKey = ROOM_KEY_PREFIX + room.getId();
+        String roomId = room.getId();
+        String roomKey = ROOM_KEY_PREFIX + roomId;
+        if (!existsById(roomId)) {
+            System.out.println(">>> [Log in delete()] Room with ID " + roomId + " not found in Redis.");
+            return;
+        }
         redisUtil.delete(roomKey);
-        redisUtil.sRemove(ROOM_IDS_KEY, room.getId());
+        redisUtil.sRemove(ROOM_IDS_KEY, roomId);
+        System.out.println(">>> [Log in delete()] Room with ID " + roomId + " deleted from Redis.");
     }
 
     public void deleteById(String id) {
+        if (!existsById(id)) {
+            System.out.println(">>> [Log in deleteById()] Room with ID " + id + " not found in Redis.");
+            return;
+        }
+
         String roomKey = ROOM_KEY_PREFIX + id;
         redisUtil.delete(roomKey);
         redisUtil.sRemove(ROOM_IDS_KEY, id);
+        System.out.println(">>> [Log in deleteById()] Room with ID " + id + " deleted successfully.");
     }
 
     public boolean existsById(String id) {

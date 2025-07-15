@@ -17,7 +17,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import org.springframework.data.mongodb.core.messaging.Message;
 import org.springframework.stereotype.Service;
 
 // import com.server.game.exception.socket.SocketException;
@@ -104,10 +103,16 @@ public class RoomService {
 
     public void leaveRoom(String roomId) {
         User user = userService.getUserInfo();
+        System.out.println(">>> [Log in leaveRoom()] Getting room by roomId: " + roomId);
         Room room = getRoomById(roomId);
+        System.out.println(">>> [Log in leaveRoom()] Room found: " + room);
         Channel channel = ChannelManager.getChannelByUserId(user.getId());
-        channel.writeAndFlush(new MessageSend(roomId)); // Send an empty message to notify the client
-        ChannelManager.unregister(channel);
+        
+        channel.writeAndFlush(new MessageSend(roomId)).addListener(future -> {
+            if (future.isSuccess()) {
+                ChannelManager.unregister(channel);
+            }
+        });
 
 
         if (room.getPlayers().stream().noneMatch(p -> p.getId().equals(user.getId()))) {

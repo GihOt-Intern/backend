@@ -111,6 +111,7 @@ public class ChannelManager {
                 //Remove the room from redis cache
                 RoomRedisService roomRedisService = SpringContextHolder.getBean(RoomRedisService.class);
                 roomRedisService.deleteById(gameId);
+                System.out.println(">>> [Log in gameUnregister()] Removed room from redis cache for roomId: " + gameId);
             }
 
             System.out.println(">>> Unregistered channel for gameId: " + gameId);

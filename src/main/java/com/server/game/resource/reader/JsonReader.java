@@ -24,28 +24,34 @@ public class JsonReader {
 
     public GameMap readMapFromJson(String mapName) {
         try {
-            InputStream is = getClass().getClassLoader().getResourceAsStream("map/" + mapName + ".json");
+            InputStream is = getClass().getClassLoader().getResourceAsStream("game/map/" + mapName + ".json");
             if (is == null) {
-                throw new FileNotFoundException("File not found: resources/map/" + mapName + ".json");
+                // throw new FileNotFoundException("File not found: resources/game/map/" + mapName + ".json");
+                System.out.println(">>> File not found: resources/game/map/" + mapName + ".json");
+                return null;
             }
             return objectMapper.readValue(is, GameMap.class);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            // e.printStackTrace();
+            System.out.println(">>> Error reading map JSON: " + e.getMessage());
             return null;
         }
     }
 
     public Champion readChampionFromJson(String championName) {
         try {
-            InputStream is = getClass().getClassLoader().getResourceAsStream("champion/" + championName + ".json");
+            InputStream is = getClass().getClassLoader().getResourceAsStream("game/champion/" + championName + ".json");
             if (is == null) {
-                throw new FileNotFoundException("File not found: resources/champion/" + championName + ".json");
+                // throw new FileNotFoundException("File not found: resources/game/champion/" + championName + ".json");
+                System.out.println(">>> File not found: resources/game/champion/" + championName + ".json");
+                return null;
             }
             return objectMapper.readValue(is, Champion.class);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            // e.printStackTrace();
+            System.out.println(">>> Error reading champion JSON: " + e.getMessage());
             return null;
         }
     }

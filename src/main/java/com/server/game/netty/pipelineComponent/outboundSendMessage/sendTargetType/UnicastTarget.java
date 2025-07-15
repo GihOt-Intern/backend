@@ -4,6 +4,9 @@ import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.DefaultChannelPromise;
+import io.netty.util.concurrent.ImmediateEventExecutor;
 
 public class UnicastTarget implements SendTarget {
     private final Channel channel;
@@ -13,11 +16,13 @@ public class UnicastTarget implements SendTarget {
     }
 
     @Override
-    public void send(ByteBuf message) {
+    public ChannelFuture send(ByteBuf message) {
         System.out.println(">>> Sending Unicast to channel: " + channel.id());
 
         if (channel.isActive()) {
-            channel.writeAndFlush(message.retain());
+            return channel.writeAndFlush(message.retain());
         }
+
+        return new DefaultChannelPromise(null, ImmediateEventExecutor.INSTANCE).setSuccess();
     }
 }

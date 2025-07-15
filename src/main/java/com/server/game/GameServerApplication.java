@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.redis.RedisConnectionFailureException;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 
@@ -17,7 +16,7 @@ import jakarta.annotation.PostConstruct;
 public class GameServerApplication {
 
 	@Autowired
-	private RedisTemplate<String, Object> redisTemplate;
+	// private RedisTemplate<String, Object> redisTemplate;
 
 	public static void main(String[] args) {
 		SpringApplication.run(GameServerApplication.class, args);
