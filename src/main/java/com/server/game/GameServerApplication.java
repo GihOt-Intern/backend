@@ -32,7 +32,7 @@ public class GameServerApplication {
 
 		try {
 			System.out.println(">>> Call Redis");
-			redisTemplate.opsForValue().set("key", "value");
+			// redisTemplate.opsForValue().set("key", "value");
 		} catch (RedisConnectionFailureException e) {
 			System.err.println("Redis connection failed: " + e.getMessage());
 			System.exit(1);

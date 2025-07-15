@@ -85,7 +85,7 @@ public class ChannelManager {
             System.out.println(">>> Cannot unregister channel, userId is null.");
             return;
         }
-        userChannels.remove(userId);
+        userChannels.remove(userId); 
 
         System.out.println(">>> Unregistered channel for userId: " + userId);
     }
