@@ -1,4 +1,4 @@
-package com.server.game.netty.tlv.codecableInterface;
+package com.server.game.netty.tlv.interf4ce;
 
 import java.nio.ByteBuffer;
 

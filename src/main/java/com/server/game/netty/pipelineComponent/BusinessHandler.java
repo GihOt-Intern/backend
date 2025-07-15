@@ -6,8 +6,8 @@ import java.util.Map;
 
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageMapping.MessageDispatcher;
-import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
-import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
+import com.server.game.netty.tlv.interf4ce.TLVDecodable;
+import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;

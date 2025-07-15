@@ -3,7 +3,7 @@ package com.server.game.netty.tlv.codec;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
+import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.ServerMessageType;
 import com.server.game.util.Util;
 

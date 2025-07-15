@@ -4,7 +4,7 @@ package com.server.game.netty.pipelineComponent;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.OutboundSendMessage;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.tlv.codec.TLVEncoder;
-import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
+import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

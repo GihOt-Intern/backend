@@ -2,7 +2,7 @@ package com.server.game.annotation.annotationScanner;
 
 import com.server.game.annotation.customAnnotation.ReceiveType;
 import com.server.game.netty.tlv.codec.TLVDecoder;
-import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
+import com.server.game.netty.tlv.interf4ce.TLVDecodable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
