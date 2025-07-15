@@ -1,6 +1,6 @@
 package com.server.game.service;
 
-import com.server.game.exception.DataNotFoundException;
+import com.server.game.exception.http.DataNotFoundException;
 import com.server.game.model.Room;
 import com.server.game.model.RoomStatus;
 import com.server.game.util.RedisUtil;
@@ -99,6 +99,12 @@ public class RoomRedisService {
         String roomKey = ROOM_KEY_PREFIX + room.getId();
         redisUtil.delete(roomKey);
         redisUtil.sRemove(ROOM_IDS_KEY, room.getId());
+    }
+
+    public void deleteById(String id) {
+        String roomKey = ROOM_KEY_PREFIX + id;
+        redisUtil.delete(roomKey);
+        redisUtil.sRemove(ROOM_IDS_KEY, id);
     }
 
     public boolean existsById(String id) {

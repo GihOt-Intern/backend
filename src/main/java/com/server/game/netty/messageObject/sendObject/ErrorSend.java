@@ -1,6 +1,8 @@
 package com.server.game.netty.messageObject.sendObject;
 
-import java.nio.ByteBuffer;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
@@ -18,20 +20,31 @@ import lombok.experimental.FieldDefaults;
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class DistanceSend implements TLVEncodable {
-    float distance;
+public class ErrorSend implements TLVEncodable {
+    String errorMessage;
 
     @Override
     public ServerMessageType getType() { // return enum defined in documentation for this message
-        return ServerMessageType.DISTANCE_SEND;
+        return ServerMessageType.ERROR_SEND;
     }
 
     @Override
     public byte[] encode() { // only return the [value] part of the TLV message
-        ByteBuffer buf = Util.allocateByteBuffer(Util.FLOAT_SIZE);
-        buf.putFloat(distance);
-        return buf.array();
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+
+            byte[] errorMessageBytes = Util.stringToBytes(errorMessage);
+            int errorMessageByteLength = errorMessageBytes.length;
+            dos.writeInt(errorMessageByteLength);
+            dos.write(errorMessageBytes);
+            
+            return baos.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot encoding ErrorSend", e);
+        }
     }
+
 
     @Override     // this message is only sent to one channel.
     public SendTarget getSendTarget(Channel channel) {

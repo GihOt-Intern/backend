@@ -10,6 +10,7 @@ import com.server.game.netty.messageObject.sendObject.AuthenticationSend;
 import com.server.game.netty.pipelineComponent.AuthenticationHandler;
 import com.server.game.service.AuthenticationService;
 import com.server.game.service.UserService;
+import com.server.game.netty.messageObject.sendObject.MessageSend;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,14 +28,15 @@ public class RegistryHandler {
     UserService userService;
 
     @MessageMapping(AuthenticationReceive.class)
-    public AuthenticationSend authenticate(AuthenticationReceive receiveObject, ChannelHandlerContext ctx) {
+    public void authenticate(AuthenticationReceive receiveObject, ChannelHandlerContext ctx) {
         String token = receiveObject.getToken();
         String gameId = receiveObject.getGameId();
 
         String userId = authenticationService.getJWTSubject(token);
         if (userId == null || !userService.isUserExist(userId)) {
             System.out.println(">>> Authentication failed for token: " + token);
-            return new AuthenticationSend(AuthenticationSend.Status.FAILURE, "Invalid token, playerId does not exist or failed to register for room notifications");
+            ctx.channel().writeAndFlush(new AuthenticationSend(AuthenticationSend.Status.FAILURE, "Invalid token, playerId does not exist or failed to register for room notifications"));
+            return;
         }
 
         Channel channel = ctx.channel();
@@ -47,6 +49,8 @@ public class RegistryHandler {
             ctx.pipeline().remove(AuthenticationHandler.class);
         });
 
-        return new AuthenticationSend(AuthenticationSend.Status.SUCCESS, "Authenticated and registered to room notifications successfully!");
+        ctx.channel().writeAndFlush(new AuthenticationSend(AuthenticationSend.Status.SUCCESS, "Authenticated and registered to room notifications successfully!"));
+        // Send room ID to all the client in the room
+        ctx.channel().writeAndFlush(new MessageSend(gameId));
     }
 }

@@ -11,6 +11,7 @@ import com.server.game.netty.messageObject.receiveObject.ChooseChampionReceive;
 import com.server.game.netty.messageObject.receiveObject.PlayerReadyReceive;
 import com.server.game.netty.messageObject.sendObject.ChooseChampionSend;
 import com.server.game.netty.messageObject.sendObject.PlayerReadySend;
+import com.server.game.util.ChampionEnum;
 
 import io.netty.channel.Channel;
 
@@ -21,17 +22,18 @@ public class LobbyHandler {
 
     @MessageMapping(ChooseChampionReceive.class)
     public ChooseChampionSend handleChooseChampion(ChooseChampionReceive receiveObject, Channel channel) {
-        int championId = receiveObject.getChampionEnum().getChampionId();
+        ChampionEnum championId = receiveObject.getChampionEnum();
         short slot = ChannelManager.getSlotByChannel(channel);
-        System.out.println("Chosen Champion ID: " + championId);
+        ChannelManager.setChampionId2Channel(championId.getChampionId(), channel);
+        System.out.println("Slot " + slot + " chose Champion ID: " + championId);
         return new ChooseChampionSend(slot, championId);
     }
 
     @MessageMapping(PlayerReadyReceive.class)
     public PlayerReadySend handlePlayerReady(PlayerReadyReceive receiveObject, Channel channel) {
         ChannelManager.setUserReady(channel);
-        String roomId = ChannelManager.getGameIdByChannel(channel);
-        Set<Channel> playersInRoom = ChannelManager.getChannelsByRoomId(roomId);
+        String gameId = ChannelManager.getGameIdByChannel(channel);
+        Set<Channel> playersInRoom = ChannelManager.getChannelsByGameId(gameId);
         boolean isAllPlayersReady = playersInRoom.stream() // fun sân nồ prồ ram minh
             .allMatch(ChannelManager::isUserReady);
         PlayerReadySend playerReadySend = new PlayerReadySend(

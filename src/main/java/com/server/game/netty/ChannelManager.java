@@ -1,6 +1,13 @@
 package com.server.game.netty;
 
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.stereotype.Component;
+
+import com.server.game.config.SpringContextHolder;
+import com.server.game.service.RoomRedisService;
+import com.server.game.service.UserService;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -9,19 +16,18 @@ import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 
 
+@Component
 public class ChannelManager {
+
     private static final Map<String, Channel> userChannels = new ConcurrentHashMap<>();
     private static final Map<String, Set<Channel>> gameChannels = new ConcurrentHashMap<>();
-    private static final Map<String, Set<Channel>> roomChannels = new ConcurrentHashMap<>();
-    
-    // New map to track slot-to-userId mapping per game
-    private static final Map<String, Map<Short, String>> gameSlotToUserIdMap = new ConcurrentHashMap<>();
 
-    public static final AttributeKey<String> USER_ID = AttributeKey.valueOf("USER_ID");
-    public static final AttributeKey<String> GAME_ID = AttributeKey.valueOf("GAME_ID");
-    // public static final AttributeKey<String> ROOM_ID = AttributeKey.valueOf("ROOM_ID");
-    public static final AttributeKey<Short> SLOT = AttributeKey.valueOf("SLOT");
-    public static final AttributeKey<Boolean> IS_READY = AttributeKey.valueOf("IS_READY");
+    private static final AttributeKey<String>  USER_ID     = AttributeKey.valueOf("USER_ID");
+    private static final AttributeKey<String>  USERNAME    = AttributeKey.valueOf("USERNAME");
+    private static final AttributeKey<String>  GAME_ID     = AttributeKey.valueOf("GAME_ID");
+    private static final AttributeKey<Short>   SLOT        = AttributeKey.valueOf("SLOT");
+    private static final AttributeKey<Boolean> IS_READY    = AttributeKey.valueOf("IS_READY");
+    private static final AttributeKey<Short>   CHAMPION_ID = AttributeKey.valueOf("CHAMPION_ID");
 
 
     public static void register(String userId, String gameId, Channel channel) {
@@ -29,10 +35,6 @@ public class ChannelManager {
         gameRegister(gameId, channel);
     }
 
-    // public static void registerToRoom(String userId, String roomId, Channel channel) {
-    //     userRegister(userId, channel);
-    //     roomRegister(roomId, channel);
-    // }
 
     private static void userRegister(String userId, Channel channel) {
         if (userId == null || userId.isEmpty()) {
@@ -48,6 +50,10 @@ public class ChannelManager {
         // Add userId to channel attributes (to find channel by userId later)
         ChannelManager.setUserId2Channel(userId, channel);
 
+        UserService userService = SpringContextHolder.getBean(UserService.class);
+        String username = userService.getUsernameById(userId);
+        ChannelManager.setUsername2Channel(username, channel);
+
         userChannels.put(userId, channel);
         System.out.println(">>> Registered channel for userId: " + userId);
     }
@@ -61,6 +67,7 @@ public class ChannelManager {
         // Add gameId to channel attributes (to find game by channel later)
         ChannelManager.setGameId2Channel(gameId, channel);
 
+
         // Add the channel to the gameChannels map
         gameChannels.computeIfAbsent(gameId, k -> ConcurrentHashMap.newKeySet())
                    .add(channel);
@@ -68,26 +75,9 @@ public class ChannelManager {
         System.out.println(">>> Registered channel for gameId: " + gameId);
     }
 
-    // private static void roomRegister(String roomId, Channel channel) {
-    //     if (roomId == null || roomId.isEmpty()) {
-    //         System.out.println(">>> Cannot register channel, roomId is null or empty.");
-    //         return; // Invalid roomId, do not register
-    //     }
-
-    //     // // Add roomId to channel attributes (to find room by channel later)
-    //     // ChannelRegistry.setRoomId2Channel(roomId, channel);
-
-    //     // Add the channel to the roomChannels map
-    //     roomChannels.computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet())
-    //                .add(channel);
-
-    //     System.out.println(">>> Registered channel for roomId: " + roomId);
-    // }
-
     public static void unregister(Channel channel) {
         userUnregister(channel);
         gameUnregister(channel);
-        // roomUnregister(channel);
     }
 
     private static void userUnregister(Channel channel) {
@@ -110,32 +100,23 @@ public class ChannelManager {
 
         Set<Channel> channels = gameChannels.get(gameId);
         if (channels != null) {
+            if (!channels.contains(channel)) {
+                System.out.println(">>> Channel not found in game channels for gameId: " + gameId);
+                return; // Channel not found in the game, nothing to remove
+            }
+
             channels.remove(channel);
             if (channels.isEmpty()) {
                 gameChannels.remove(gameId); // Remove game entry if no channels left
+                //Remove the room from redis cache
+                RoomRedisService roomRedisService = SpringContextHolder.getBean(RoomRedisService.class);
+                roomRedisService.deleteById(gameId);
             }
 
             System.out.println(">>> Unregistered channel for gameId: " + gameId);
         }
     }
 
-    // private static void roomUnregister(Channel channel) {
-    //     String roomId = ChannelRegistry.getRoomIdByChannel(channel);
-    //     if (roomId == null) {
-    //         System.out.println(">>> Cannot unregister channel, roomId is null.");
-    //         return;
-    //     }
-
-    //     Set<Channel> channels = roomChannels.get(roomId);
-    //     if (channels != null) {
-    //         channels.remove(channel);
-    //         if (channels.isEmpty()) {
-    //             roomChannels.remove(roomId); // Remove room entry if no channels left
-    //         }
-
-    //         System.out.println(">>> Unregistered channel for roomId: " + roomId);
-    //     }
-    // }
 
     public static Set<Channel> getAllChannels() {
         return Set.copyOf(userChannels.values());
@@ -155,20 +136,18 @@ public class ChannelManager {
         }
         return gameChannels.get(gameId);
     }
-
-    public static Set<Channel> getChannelsByRoomId(String roomId) {
-        Set<Channel> channelsInRoom = roomChannels.get(roomId);
-        if (channelsInRoom == null || channelsInRoom.isEmpty()) {
-            System.out.println(">>> No channels found for roomId: " + roomId);
-            return Collections.emptySet();
-        }
-        return channelsInRoom;
-    }
-
+    
     public static String getUserIdByChannel(Channel channel) {
         String userId = channel.attr(USER_ID).get();
         if (userId != null) { return userId; }
         System.out.println(">>> Cannot get userId, it is not set for the channel.");
+        return null;
+    }
+
+    public static String getUsernameByChannel(Channel channel) {
+        String username = channel.attr(USERNAME).get();
+        if (username != null) { return username; }
+        System.out.println(">>> Cannot get username, it is not set for the channel.");
         return null;
     }
 
@@ -179,17 +158,28 @@ public class ChannelManager {
         return null;
     }
 
-    // public static String getRoomIdByChannel(Channel channel) {
-    //     return channel.attr(ROOM_ID).get();
-    // }
 
-    public static short getSlotByChannel(Channel channel) {
-        Short slot = channel.attr(SLOT).get();
+    public static Short getSlotByChannel(Channel channel) {
+        if (channel == null) {
+            System.out.println(">>> Cannot get slot, channel is null.");
+            return null; // Return -1 if channel is null
+        }
+        Short slot = 0;
+        slot = channel.attr(SLOT).get();
         if (slot == null) {
             System.out.println(">>> Cannot get slot, it is not set for the channel.");
-            return -1; // Return -1 if slot is not set
+            return null; // Return -1 if slot is not set
         }
         return slot;
+    }
+
+    public static Short getChampionIdByChannel(Channel channel) {
+        Short championId = channel.attr(CHAMPION_ID).get();
+        if (championId == null) {
+            System.out.println(">>> Cannot get championId, it is not set for the channel.");
+            return null; 
+        }
+        return championId;
     }
 
     public static Boolean isUserReady(Channel channel) {
@@ -204,22 +194,16 @@ public class ChannelManager {
         channel.attr(GAME_ID).set(gameId);
     }
 
-    // private static void setRoomId2Channel(String roomId, Channel channel) {
-    //     channel.attr(ROOM_ID).set(roomId);
-    // }
+    private static void setUsername2Channel(String username, Channel channel) {
+        channel.attr(USERNAME).set(username);
+    }
 
     public static void setSlot2Channel(short slot, Channel channel) {
         channel.attr(SLOT).set(slot);
-        
-        // Update slot-to-userId mapping
-        String gameId = getGameIdByChannel(channel);
-        String userId = getUserIdByChannel(channel);
-        
-        if (gameId != null && userId != null) {
-            gameSlotToUserIdMap.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
-                              .put(slot, userId);
-            System.out.println(">>> Mapped slot " + slot + " to userId " + userId + " in game " + gameId);
-        }
+    }
+    
+    public static void setChampionId2Channel(short championId, Channel channel) {
+        channel.attr(CHAMPION_ID).set(championId);
     }
 
     public static void setUserReady(Channel channel) {
@@ -229,64 +213,24 @@ public class ChannelManager {
     public static void setUserNotReady(Channel channel) {
         channel.attr(IS_READY).set(false);
     }
-    
-    /**
-     * Get userId from slot for a specific game
-     */
-    public static String getUserIdFromSlot(String gameId, short slot) {
-        Map<Short, String> slotMap = gameSlotToUserIdMap.get(gameId);
-        if (slotMap != null) {
-            String userId = slotMap.get(slot);
-            if (userId != null) {
-                return userId;
-            }
-        }
-        System.out.println(">>> No userId found for slot " + slot + " in game " + gameId);
-        return null;
-    }
-    
-    /**
-     * Get slot from userId for a specific game
-     */
-    public static short getSlotFromUserId(String gameId, String userId) {
-        Map<Short, String> slotMap = gameSlotToUserIdMap.get(gameId);
-        if (slotMap != null) {
-            for (Map.Entry<Short, String> entry : slotMap.entrySet()) {
-                if (userId.equals(entry.getValue())) {
-                    return entry.getKey();
-                }
-            }
-        }
-        System.out.println(">>> No slot found for userId " + userId + " in game " + gameId);
-        return -1;
-    }
-    
-    /**
-     * Get all slot-to-userId mappings for a game
-     */
-    public static Map<Short, String> getGameSlotMappings(String gameId) {
-        Map<Short, String> slotMap = gameSlotToUserIdMap.get(gameId);
-        return slotMap != null ? new ConcurrentHashMap<>(slotMap) : new ConcurrentHashMap<>();
-    }
-    
-    /**
-     * Clear slot mappings when a game ends
-     */
-    public static void clearGameSlotMappings(String gameId) {
-        gameSlotToUserIdMap.remove(gameId);
-        System.out.println(">>> Cleared slot mappings for game " + gameId);
-    }
-    
-    /**
-     * Remove a specific slot mapping (when a player leaves)
-     */
+
     public static void removeSlotMapping(String gameId, short slot) {
-        Map<Short, String> slotMap = gameSlotToUserIdMap.get(gameId);
-        if (slotMap != null) {
-            String removedUserId = slotMap.remove(slot);
-            if (removedUserId != null) {
-                System.out.println(">>> Removed slot mapping: slot " + slot + " -> userId " + removedUserId + " in game " + gameId);
+        if (gameChannels.containsKey(gameId)) {
+            Set<Channel> channels = gameChannels.get(gameId);
+            channels.removeIf(channel -> getSlotByChannel(channel) == slot);
+            if (channels.isEmpty()) {
+                gameChannels.remove(gameId);
             }
+        }
+    }
+
+
+    public static void clearGameSlotMappings(String gameId) {
+        if (gameChannels.containsKey(gameId)) {
+            Set<Channel> channels = gameChannels.get(gameId);
+            channels.forEach(channel -> {
+                channel.attr(SLOT).set(null);
+            });
         }
     }
 }

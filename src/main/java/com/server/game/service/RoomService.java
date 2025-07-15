@@ -2,8 +2,7 @@ package com.server.game.service;
 
 import com.server.game.dto.request.CreateRoomRequest;
 import com.server.game.dto.response.RoomResponse;
-import com.server.game.exception.DataNotFoundException;
-import com.server.game.exception.IllegalArgumentException;
+import com.server.game.exception.http.DataNotFoundException;
 import com.server.game.mapper.RoomMapper;
 import com.server.game.model.Room;
 import com.server.game.model.RoomStatus;
@@ -11,13 +10,17 @@ import com.server.game.model.RoomVisibility;
 import com.server.game.model.User;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.InfoPlayersInRoomSend;
+import com.server.game.netty.messageObject.sendObject.MessageSend;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
+import org.springframework.data.mongodb.core.messaging.Message;
 import org.springframework.stereotype.Service;
 
+// import com.server.game.exception.socket.SocketException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +35,6 @@ public class RoomService {
     RoomRedisService roomRedisService;
     UserService userService;
     RoomMapper roomMapper;
-    NotificationService notificationService;
 
     public RoomResponse createRoom(CreateRoomRequest request) {
         User host = userService.getUserInfo();
@@ -97,15 +99,16 @@ public class RoomService {
         room.getPlayers().add(user);
         room = roomRedisService.save(room);
 
-        // Notify other players in the room
-        notificationService.notifyPlayerJoinedRoom(roomId, user.getId(), user.getUsername());
-
         return roomMapper.toRoomResponse(room);
     }
 
     public void leaveRoom(String roomId) {
         User user = userService.getUserInfo();
         Room room = getRoomById(roomId);
+        Channel channel = ChannelManager.getChannelByUserId(user.getId());
+        channel.writeAndFlush(new MessageSend(roomId)); // Send an empty message to notify the client
+        ChannelManager.unregister(channel);
+
 
         if (room.getPlayers().stream().noneMatch(p -> p.getId().equals(user.getId()))) {
             throw new IllegalArgumentException("User is not in this room");
@@ -113,19 +116,16 @@ public class RoomService {
 
         if (room.getHost().getId().equals(user.getId())) {
             // Host is leaving, delete the room
-            notificationService.notifyRoomDeleted(roomId);
             roomRedisService.delete(room);
         } else {
             // Regular player is leaving
             room.getPlayers().removeIf(p -> p.getId().equals(user.getId()));
             if (room.getPlayers().isEmpty()) {
                 // No players left, delete the room
-                notificationService.notifyRoomDeleted(roomId);
                 roomRedisService.delete(room);
             } else {
                 roomRedisService.save(room);
                 // Notify other players that this player left
-                notificationService.notifyPlayerLeftRoom(roomId, user.getId(), user.getUsername());
             }
         }
     }
@@ -174,11 +174,11 @@ public class RoomService {
     //     return roomMapper.toRoomResponse(room);
     // }
 
-    private String generateGameServerUrl(String roomId) {
-        // This should be configurable via application properties
-        // For now, using a default WebSocket URL pattern
-        return "ws://localhost:8386/game/" + roomId;
-    }
+    // private String generateGameServerUrl(String roomId) {
+    //     // This should be configurable via application properties
+    //     // For now, using a default WebSocket URL pattern
+    //     return "ws://localhost:8386/game/" + roomId;
+    // }
 
     public RoomResponse changeHost(String roomId, String newHostId) {
         User user = userService.getUserInfo();
@@ -205,7 +205,6 @@ public class RoomService {
         room = roomRedisService.save(room);
 
         // Notify players about host change
-        notificationService.notifyHostChanged(roomId, newHost.getId(), newHost.getUsername());
 
         return roomMapper.toRoomResponse(room);
     }
@@ -239,39 +238,57 @@ public class RoomService {
         room = roomRedisService.save(room);
 
         // Notify other players about the invited user
-        notificationService.notifyPlayerJoinedRoom(roomId, invitedUser.getId(), invitedUser.getUsername());
-
         return roomMapper.toRoomResponse(room);
     }
 
 
     public void startGameSocket(String roomId) {
-        // TODO: Handle checking the existing of room, player,...
+        User user = userService.getUserInfo(); // get channel who sending http request
+        Channel channel = ChannelManager.getChannelByUserId(user.getId());
+
+        Room room = getRoomById(roomId);
+
+        if (room == null) {
+            throw new DataNotFoundException("Room not found");
+            // throw new SocketException("Room not found", channel);
+        }
+
+        if (!room.getHost().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("Only the host can start the game");
+            // throw new SocketException("Only the host can start the game", channel);
+        }
+
+        if (room.getStatus() != RoomStatus.WAITING) {
+            throw new IllegalArgumentException("Game has already started in this room");
+            // throw new SocketException("Game has already started in this room", channel);
+        }
+
+        if (room.getPlayers().size() < 2) {
+            throw new IllegalArgumentException("Need at least 2 players to start the game");
+            // throw new SocketException("Need at least 2 players to start the game", channel);
+        }
 
         Set<Channel> channels = ChannelManager.getChannelsByGameId(roomId);
         if (channels.isEmpty()) {
             System.out.println("No active game channels found for room: " + roomId);
             return;
         }
+  
         
         Map<Short, String> players = new HashMap<>();
         short slot = 1; // Start from slot 1
         
-        for (Channel channel: channels){
-            String userId = ChannelManager.getUserIdByChannel(channel);
-            String username = userService.getUsernameById(userId);
+        for (Channel ch : channels) {
+            String username = ChannelManager.getUsernameByChannel(ch);
             
             // Set slot for this channel and update the mapping
-            ChannelManager.setSlot2Channel(slot, channel);
-            
+            ChannelManager.setSlot2Channel(slot, ch);
             players.put(slot, username);
             slot++;
         }
         
         InfoPlayersInRoomSend infoPlayerInRoomSend = new InfoPlayersInRoomSend(players);
-        // Get any Channel from the set to represent to broadcast message
-        Channel firstChannel = channels.iterator().next();
-        firstChannel.writeAndFlush(infoPlayerInRoomSend);
+        channel.writeAndFlush(infoPlayerInRoomSend);
         
         System.out.println(">>> Game started for room: " + roomId + " with " + (slot - 1) + " players");
     }

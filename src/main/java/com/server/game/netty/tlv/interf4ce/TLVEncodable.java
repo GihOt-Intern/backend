@@ -1,4 +1,4 @@
-package com.server.game.netty.tlv.codecableInterface;
+package com.server.game.netty.tlv.interf4ce;
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.tlv.typeDefine.ServerMessageType;

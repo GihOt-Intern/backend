@@ -6,8 +6,9 @@ import io.netty.channel.Channel;
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
-import com.server.game.netty.tlv.codecableInterface.TLVEncodable;
+import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.ServerMessageType;
+import com.server.game.util.ChampionEnum;
 import com.server.game.util.Util;
 
 import lombok.AccessLevel;
@@ -21,7 +22,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChooseChampionSend implements TLVEncodable {
     short slot;
-    Integer championId;
+    ChampionEnum championId;
 
     @Override
     public ServerMessageType getType() {
@@ -30,9 +31,9 @@ public class ChooseChampionSend implements TLVEncodable {
 
     @Override
     public byte[] encode() { // only return the [value] part of the TLV message
-        ByteBuffer buf = Util.allocateByteBuffer(Util.SHORT_SIZE + Util.INT_SIZE);
+        ByteBuffer buf = Util.allocateByteBuffer(Util.SHORT_SIZE + Util.SHORT_SIZE);
         buf.putShort(slot);
-        buf.putInt(championId);
+        buf.putShort(championId.getChampionId());
         return buf.array();
     }
 

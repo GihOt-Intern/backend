@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import com.server.game.netty.tlv.codec.TLVDecoder;
-import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
+import com.server.game.netty.tlv.interf4ce.TLVDecodable;
 import com.server.game.util.Util;
 
 public class TLVMessageDecoder extends MessageToMessageDecoder<ByteBuf> {

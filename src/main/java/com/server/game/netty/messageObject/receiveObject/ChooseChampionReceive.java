@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.ReceiveType;
-import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
+import com.server.game.netty.tlv.interf4ce.TLVDecodable;
 import com.server.game.netty.tlv.typeDefine.ClientMessageType;
 import com.server.game.util.ChampionEnum;
 
@@ -24,7 +24,7 @@ public class ChooseChampionReceive implements TLVDecodable {
 
     @Override // must override this method of TLVDecodable interface
     public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
-        int championId = buffer.getInt();
-        this.championEnum = ChampionEnum.fromInt(championId);
+        short championId = buffer.getShort();
+        this.championEnum = ChampionEnum.fromShort(championId);
     }
 }
