@@ -1,5 +1,6 @@
 package com.server.game.util;
 
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,19 @@ import lombok.RequiredArgsConstructor;
 public class RedisUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public boolean isRedisReady() {
+        try {
+            RedisConnectionFactory connectionFactory = redisTemplate.getConnectionFactory();
+            if (connectionFactory == null || connectionFactory.getConnection() == null) {
+                return false;
+            }
+            String pong = connectionFactory.getConnection().ping();
+            return "PONG".equals(pong);
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     // ===== Key-Value =====
     public void set(String key, Object value) {

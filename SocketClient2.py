@@ -4,10 +4,11 @@ import io
 import time
 
 # Cấu hình thông tin kết nối
-game_id = "BPTK4"
-token = "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsInN1YiI6IjY4NmNjN2Q5YjQ4YjJiNmE0NzhlZDNiYyIsImV4cCI6Mjc1MjIzMDk3NiwiaWF0IjoxNzUyMjMwOTc2LCJqdGkiOiJiNDFkZDgzOS04YmM1LTQxODYtYmZlOC1lN2FmNGQ2YjVkNjciLCJzY29wZSI6IlVTRVIifQ.hJtzUTKxvVQ1ipJQSrRVw-urw2p3gjJh8XOxacn-6l0"
+game_id = "D7HLB"
+token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2ODc2MTA4NmIwYzY5NzdiOTY5YjA2MTYiLCJzY29wZSI6IlVTRVIiLCJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsImV4cCI6Mjc1MjU2Nzk0NywiaWF0IjoxNzUyNTY3OTQ3LCJqdGkiOiJlOTg1OTg3Zi03NDk5LTQ5MjItODdiYy1mN2EyMjAzYWRmYzMifQ.N4VzgUPPWLC_L0b7sJdC_m2zYKTUeaKDCb6CyogAqLY"
 
-host = "localhost"
+host = "34.63.179.208"
+# host = "localhost"
 port = 8386
 
 USERNAME = "user2"

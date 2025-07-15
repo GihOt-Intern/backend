@@ -62,6 +62,12 @@ public class MatchmakingService {
 
     @Scheduled(fixedDelay = 3000)
     public void matchPlayers() {
+
+        if (!redisUtil.isRedisReady()) {
+            System.err.println("Redis is not ready, skipping this matchmaking cycle.");
+            return;
+        }
+
         List<Object> queue = redisUtil.lRange(QUEUE_KEY, 0, -1);
         while (queue.size() >= MATCH_SIZE) {
             List<String> players = new ArrayList<>();
