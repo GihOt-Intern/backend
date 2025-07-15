@@ -3,6 +3,7 @@ package com.server.game.netty.messageObject.sendObject;
 import java.nio.ByteBuffer;
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.ServerMessageType;
@@ -40,6 +41,6 @@ public class MessageSend implements TLVEncodable {
 
     @Override
     public SendTarget getSendTarget(Channel channel) {
-        return new UnicastTarget(channel);
+        return new AMatchBroadcastTarget(channel);
     }
 }

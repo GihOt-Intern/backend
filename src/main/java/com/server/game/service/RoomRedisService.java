@@ -101,6 +101,12 @@ public class RoomRedisService {
         redisUtil.sRemove(ROOM_IDS_KEY, room.getId());
     }
 
+    public void deleteById(String id) {
+        String roomKey = ROOM_KEY_PREFIX + id;
+        redisUtil.delete(roomKey);
+        redisUtil.sRemove(ROOM_IDS_KEY, id);
+    }
+
     public boolean existsById(String id) {
         String roomKey = ROOM_KEY_PREFIX + id;
         return redisUtil.hasKey(roomKey);

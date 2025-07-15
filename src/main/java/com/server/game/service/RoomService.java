@@ -10,11 +10,14 @@ import com.server.game.model.RoomVisibility;
 import com.server.game.model.User;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.InfoPlayersInRoomSend;
+import com.server.game.netty.messageObject.sendObject.MessageSend;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
+import org.springframework.data.mongodb.core.messaging.Message;
 import org.springframework.stereotype.Service;
 
 // import com.server.game.exception.socket.SocketException;
@@ -32,7 +35,6 @@ public class RoomService {
     RoomRedisService roomRedisService;
     UserService userService;
     RoomMapper roomMapper;
-    NotificationService notificationService;
 
     public RoomResponse createRoom(CreateRoomRequest request) {
         User host = userService.getUserInfo();
@@ -97,15 +99,16 @@ public class RoomService {
         room.getPlayers().add(user);
         room = roomRedisService.save(room);
 
-        // Notify other players in the room
-        notificationService.notifyPlayerJoinedRoom(roomId, user.getId(), user.getUsername());
-
         return roomMapper.toRoomResponse(room);
     }
 
     public void leaveRoom(String roomId) {
         User user = userService.getUserInfo();
         Room room = getRoomById(roomId);
+        Channel channel = ChannelManager.getChannelByUserId(user.getId());
+        channel.writeAndFlush(new MessageSend(roomId)); // Send an empty message to notify the client
+        ChannelManager.unregister(channel);
+
 
         if (room.getPlayers().stream().noneMatch(p -> p.getId().equals(user.getId()))) {
             throw new IllegalArgumentException("User is not in this room");
@@ -113,19 +116,16 @@ public class RoomService {
 
         if (room.getHost().getId().equals(user.getId())) {
             // Host is leaving, delete the room
-            notificationService.notifyRoomDeleted(roomId);
             roomRedisService.delete(room);
         } else {
             // Regular player is leaving
             room.getPlayers().removeIf(p -> p.getId().equals(user.getId()));
             if (room.getPlayers().isEmpty()) {
                 // No players left, delete the room
-                notificationService.notifyRoomDeleted(roomId);
                 roomRedisService.delete(room);
             } else {
                 roomRedisService.save(room);
                 // Notify other players that this player left
-                notificationService.notifyPlayerLeftRoom(roomId, user.getId(), user.getUsername());
             }
         }
     }
@@ -205,7 +205,6 @@ public class RoomService {
         room = roomRedisService.save(room);
 
         // Notify players about host change
-        notificationService.notifyHostChanged(roomId, newHost.getId(), newHost.getUsername());
 
         return roomMapper.toRoomResponse(room);
     }
@@ -239,8 +238,6 @@ public class RoomService {
         room = roomRedisService.save(room);
 
         // Notify other players about the invited user
-        notificationService.notifyPlayerJoinedRoom(roomId, invitedUser.getId(), invitedUser.getUsername());
-
         return roomMapper.toRoomResponse(room);
     }
 
@@ -277,15 +274,22 @@ public class RoomService {
             return;
         }
   
+        
         Map<Short, String> players = new HashMap<>();
-        Short slot = 0;
+        short slot = 1; // Start from slot 1
+        
         for (Channel ch : channels) {
             String username = ChannelManager.getUsernameByChannel(ch);
-            ++slot;
+            
+            // Set slot for this channel and update the mapping
             ChannelManager.setSlot2Channel(slot, ch);
             players.put(slot, username);
+            slot++;
         }
+        
         InfoPlayersInRoomSend infoPlayerInRoomSend = new InfoPlayersInRoomSend(players);
         channel.writeAndFlush(infoPlayerInRoomSend);
+        
+        System.out.println(">>> Game started for room: " + roomId + " with " + (slot - 1) + " players");
     }
 } 

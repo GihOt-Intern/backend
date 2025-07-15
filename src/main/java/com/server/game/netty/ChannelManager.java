@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
 
 import com.server.game.config.SpringContextHolder;
+import com.server.game.service.RoomRedisService;
 import com.server.game.service.UserService;
 
 import java.util.Collections;
@@ -107,6 +108,9 @@ public class ChannelManager {
             channels.remove(channel);
             if (channels.isEmpty()) {
                 gameChannels.remove(gameId); // Remove game entry if no channels left
+                //Remove the room from redis cache
+                RoomRedisService roomRedisService = SpringContextHolder.getBean(RoomRedisService.class);
+                roomRedisService.deleteById(gameId);
             }
 
             System.out.println(">>> Unregistered channel for gameId: " + gameId);
@@ -156,7 +160,12 @@ public class ChannelManager {
 
 
     public static Short getSlotByChannel(Channel channel) {
-        Short slot = channel.attr(SLOT).get();
+        if (channel == null) {
+            System.out.println(">>> Cannot get slot, channel is null.");
+            return null; // Return -1 if channel is null
+        }
+        Short slot = 0;
+        slot = channel.attr(SLOT).get();
         if (slot == null) {
             System.out.println(">>> Cannot get slot, it is not set for the channel.");
             return null; // Return -1 if slot is not set
@@ -203,5 +212,25 @@ public class ChannelManager {
 
     public static void setUserNotReady(Channel channel) {
         channel.attr(IS_READY).set(false);
+    }
+
+    public static void removeSlotMapping(String gameId, short slot) {
+        if (gameChannels.containsKey(gameId)) {
+            Set<Channel> channels = gameChannels.get(gameId);
+            channels.removeIf(channel -> getSlotByChannel(channel) == slot);
+            if (channels.isEmpty()) {
+                gameChannels.remove(gameId);
+            }
+        }
+    }
+
+
+    public static void clearGameSlotMappings(String gameId) {
+        if (gameChannels.containsKey(gameId)) {
+            Set<Channel> channels = gameChannels.get(gameId);
+            channels.forEach(channel -> {
+                channel.attr(SLOT).set(null);
+            });
+        }
     }
 }

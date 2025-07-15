@@ -13,6 +13,7 @@ public enum ClientMessageType {
     MESSAGE_RECEIVE((short) 3),
     CHOOSE_CHAMPION_RECEIVE((short) 6),
     PLAYER_READY_RECEIVE((short) 8),
+    POSITION_UPDATE_RECEIVE((short) 19),
     DISTANCE_RECEIVE((short) 999),
     ;
 
