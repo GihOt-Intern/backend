@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-import com.server.game.netty.tlv.codecableInterface.TLVDecodable;
+import com.server.game.netty.tlv.interf4ce.TLVDecodable;
 
 
 public class TLVDecoder {
