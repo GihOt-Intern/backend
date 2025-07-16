@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.server.game.config.SpringContextHolder;
 import com.server.game.service.RoomRedisService;
 import com.server.game.service.UserService;
+import com.server.game.util.ChampionEnum;
 
 import java.util.Collections;
 import java.util.Map;
@@ -66,13 +67,14 @@ public class ChannelManager {
 
         // Add gameId to channel attributes (to find game by channel later)
         ChannelManager.setGameId2Channel(gameId, channel);
+        ChannelManager.setUserNotReady(channel);
 
 
         // Add the channel to the gameChannels map
         gameChannels.computeIfAbsent(gameId, k -> ConcurrentHashMap.newKeySet())
                    .add(channel);
 
-        System.out.println(">>> Registered channel for gameId: " + gameId);
+        System.out.println(">>> Registered channel for gameId: " + gameId + "\n\n");
     }
 
     public static void unregister(Channel channel) {
@@ -111,6 +113,7 @@ public class ChannelManager {
                 //Remove the room from redis cache
                 RoomRedisService roomRedisService = SpringContextHolder.getBean(RoomRedisService.class);
                 roomRedisService.deleteById(gameId);
+                System.out.println(">>> [Log in gameUnregister()] Removed room from redis cache for roomId: " + gameId);
             }
 
             System.out.println(">>> Unregistered channel for gameId: " + gameId);
@@ -120,6 +123,11 @@ public class ChannelManager {
 
     public static Set<Channel> getAllChannels() {
         return Set.copyOf(userChannels.values());
+    }
+
+    public static Set<Channel> getGameChannelsByInnerChannel(Channel channel) {
+        String gameId = ChannelManager.getGameIdByChannel(channel);
+        return ChannelManager.getChannelsByGameId(gameId);
     }
 
     public static Channel getChannelByUserId(String userId) {
@@ -176,14 +184,31 @@ public class ChannelManager {
     public static Short getChampionIdByChannel(Channel channel) {
         Short championId = channel.attr(CHAMPION_ID).get();
         if (championId == null) {
-            System.out.println(">>> Cannot get championId, it is not set for the channel.");
-            return null; 
+            System.out.println(">>> [Log in ChannelManager.getChampionIdByChannel()] Cannot get championId, it is not set for the channel.");
+            return null;
         }
         return championId;
     }
 
+
+    public static Map<Short, ChampionEnum> getSlot2ChampionIdByChannel(Channel channel) {
+        Short slot = ChannelManager.getSlotByChannel(channel);
+        Short championId = ChannelManager.getChampionIdByChannel(channel);
+        if (slot != null && championId != null) {
+            return Map.of(slot, ChampionEnum.fromShort(championId));
+        }
+        System.out.println(">>> [Log in ChannelManager.getSlot2ChampionIdByChannel()] Cannot get slot or championId, they are not set for the channel.");
+        return Map.of();
+    }
+
+
     public static Boolean isUserReady(Channel channel) {
-        return channel.attr(IS_READY).get();
+        Boolean isReady = channel.attr(IS_READY).get();
+        if (isReady == null) {
+            System.out.println(">>> Cannot get user ready status, it is not set for the channel.");
+            return false; // Default to false if not set
+        }
+        return isReady;
     }
 
     private static void setUserId2Channel(String userId, Channel channel) {

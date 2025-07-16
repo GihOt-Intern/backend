@@ -22,7 +22,7 @@ public class DisconnectHandler extends ChannelInboundHandlerAdapter {
         }
 
         ChannelManager.unregister(channel);
-        // Gui so 4 o day
+        
         super.channelInactive(ctx);
     }
 

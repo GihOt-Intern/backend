@@ -11,9 +11,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.server.game.map.component.Vector2;
-import com.server.game.resource.deserializer.MapObjectDeserializer;
+import com.server.game.resource.deserializer.BurgDeserializer;
+import com.server.game.resource.deserializer.GoldMineDeserializer;
+import com.server.game.resource.deserializer.TowerDeserializer;
 
-import org.springframework.data.annotation.Id;
+// import org.springframework.data.annotation.Id;
 
 import lombok.AccessLevel;
 
@@ -24,15 +26,14 @@ import lombok.AccessLevel;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GameMap {
     @JsonIgnore
-    @Id
-    String id;
+    short id = 2;
     @JsonProperty("mapName")
     String name;
     List<Vector2> boundary;
-    @JsonProperty("spawn_positions")
-    List<Spawn> spawnPositions;
-    @JsonProperty("objects")
-    List<MapObject> mapObjects;
+    @JsonProperty("gold_mine")
+    GoldMine goldMine;
+    @JsonProperty("slot_info")
+    List<SlotInfo> slotInfo;
 
 
 
@@ -41,10 +42,9 @@ public class GameMap {
     @AllArgsConstructor
     @NoArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    @JsonDeserialize(using = MapObjectDeserializer.class)
-    public static class MapObject {
+    @JsonDeserialize(using = GoldMineDeserializer.class)
+    public static class GoldMine {
         String id;
-        String type;
         Vector2 position;
         float width;
         float length;
@@ -55,8 +55,45 @@ public class GameMap {
     @AllArgsConstructor
     @NoArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    public static class Spawn {
-        String id;
-        Vector2 position;
+    public static class SlotInfo {
+        short slot;
+        @JsonProperty("spawn_position")
+        Spawn spawn;
+        Burg burg;
+        List<Tower> towers;
+
+        @Data
+        @AllArgsConstructor
+        @NoArgsConstructor
+        public static class Spawn {
+            String id;
+            Vector2 position;
+            float rotate;
+        }
+    
+
+        @Data
+        @AllArgsConstructor
+        @NoArgsConstructor
+        @JsonDeserialize(using = BurgDeserializer.class)
+        public static class Burg {
+            String id;
+            Vector2 position;
+            float width;
+            float length;
+        }
+
+        @Data
+        @AllArgsConstructor
+        @NoArgsConstructor
+        @JsonDeserialize(using = TowerDeserializer.class)
+        public static class Tower {
+            String id;
+            Vector2 position;
+            float width;
+            float length;
+        }
     }
+
+
 }

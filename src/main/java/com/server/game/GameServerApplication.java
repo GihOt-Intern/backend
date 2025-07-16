@@ -2,11 +2,11 @@ package com.server.game;
 
 import java.util.TimeZone;
 
-import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.redis.RedisConnectionFailureException;
-import org.springframework.data.redis.core.RedisTemplate;
+// import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 
@@ -16,8 +16,8 @@ import jakarta.annotation.PostConstruct;
 @EnableScheduling
 public class GameServerApplication {
 
-	@Autowired
-	private RedisTemplate<String, Object> redisTemplate;
+	// @Autowired
+	// private RedisTemplate<String, Object> redisTemplate;
 
 	public static void main(String[] args) {
 		SpringApplication.run(GameServerApplication.class, args);
@@ -38,4 +38,7 @@ public class GameServerApplication {
 			System.exit(1);
 		}
 	}
+
+	// TODO: before channel disconnect, channel will send a message to server to notify,
+	// server must receive a message to confirm.
 }

@@ -1,19 +1,14 @@
 package com.server.game.netty.receiveMessageHandler;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.receiveObject.PositionReceive;
-import com.server.game.netty.messageObject.sendObject.PositionSend;
 import com.server.game.service.PositionService;
 import com.server.game.service.PositionBroadcastService;
-import com.server.game.service.UserService;
 
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +19,6 @@ public class PositionHandler {
     
     private final PositionService positionService;
     private final PositionBroadcastService positionBroadcastService;
-    private final UserService userService;
     
     @MessageMapping(PositionReceive.class)
     public void handlePosition(PositionReceive receiveObject, Channel channel) {

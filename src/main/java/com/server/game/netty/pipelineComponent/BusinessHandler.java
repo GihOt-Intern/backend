@@ -40,8 +40,9 @@ public class BusinessHandler extends SimpleChannelInboundHandler<TLVDecodable> {
         // Use polymorphic dispatching to find the right method to handle the message
         TLVEncodable sendObject = (TLVEncodable) dispatcher.dispatch(receiveObject, contextParams);
 
+        // If handler is void method, sendObject will be null
         if (sendObject == null) {
-            System.out.println(">>> This message no need to send back response to client, stop pipeline.");
+            // System.out.println(">>> This message no need to send back response to client, stop pipeline.");
             return;
         }
         System.out.println(">>> Server Created TLVEncodable object of type: " + sendObject.getClass().getSimpleName());

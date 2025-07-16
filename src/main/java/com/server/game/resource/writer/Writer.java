@@ -12,7 +12,7 @@ import com.server.game.resource.model.Champion;
 import com.server.game.resource.model.GameMap;
 import com.server.game.resource.reader.JsonReader;
 import com.server.game.resource.repository.mongo.ChampionRepository;
-import com.server.game.resource.repository.mongo.MapRepository;
+import com.server.game.resource.repository.mongo.GameMapRepository;
 
 import lombok.AllArgsConstructor;
 
@@ -21,7 +21,7 @@ import lombok.AllArgsConstructor;
 public class Writer {
 
     JsonReader jsonReader;
-    MapRepository mapRepository;
+    GameMapRepository mapRepository;
     ChampionRepository championRepository;
 
     private final List<String> mapNames = new ArrayList<>(Arrays.asList(
@@ -39,7 +39,9 @@ public class Writer {
     @EventListener(ApplicationReadyEvent.class)
     public void writeMaps() {
         for (String mapName : mapNames) {
-            if (mapRepository.existsByName(mapName)) {
+            if (mapRepository.existsByName(mapName)
+                // && false
+             ) { // remove && false when not debugging
                 System.out.println("Map already exists: " + mapName);
                 continue;
             }
@@ -62,7 +64,9 @@ public class Writer {
     @EventListener(ApplicationReadyEvent.class)
     public void writeChampions() {
         for (String championName : championNames) {
-            if (championRepository.existsByName(championName)) {
+            if (championRepository.existsByName(championName) 
+                // && false
+            ) { // remove && false when not debugging
                 System.out.println("Champion already exists: " + championName);
                 continue;
             }
