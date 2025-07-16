@@ -4,12 +4,15 @@ import io
 import time
 
 # Cấu hình thông tin kết nối
-game_id = "BPTK4"
-token = "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsInN1YiI6IjY4NmIzMTA0YWQ4YWNjNTRjMDhhZjQxZiIsImV4cCI6Mjc1MjQ3NjA2MywiaWF0IjoxNzUyNDc2MDYzLCJqdGkiOiI0ZTJhNWYxZi1lZTNlLTQ2YmMtYTNlNi1hODU1NWU5ZmJmZWQiLCJzY29wZSI6IlVTRVIifQ.QJSm9yk8CGDSX-a9LxwkhSAgTX_si5Ph2u7MBN8YxrU"
+game_id = "MQHVO"
+token = "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsInN1YiI6IjY4NmIzMTA0YWQ4YWNjNTRjMDhhZjQxZiIsImV4cCI6Mjc1MjU5NjgxNywiaWF0IjoxNzUyNTk2ODE3LCJqdGkiOiIwMDRhZGJjZi0zZWNkLTQ5ZTAtODEzNC0zNTdmYjc2NTgxNzMiLCJzY29wZSI6IlVTRVIifQ.0CWJFkmMhjCy0HhEwM_SzYzdXkqkls-a01rhN81gY64"
 
-# host = "13.113.89.215"
-host = "localhost"
-port = 8386
+# host = "34.63.179.208"
+# host = "10.7.1.155"
+# port = 8386
+
+host = "0.tcp.ap.ngrok.io"
+port = 16857
 
 MY_USERNAME = "user"
 my_slot = None

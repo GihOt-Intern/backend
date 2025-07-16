@@ -1,6 +1,8 @@
 package com.server.game.netty.pipelineComponent.outboundSendMessage;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.DefaultChannelPromise;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,11 +12,12 @@ public class OutboundSendMessage {
     ByteBuf byteBuf;
     SendTarget sendTarget;
 
-    public void send() {
+    public ChannelFuture send() {
         if (sendTarget != null) {
-            sendTarget.send(byteBuf);
+            return sendTarget.send(byteBuf);
         } else {
             System.out.println(">>> Error: SendTarget is null, cannot send message.");
+            return new DefaultChannelPromise(null).setFailure(new IllegalStateException("SendTarget is null"));
         }
     }
 }

@@ -1,0 +1,86 @@
+package com.server.game.resource.writer;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
+import com.server.game.resource.model.Champion;
+import com.server.game.resource.model.GameMap;
+import com.server.game.resource.reader.JsonReader;
+import com.server.game.resource.repository.mongo.ChampionRepository;
+import com.server.game.resource.repository.mongo.GameMapRepository;
+
+import lombok.AllArgsConstructor;
+
+@Component
+@AllArgsConstructor
+public class Writer {
+
+    JsonReader jsonReader;
+    GameMapRepository mapRepository;
+    ChampionRepository championRepository;
+
+    private final List<String> mapNames = new ArrayList<>(Arrays.asList(
+        "map_2"
+    ));
+
+    private final List<String> championNames = new ArrayList<>(Arrays.asList(
+        "Axe",
+        "Knight",
+        "Archer",
+        "Wizard"
+    ));
+    
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void writeMaps() {
+        for (String mapName : mapNames) {
+            if (mapRepository.existsByName(mapName)
+                // && false
+             ) { // remove && false when not debugging
+                System.out.println("Map already exists: " + mapName);
+                continue;
+            }
+            this.writeMap(mapName); 
+        }
+    }
+
+
+    private void writeMap(String mapName) {
+        GameMap map = jsonReader.readMapFromJson(mapName);
+        if (map == null) {
+            System.out.println("Failed to read map from JSON.");
+            return;
+        }
+        mapRepository.save(map);
+        System.out.println("Map saved successfully: " + map.getName());
+    }
+
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void writeChampions() {
+        for (String championName : championNames) {
+            if (championRepository.existsByName(championName) 
+                // && false
+            ) { // remove && false when not debugging
+                System.out.println("Champion already exists: " + championName);
+                continue;
+            }
+            this.writeChampion(championName.toLowerCase());
+        }
+    }
+
+    private void writeChampion(String championName) {
+        Champion champion = jsonReader.readChampionFromJson(championName);
+        if (champion == null) {
+            System.out.println("Failed to read champion from JSON.");
+            return;
+        }
+        championRepository.save(champion);
+        System.out.println("Champion saved successfully: " + champion.getName());
+    }
+}

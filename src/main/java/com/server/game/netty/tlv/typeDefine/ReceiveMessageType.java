@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public enum ClientMessageType {
+public enum ReceiveMessageType {
     AUTHENTICATION_RECEIVE((short) 1),
     MESSAGE_RECEIVE((short) 3),
     CHOOSE_CHAMPION_RECEIVE((short) 6),
@@ -20,8 +20,8 @@ public enum ClientMessageType {
 
     short type;
 
-    public static ClientMessageType fromShort(short value) {
-        for (ClientMessageType t : values()) {
+    public static ReceiveMessageType fromShort(short value) {
+        for (ReceiveMessageType t : values()) {
             if (t.type == value) return t;
         }
         throw new IllegalArgumentException("Unknown ClientMessageType: " + value);

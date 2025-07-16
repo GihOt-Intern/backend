@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
-import com.server.game.netty.tlv.typeDefine.ServerMessageType;
+import com.server.game.netty.tlv.typeDefine.SendMessageType;
 import com.server.game.util.Util;
 
 import io.netty.channel.Channel;
@@ -22,8 +22,8 @@ public class MessageSend implements TLVEncodable {
     String message;
 
     @Override
-    public ServerMessageType getType() {
-        return ServerMessageType.MESSAGE_SEND;
+    public SendMessageType getType() {
+        return SendMessageType.MESSAGE_SEND;
     }
 
     @Override

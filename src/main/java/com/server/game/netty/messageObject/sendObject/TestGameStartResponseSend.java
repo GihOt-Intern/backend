@@ -8,7 +8,7 @@ import java.util.List;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
-import com.server.game.netty.tlv.typeDefine.ServerMessageType;
+import com.server.game.netty.tlv.typeDefine.SendMessageType;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
@@ -24,8 +24,8 @@ public class TestGameStartResponseSend implements TLVEncodable {
     List<PlayerInfo> players;
 
     @Override
-    public ServerMessageType getType() {
-        return ServerMessageType.TEST_GAME_START_RESPONSE;
+    public SendMessageType getType() {
+        return SendMessageType.TEST_GAME_START_RESPONSE;
     }
 
     @Override

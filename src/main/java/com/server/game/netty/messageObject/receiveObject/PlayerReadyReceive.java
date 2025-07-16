@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.ReceiveType;
 import com.server.game.netty.tlv.interf4ce.TLVDecodable;
-import com.server.game.netty.tlv.typeDefine.ClientMessageType;
+import com.server.game.netty.tlv.typeDefine.ReceiveMessageType;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -16,7 +16,7 @@ import lombok.experimental.FieldDefaults;
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@ReceiveType(ClientMessageType.PLAYER_READY_RECEIVE) // Custom annotation to define the type of this message
+@ReceiveType(ReceiveMessageType.PLAYER_READY_RECEIVE) // Custom annotation to define the type of this message
 @Component // Register this class as a Spring component to be scanned in ReceiveTypeScanner when the application starts
 public class PlayerReadyReceive implements TLVDecodable {
     // No data, just a signal message

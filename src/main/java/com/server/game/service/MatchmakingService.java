@@ -50,6 +50,7 @@ public class MatchmakingService {
         redisUtil.delete(matchKey(userId));
     }
 
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getMatchInfo(String userId) {
         Object match = null;
         try {
@@ -66,6 +67,12 @@ public class MatchmakingService {
 
     @Scheduled(fixedDelay = 3000)
     public void matchPlayers() {
+
+        if (!redisUtil.isRedisReady()) {
+            System.err.println("Redis is not ready, skipping this matchmaking cycle.");
+            return;
+        }
+
         List<Object> queue = redisUtil.lRange(QUEUE_KEY, 0, -1);
         while (queue.size() >= MATCH_SIZE) {
             List<String> players = new ArrayList<>();

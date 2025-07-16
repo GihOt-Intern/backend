@@ -98,10 +98,16 @@ public class RoomService {
 
     public void leaveRoom(String roomId) {
         User user = userService.getUserInfo();
+        System.out.println(">>> [Log in leaveRoom()] Getting room by roomId: " + roomId); 
         Room room = getRoomById(roomId);
+        System.out.println(">>> [Log in leaveRoom()] Room found.");
         Channel channel = ChannelManager.getChannelByUserId(user.getId());
-        channel.writeAndFlush(new MessageSend(roomId)); // Send an empty message to notify the client
-        ChannelManager.unregister(channel);
+        
+        channel.writeAndFlush(new MessageSend(roomId)).addListener(future -> {
+            if (future.isSuccess()) {
+                ChannelManager.unregister(channel);
+            }
+        });
 
 
         if (room.getPlayers().stream().noneMatch(p -> p.getId().equals(user.getId()))) {
@@ -285,21 +291,28 @@ public class RoomService {
         }
   
         
+        
         Map<Short, String> players = new HashMap<>();
-        short slot = 0; // Start from slot 0
-
+        short slot = -1; 
+        
         for (Channel ch : channels) {
             String username = ChannelManager.getUsernameByChannel(ch);
-            
+            ++slot;
             // Set slot for this channel and update the mapping
             ChannelManager.setSlot2Channel(slot, ch);
             players.put(slot, username);
-            slot++;
         }
         
         InfoPlayersInRoomSend infoPlayerInRoomSend = new InfoPlayersInRoomSend(players);
         channel.writeAndFlush(infoPlayerInRoomSend);
 
-        System.out.println(">>> Game started for room: " + roomId + " with " + (slot) + " players");
+        System.out.println(">>> Game started for room: " + roomId + " with " + (slot + 1) + " players");
+        
+        this.setRoomTo(room, RoomStatus.IN_GAME);
+    }
+
+    private void setRoomTo(Room room, RoomStatus status) {
+        room.setStatus(status);
+        roomRedisService.save(room);
     }
 } 
