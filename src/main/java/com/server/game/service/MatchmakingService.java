@@ -11,7 +11,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class MatchmakingService {
     private final RedisUtil redisUtil;
-    private final NotificationService notificationService;
     private static final String QUEUE_KEY = "matchmaking:queue";
     private static final int MATCH_SIZE = 4;
     private static final int ESTIMATED_WAIT = 60;
@@ -57,7 +56,12 @@ public class MatchmakingService {
             match = redisUtil.get(matchKey(userId));
         } catch (Exception ignored) {}
         if (match == null) return null;
-        return (Map<String, Object>) match;
+        if (match instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> matchMap = (Map<String, Object>) match;
+            return matchMap;
+        }
+        return null;
     }
 
     @Scheduled(fixedDelay = 3000)
@@ -82,8 +86,6 @@ public class MatchmakingService {
             }
             // Remove matchId from Redis set for uniqueness
             redisUtil.sRemove(MATCH_IDS_KEY, matchId);
-            // Notify all matched players (implement this method to send via HTTP or notification channel)
-            notificationService.notifyMatchFoundRawSocket(players, matchId);
         }
     }
 

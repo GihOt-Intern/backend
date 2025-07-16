@@ -23,6 +23,9 @@ public class PositionBroadcastService {
     
     @Autowired
     private PositionService positionService;
+
+    @Autowired
+    private MoveService moveService;
     
     // Lưu trữ các game đang hoạt động
     private final Set<String> activeGames = ConcurrentHashMap.newKeySet();
@@ -41,8 +44,16 @@ public class PositionBroadcastService {
     public void unregisterGame(String gameId) {
         activeGames.remove(gameId);
         positionService.clearGamePositions(gameId);
+        moveService.clearMoveTargets(gameId);
         ChannelManager.clearGameSlotMappings(gameId);
         log.info("Unregistered game from position broadcasting: {}", gameId);
+    }
+
+    /**
+     * Kiểm tra xem game có hoạt động hay không
+     */
+    public boolean isGameActive(String gameId) {
+        return activeGames.contains(gameId);
     }
     
     /**
@@ -52,6 +63,8 @@ public class PositionBroadcastService {
     public void broadcastPositions() {
         for (String gameId : activeGames) {
             try {
+                moveService.updatePositions(gameId);
+
                 broadcastGamePositions(gameId);
             } catch (Exception e) {
                 log.error("Error broadcasting positions for game: {}", gameId, e);
@@ -102,12 +115,9 @@ public class PositionBroadcastService {
             Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
             
             if (channels != null && !channels.isEmpty()) {
-                // Broadcast cho tất cả player trong game
-                for (Channel channel : channels) {
-                    if (channel.isActive()) {
-                        channel.writeAndFlush(positionSend);
-                    }
-                }
+                // Broadcast cho tất cả player trong game, chỉ cần writeAndFlush cho channel đầu tiên
+                Channel firstChannel = channels.iterator().next();
+                firstChannel.writeAndFlush(positionSend);
                 
                 log.debug("Broadcasted position update for game: {}, players: {}", 
                          gameId, playerDataList.size());

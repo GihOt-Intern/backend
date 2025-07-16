@@ -18,10 +18,13 @@ import com.server.game.service.PositionBroadcastService;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TestGameHandler {
+
     private final PositionBroadcastService positionBroadcastService;
     private final Random random = new Random();
 
