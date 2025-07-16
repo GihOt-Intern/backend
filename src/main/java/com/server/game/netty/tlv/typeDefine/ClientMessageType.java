@@ -15,6 +15,7 @@ public enum ClientMessageType {
     PLAYER_READY_RECEIVE((short) 8),
     POSITION_UPDATE_RECEIVE((short) 19),
     DISTANCE_RECEIVE((short) 999),
+    TEST_GAME_START_ANNOUNCE((short) 2025),
     ;
 
     short type;
