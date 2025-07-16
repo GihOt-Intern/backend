@@ -280,6 +280,7 @@ public class RoomService {
         }
   
         
+        
         Map<Short, String> players = new HashMap<>();
         short slot = -1; 
         
@@ -295,5 +296,12 @@ public class RoomService {
         channel.writeAndFlush(infoPlayerInRoomSend);
 
         System.out.println(">>> Game started for room: " + roomId + " with " + (slot + 1) + " players");
+        
+        this.setRoomTo(room, RoomStatus.IN_GAME);
+    }
+
+    private void setRoomTo(Room room, RoomStatus status) {
+        room.setStatus(status);
+        roomRedisService.save(room);
     }
 } 
