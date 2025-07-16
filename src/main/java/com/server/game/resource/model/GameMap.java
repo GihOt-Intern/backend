@@ -15,7 +15,7 @@ import com.server.game.resource.deserializer.BurgDeserializer;
 import com.server.game.resource.deserializer.GoldMineDeserializer;
 import com.server.game.resource.deserializer.TowerDeserializer;
 
-import org.springframework.data.annotation.Id;
+// import org.springframework.data.annotation.Id;
 
 import lombok.AccessLevel;
 
@@ -26,8 +26,7 @@ import lombok.AccessLevel;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GameMap {
     @JsonIgnore
-    @Id
-    String id;
+    short id = 2;
     @JsonProperty("mapName")
     String name;
     List<Vector2> boundary;
@@ -58,6 +57,7 @@ public class GameMap {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public static class SlotInfo {
         short slot;
+        @JsonProperty("spawn_position")
         Spawn spawn;
         Burg burg;
         List<Tower> towers;

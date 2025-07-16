@@ -3,7 +3,7 @@ package com.server.game.netty.pipelineComponent;
 import java.util.List;
 
 import com.server.game.netty.messageObject.sendObject.MessageSend;
-import com.server.game.netty.tlv.typeDefine.ClientMessageType;
+import com.server.game.netty.tlv.typeDefine.ReceiveMessageType;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -21,7 +21,7 @@ public class AuthenticationHandler extends MessageToMessageDecoder<ByteBuf> {
         System.out.println(">>> Server received first message from client, type: " + type); 
         
         // If this first message is not an authentication message, close the channel 
-        if (type != ClientMessageType.AUTHENTICATION_RECEIVE.getType()) {
+        if (type != ReceiveMessageType.AUTHENTICATION_RECEIVE.getType()) {
             System.out.println(">>> Invalid: First message from client is not an authentication message");
 
             // Create a MessageSend (concrete of TLVEncodable) and flush to pipeline

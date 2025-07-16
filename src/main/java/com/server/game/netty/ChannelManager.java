@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.server.game.config.SpringContextHolder;
 import com.server.game.service.RoomRedisService;
 import com.server.game.service.UserService;
+import com.server.game.util.ChampionEnum;
 
 import java.util.Collections;
 import java.util.Map;
@@ -124,6 +125,11 @@ public class ChannelManager {
         return Set.copyOf(userChannels.values());
     }
 
+    public static Set<Channel> getGameChannelsByInnerChannel(Channel channel) {
+        String gameId = ChannelManager.getGameIdByChannel(channel);
+        return ChannelManager.getChannelsByGameId(gameId);
+    }
+
     public static Channel getChannelByUserId(String userId) {
         Channel channel = userChannels.get(userId);
         if (channel != null) { return channel; }
@@ -178,11 +184,23 @@ public class ChannelManager {
     public static Short getChampionIdByChannel(Channel channel) {
         Short championId = channel.attr(CHAMPION_ID).get();
         if (championId == null) {
-            System.out.println(">>> Cannot get championId, it is not set for the channel.");
-            return null; 
+            System.out.println(">>> [Log in ChannelManager.getChampionIdByChannel()] Cannot get championId, it is not set for the channel.");
+            return null;
         }
         return championId;
     }
+
+
+    public static Map<Short, ChampionEnum> getSlot2ChampionIdByChannel(Channel channel) {
+        Short slot = ChannelManager.getSlotByChannel(channel);
+        Short championId = ChannelManager.getChampionIdByChannel(channel);
+        if (slot != null && championId != null) {
+            return Map.of(slot, ChampionEnum.fromShort(championId));
+        }
+        System.out.println(">>> [Log in ChannelManager.getSlot2ChampionIdByChannel()] Cannot get slot or championId, they are not set for the channel.");
+        return Map.of();
+    }
+
 
     public static Boolean isUserReady(Channel channel) {
         Boolean isReady = channel.attr(IS_READY).get();

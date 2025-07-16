@@ -4,14 +4,14 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
-import com.server.game.netty.tlv.typeDefine.ServerMessageType;
+import com.server.game.netty.tlv.typeDefine.SendMessageType;
 import com.server.game.util.Util;
 
 public class TLVEncoder {
 
     public static byte[] object2Bytes(TLVEncodable sendObj) { // return a full TLV message in byte array format
         byte[] valueBytes = sendObj.encode();
-        ServerMessageType type = sendObj.getType();
+        SendMessageType type = sendObj.getType();
         int length = valueBytes.length;
 
         ByteBuffer buffer = ByteBuffer.allocate(Util.SHORT_SIZE + Util.INT_SIZE + length).order(ByteOrder.BIG_ENDIAN);
