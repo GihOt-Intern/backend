@@ -17,7 +17,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import org.springframework.data.mongodb.core.messaging.Message;
 import org.springframework.stereotype.Service;
 
 // import com.server.game.exception.socket.SocketException;
@@ -46,12 +45,10 @@ public class RoomService {
         room.setStatus(RoomStatus.WAITING);
         room.setMaxPlayers(request.getMaxPlayers());
         room.setPassword(request.getPassword());
-        if (request.getPassword() != null && request.getVisibility() != RoomVisibility.HIDDEN) {
+        if (request.getPassword() != null) {
             room.setVisibility(RoomVisibility.LOCKED);
-        } else if (request.getPassword() == null && request.getVisibility() != RoomVisibility.HIDDEN) {
-            room.setVisibility(RoomVisibility.PUBLIC);
         } else {
-            room.setVisibility(RoomVisibility.HIDDEN);
+            room.setVisibility(RoomVisibility.PUBLIC);
         }
 
         room = roomRedisService.save(room);
@@ -61,7 +58,7 @@ public class RoomService {
 
     public List<RoomResponse> getAvailableRooms() {
         return roomRedisService.findByStatus(RoomStatus.WAITING).stream()
-                .filter(room -> room.getVisibility() != RoomVisibility.HIDDEN) // Hide hidden rooms
+                .filter(room -> room.getVisibility() == RoomVisibility.PUBLIC || room.getVisibility() == RoomVisibility.LOCKED)
                 .map(roomMapper::toRoomResponse)
                 .collect(Collectors.toList());
     }
@@ -86,14 +83,11 @@ public class RoomService {
             throw new IllegalArgumentException("User is already in the room");
         }
 
-        // Check visibility and password requirements
+        // Check password requirements
         if (room.getVisibility() == RoomVisibility.LOCKED) {
             if (password == null || !room.getPassword().equals(password)) {
                 throw new IllegalArgumentException("Incorrect room password");
             }
-        } else if (room.getVisibility() == RoomVisibility.HIDDEN) {
-            // Hidden rooms can only be joined by invitation (host adds players directly)
-            throw new IllegalArgumentException("This room is hidden and requires invitation to join");
         }
 
         room.getPlayers().add(user);
@@ -115,8 +109,21 @@ public class RoomService {
         }
 
         if (room.getHost().getId().equals(user.getId())) {
-            // Host is leaving, delete the room
-            roomRedisService.delete(room);
+            // Host is leaving, transfer host role to another player if available
+            if (room.getPlayers().size() <= 1) {
+                // If no players left, delete the room
+                roomRedisService.delete(room);
+            } else {
+                // Find a new host (first player in the list)
+                User newHost = room.getPlayers().stream()
+                        .filter(p -> !p.getId().equals(user.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("No other players to transfer host role"));
+
+                room.setHost(newHost);
+                room.getPlayers().removeIf(p -> p.getId().equals(user.getId()));
+                roomRedisService.save(room);
+            }
         } else {
             // Regular player is leaving
             room.getPlayers().removeIf(p -> p.getId().equals(user.getId()));
@@ -125,7 +132,6 @@ public class RoomService {
                 roomRedisService.delete(room);
             } else {
                 roomRedisService.save(room);
-                // Notify other players that this player left
             }
         }
     }
@@ -205,6 +211,10 @@ public class RoomService {
         room = roomRedisService.save(room);
 
         // Notify players about host change
+        Channel channel = ChannelManager.getChannelByUserId(user.getId());
+        if (channel != null) {
+            channel.writeAndFlush(new MessageSend(roomId)); // Send an empty message to notify the client
+        }
 
         return roomMapper.toRoomResponse(room);
     }
@@ -276,8 +286,8 @@ public class RoomService {
   
         
         Map<Short, String> players = new HashMap<>();
-        short slot = 1; // Start from slot 1
-        
+        short slot = 0; // Start from slot 0
+
         for (Channel ch : channels) {
             String username = ChannelManager.getUsernameByChannel(ch);
             
@@ -289,7 +299,7 @@ public class RoomService {
         
         InfoPlayersInRoomSend infoPlayerInRoomSend = new InfoPlayersInRoomSend(players);
         channel.writeAndFlush(infoPlayerInRoomSend);
-        
-        System.out.println(">>> Game started for room: " + roomId + " with " + (slot - 1) + " players");
+
+        System.out.println(">>> Game started for room: " + roomId + " with " + (slot) + " players");
     }
 } 
