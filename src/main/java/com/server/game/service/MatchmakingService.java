@@ -51,12 +51,13 @@ public class MatchmakingService {
         redisUtil.delete(matchKey(userId));
     }
 
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getMatchInfo(String userId) {
         Object match = null;
         try {
             match = redisUtil.get(matchKey(userId));
         } catch (Exception ignored) {}
-        if (match == null) return null;
+        if (match == null) return null;   
         return (Map<String, Object>) match;
     }
 
