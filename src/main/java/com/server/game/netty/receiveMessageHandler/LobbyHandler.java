@@ -31,11 +31,14 @@ public class LobbyHandler {
 
     @MessageMapping(PlayerReadyReceive.class)
     public PlayerReadySend handlePlayerReady(PlayerReadyReceive receiveObject, Channel channel) {
+        System.out.println(">>> [Log in LobbyHandler.handlePlayerReady] Channel ID: " + channel.id());
         ChannelManager.setUserReady(channel);
         String gameId = ChannelManager.getGameIdByChannel(channel);
         Set<Channel> playersInRoom = ChannelManager.getChannelsByGameId(gameId);
+        System.out.println(">>> [Log in LobbyHandler.handlePlayerReady] Room has " + playersInRoom.size() + " players.");
         boolean isAllPlayersReady = playersInRoom.stream() // fun sân nồ prồ ram minh
             .allMatch(ChannelManager::isUserReady);
+        System.out.println(">>> [Log in LobbyHandler.handlePlayerReady] Is all players ready? " + isAllPlayersReady);
         PlayerReadySend playerReadySend = new PlayerReadySend(
             ChannelManager.getSlotByChannel(channel),
             isAllPlayersReady

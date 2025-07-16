@@ -62,7 +62,7 @@ public class RoomRedisService {
         
         // Add room ID to the set of all room IDs
         redisUtil.sAdd(ROOM_IDS_KEY, room.getId());
-        System.out.println(">>> Room with ID " + room.getId() + " saved to Redis with TTL of " + ROOM_TTL.toHours() + " hours.");
+        System.out.println(">>> [Log in RoomRedisService.save()] Room with ID " + room.getId() + " saved");
         return room;
     }
 

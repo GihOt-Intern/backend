@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    image: ghcr.io/gihot-intern/game-server:0.1.4
+    image: ghcr.io/gihot-intern/game-server:0.1.5
     ports:
       - "8080:8080" # Spring HTTP server
       - "8386:8386" # WebSocket server

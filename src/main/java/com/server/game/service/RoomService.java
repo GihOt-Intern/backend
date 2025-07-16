@@ -103,9 +103,9 @@ public class RoomService {
 
     public void leaveRoom(String roomId) {
         User user = userService.getUserInfo();
-        System.out.println(">>> [Log in leaveRoom()] Getting room by roomId: " + roomId);
+        System.out.println(">>> [Log in leaveRoom()] Getting room by roomId: " + roomId); 
         Room room = getRoomById(roomId);
-        System.out.println(">>> [Log in leaveRoom()] Room found: " + room);
+        System.out.println(">>> [Log in leaveRoom()] Room found.");
         Channel channel = ChannelManager.getChannelByUserId(user.getId());
         
         channel.writeAndFlush(new MessageSend(roomId)).addListener(future -> {
@@ -281,20 +281,19 @@ public class RoomService {
   
         
         Map<Short, String> players = new HashMap<>();
-        short slot = 1; // Start from slot 1
+        short slot = -1; 
         
         for (Channel ch : channels) {
             String username = ChannelManager.getUsernameByChannel(ch);
-            
+            ++slot;
             // Set slot for this channel and update the mapping
             ChannelManager.setSlot2Channel(slot, ch);
             players.put(slot, username);
-            slot++;
         }
         
         InfoPlayersInRoomSend infoPlayerInRoomSend = new InfoPlayersInRoomSend(players);
         channel.writeAndFlush(infoPlayerInRoomSend);
-        
-        System.out.println(">>> Game started for room: " + roomId + " with " + (slot - 1) + " players");
+
+        System.out.println(">>> Game started for room: " + roomId + " with " + (slot + 1) + " players");
     }
 } 

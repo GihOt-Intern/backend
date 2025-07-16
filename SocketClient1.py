@@ -4,12 +4,15 @@ import io
 import time
 
 # Cấu hình thông tin kết nối
-game_id = "D7HLB"
-token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2ODc2MTA3YmIwYzY5NzdiOTY5YjA2MTUiLCJzY29wZSI6IlVTRVIiLCJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsImV4cCI6Mjc1MjU2Nzk3NywiaWF0IjoxNzUyNTY3OTc3LCJqdGkiOiIwZTA2YmRmOS1lZmQ0LTRmMjktYjA2YS05MWY4ZDMwOTkyNzgifQ.2ERI1wnewKgu_XOwSfwM2iIED7_O0nrny8RojImDWF4"
+game_id = "MQHVO"
+token = "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsInN1YiI6IjY4NmIzMTA0YWQ4YWNjNTRjMDhhZjQxZiIsImV4cCI6Mjc1MjU5NjgxNywiaWF0IjoxNzUyNTk2ODE3LCJqdGkiOiIwMDRhZGJjZi0zZWNkLTQ5ZTAtODEzNC0zNTdmYjc2NTgxNzMiLCJzY29wZSI6IlVTRVIifQ.0CWJFkmMhjCy0HhEwM_SzYzdXkqkls-a01rhN81gY64"
 
-host = "34.63.179.208"
-# host = "localhost"
-port = 8386
+# host = "34.63.179.208"
+# host = "10.7.1.155"
+# port = 8386
+
+host = "0.tcp.ap.ngrok.io"
+port = 16857
 
 MY_USERNAME = "user"
 my_slot = None

@@ -5,10 +5,10 @@ import time
 
 # Cấu hình thông tin kết nối
 game_id = "D7HLB"
-token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2ODc2MTA4NmIwYzY5NzdiOTY5YjA2MTYiLCJzY29wZSI6IlVTRVIiLCJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsImV4cCI6Mjc1MjU2Nzk0NywiaWF0IjoxNzUyNTY3OTQ3LCJqdGkiOiJlOTg1OTg3Zi03NDk5LTQ5MjItODdiYy1mN2EyMjAzYWRmYzMifQ.N4VzgUPPWLC_L0b7sJdC_m2zYKTUeaKDCb6CyogAqLY"
+token = "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWFwcC5leGFtcGxlLmNvbSIsInN1YiI6IjY4NmNjN2Q5YjQ4YjJiNmE0NzhlZDNiYyIsImV4cCI6Mjc1MjU5NjgzOSwiaWF0IjoxNzUyNTk2ODM5LCJqdGkiOiIyNjc5MzNhNC0yZTM3LTQ2MmEtODlhZS1hNDc0Y2M5OTliMzEiLCJzY29wZSI6IlVTRVIifQ.8wOCJ9iOdCvzBVpmSgnopA0ll4aMgC8w59HKCvwShj4"
 
-host = "34.63.179.208"
-# host = "localhost"
+# host = "34.63.179.208"
+host = "localhost"
 port = 8386
 
 USERNAME = "user2"

@@ -66,13 +66,14 @@ public class ChannelManager {
 
         // Add gameId to channel attributes (to find game by channel later)
         ChannelManager.setGameId2Channel(gameId, channel);
+        ChannelManager.setUserNotReady(channel);
 
 
         // Add the channel to the gameChannels map
         gameChannels.computeIfAbsent(gameId, k -> ConcurrentHashMap.newKeySet())
                    .add(channel);
 
-        System.out.println(">>> Registered channel for gameId: " + gameId);
+        System.out.println(">>> Registered channel for gameId: " + gameId + "\n\n");
     }
 
     public static void unregister(Channel channel) {
@@ -184,7 +185,12 @@ public class ChannelManager {
     }
 
     public static Boolean isUserReady(Channel channel) {
-        return channel.attr(IS_READY).get();
+        Boolean isReady = channel.attr(IS_READY).get();
+        if (isReady == null) {
+            System.out.println(">>> Cannot get user ready status, it is not set for the channel.");
+            return false; // Default to false if not set
+        }
+        return isReady;
     }
 
     private static void setUserId2Channel(String userId, Channel channel) {
