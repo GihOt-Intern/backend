@@ -12,7 +12,7 @@ import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.SendMessageType;
-import com.server.game.util.ChampionEnum;
+import com.server.game.resource.model.SlotInfo;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,13 +23,13 @@ import lombok.experimental.FieldDefaults;
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ChampionInitialPositionsSend implements TLVEncodable {
+public class InitialPositionsSend implements TLVEncodable {
     short mapId;
-    List<ChampionInitialPositionData> championPositionsData;
+    List<InitialPositionData> championPositionsData;
 
     @Override
     public SendMessageType getType() {
-        return SendMessageType.CHAMPION_POSITIONS_SEND;
+        return SendMessageType.INITIAL_POSITIONS_SEND;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class ChampionInitialPositionsSend implements TLVEncodable {
             dos.writeShort(championPositionsData.size());
 
             // Write each champion's position data
-            for (ChampionInitialPositionData positionData : championPositionsData) {
+            for (InitialPositionData positionData : championPositionsData) {
                 byte[] encodedData = positionData.encode();
                 dos.write(encodedData);
             }
@@ -64,31 +64,28 @@ public class ChampionInitialPositionsSend implements TLVEncodable {
 
 
 
-    //************* ChampionPositionData class *************//
+    //************* InitialPositionData class *************//
     @Data
     @AllArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    public static class ChampionInitialPositionData {
+    public static class InitialPositionData {
         short slot;
-        ChampionEnum championId;
         Vector2 position;
         float rotate;
 
-        public ChampionInitialPositionData(short slot, Vector2 position, float rotate) {
-            this.slot = slot;
-            this.position = position;
-            this.rotate = rotate;
-            this.championId = null;
+        public InitialPositionData(SlotInfo slotInfo) {
+            this.slot = slotInfo.getSlot();
+            this.position = slotInfo.getSpawn().getPosition();
+            this.rotate = slotInfo.getSpawn().getRotate();
         }
 
-     
+        
         public byte[] encode() { // encode local data to byte array
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 DataOutputStream dos = new DataOutputStream(baos);
 
                 dos.writeShort(slot);
-                dos.writeShort(championId.getChampionId());
                 dos.writeFloat(position.x());
                 dos.writeFloat(position.y());
                 dos.writeFloat(rotate);
@@ -96,9 +93,9 @@ public class ChampionInitialPositionsSend implements TLVEncodable {
                 return baos.toByteArray();
 
             } catch (IOException e) {
-                throw new RuntimeException("Cannot encoding ChampionPositionData", e);
+                throw new RuntimeException("Cannot encoding InitialPositionData", e);
             }
         }
     }
-    //************* End of ChampionPositionData class *************//
+    //************* End of InitialPositionData class *************//
 }

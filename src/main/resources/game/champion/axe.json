@@ -1,0 +1,18 @@
+{
+  "id": 0,
+  "name": "Axe",
+  "role": "Tanker",
+  "stats": {
+    "hp": 1200,
+    "defense": 200,
+    "attack": 90,
+    "move_speed": 5.0,
+    "attack_speed": 0.8,
+    "attack_range": 0.5,
+    "resource_claiming_speed": 10.0
+  },
+  "ability": {
+    "name": "Brakor's Skill name",
+    "cool_down": 15.0
+  }
+}

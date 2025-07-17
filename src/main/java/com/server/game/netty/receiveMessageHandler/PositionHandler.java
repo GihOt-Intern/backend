@@ -6,7 +6,6 @@ import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.receiveObject.PositionReceive;
 import com.server.game.service.MoveService;
-import com.server.game.service.PositionService;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -45,7 +44,7 @@ public class PositionHandler {
             slot,
             receiveObject.getX(),
             receiveObject.getY(),
-            100.0f
+            5.0f
         );
 
         System.out.println(">>> Position updated for gameId: " + gameId + ", slot: " + slot +

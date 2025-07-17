@@ -3,6 +3,7 @@ package com.server.game.netty.messageObject.sendObject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import io.netty.channel.Channel;
@@ -11,6 +12,7 @@ import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.SendMessageType;
+import com.server.game.util.Util;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -43,11 +45,15 @@ public class PositionSend implements TLVEncodable {
                 dos.writeShort(player.getSlot());
                 dos.writeFloat(player.getX());
                 dos.writeFloat(player.getY());
+                System.out.println("Slot: " + player.getSlot() + ", X: " + player.getX() + ", Y: " + player.getY());
             }
             
             // Write timestamp
             dos.writeLong(timestamp);
-
+            System.out.println("PositionSend byte");
+            // Util.printHex(new ByteBuffer(baos.toByteArray()), true);
+            ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
+            Util.printHex(buffer, true);
             return baos.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException("Cannot encode PositionSend", e);

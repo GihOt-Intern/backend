@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+
+
 import org.springframework.stereotype.Service;
 
 @Data
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
 public class ChampionService {
+    
     ChampionRepository championRepository;
 
     public Champion getChampionById(short id) {

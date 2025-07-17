@@ -1,0 +1,18 @@
+{
+  "id": 2,
+  "name": "Archer",
+  "role": "Crossbow",
+  "stats": {
+    "hp": 650,
+    "defense": 25,
+    "attack": 180,
+    "move_speed": 7.5,
+    "attack_speed": 2.1,
+    "attack_range": 2.0,
+    "resource_claiming_speed": 6.0
+  },
+  "ability": {
+    "name": "Archer's Skill name",
+    "cool_down": 12.0
+  }
+}
