@@ -28,7 +28,7 @@ public class LobbyHandler {
     public ChooseChampionSend handleChooseChampion(ChooseChampionReceive receiveObject, Channel channel) {
         ChampionEnum championId = receiveObject.getChampionEnum();
         short slot = ChannelManager.getSlotByChannel(channel);
-        ChannelManager.setChampionId2Channel(championId.getChampionId(), channel);
+        ChannelManager.setChampionId2Channel(championId, channel);
         System.out.println("Slot " + slot + " chose Champion ID: " + championId);
         return new ChooseChampionSend(slot, championId);
     }

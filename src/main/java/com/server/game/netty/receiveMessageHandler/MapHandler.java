@@ -7,8 +7,11 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 import com.server.game.netty.ChannelManager;
-import com.server.game.netty.messageObject.sendObject.InitialPositionsSend.InitialPositionData;
 import com.server.game.netty.messageObject.sendObject.InitialPositionsSend;
+import com.server.game.netty.messageObject.sendObject.InitialPositionsSend.InitialPositionData;
+import com.server.game.netty.messageObject.sendObject.ChampionInitialHPsSend;
+import com.server.game.netty.messageObject.sendObject.ChampionInitialHPsSend.ChampionInitialHPData;
+import com.server.game.resource.service.ChampionService;
 import com.server.game.resource.service.GameMapService;
 
 import io.netty.channel.Channel;
@@ -23,7 +26,10 @@ import lombok.experimental.FieldDefaults;
 public class MapHandler {
 
     GameMapService gameMapService;
+    ChampionService championService;
 
+    
+    
     // This method is called by LobbyHandler when all players are ready
     public void handleInitialGameStateLoading(Channel channel) {
         Set<Channel> playersInRoom = ChannelManager.getGameChannelsByInnerChannel(channel);
@@ -32,13 +38,30 @@ public class MapHandler {
         // GameMap id is determined by the number of players
         Short gameMapId = numPlayers;
 
+        this.handleInitialPositionsLoading(channel, gameMapId);
+        this.handleInitialHPsLoading(channel);
+    }
+
+
+    private void handleInitialPositionsLoading(Channel channel, Short gameMapId) {
         List<InitialPositionData> initialPositionsData = 
             gameMapService.getInitialPositionsData(gameMapId);
 
         InitialPositionsSend championPositionsSend = 
             new InitialPositionsSend(gameMapId, initialPositionsData);
-        System.out.println(">>> Send loading map messsage");
-        channel.writeAndFlush(championPositionsSend);        
+        System.out.println(">>> Send loading initial positions message");
+        channel.writeAndFlush(championPositionsSend);     
+    }
+
+    private void handleInitialHPsLoading(Channel channel) {
+        String gameId = ChannelManager.getGameIdByChannel(channel);
+        List<ChampionInitialHPData> initialHPsData = 
+            championService.getChampionInitialHPsData(gameId);
+
+        ChampionInitialHPsSend championInitialHPsSend = 
+            new ChampionInitialHPsSend(initialHPsData);
+        System.out.println(">>> Send loading initial HPs message");
+        channel.writeAndFlush(championInitialHPsSend);     
     }
 
 }

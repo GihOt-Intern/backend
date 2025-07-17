@@ -13,6 +13,7 @@ import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.SlotInfo;
 import com.server.game.resource.repository.mongo.GameMapRepository;
 import com.server.game.map.component.Vector2;
+import com.server.game.netty.messageObject.sendObject.ChampionInitialHPsSend.ChampionInitialHPData;
 import com.server.game.netty.messageObject.sendObject.InitialPositionsSend.InitialPositionData;
 
 import lombok.AccessLevel;
@@ -71,5 +72,4 @@ public class GameMapService {
         }
         return gameMap.getInitialRotate(slot);
     }
-
 }

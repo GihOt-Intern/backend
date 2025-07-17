@@ -66,4 +66,12 @@ public class Champion {
         @JsonProperty("cool_down")
         float cooldown;
     }
+
+    public Integer getInitialHP() {
+        if (stats != null) {
+            return stats.getHp();
+        }
+        System.out.println(">>> [Log in Champion] Initial HP not found for champion " + id);
+        return null;
+    }
 }

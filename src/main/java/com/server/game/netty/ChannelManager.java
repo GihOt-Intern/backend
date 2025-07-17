@@ -10,6 +10,7 @@ import com.server.game.service.UserService;
 import com.server.game.util.ChampionEnum;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ public class ChannelManager {
     private static final AttributeKey<String>  GAME_ID     = AttributeKey.valueOf("GAME_ID");
     private static final AttributeKey<Short>   SLOT        = AttributeKey.valueOf("SLOT");
     private static final AttributeKey<Boolean> IS_READY    = AttributeKey.valueOf("IS_READY");
-    private static final AttributeKey<Short>   CHAMPION_ID = AttributeKey.valueOf("CHAMPION_ID");
+    private static final AttributeKey<ChampionEnum> CHAMPION_ID = AttributeKey.valueOf("CHAMPION_ID");
 
 
     public static void register(String userId, String gameId, Channel channel) {
@@ -181,26 +182,33 @@ public class ChannelManager {
         return slot;
     }
 
-    public static Short getChampionIdByChannel(Channel channel) {
-        Short championId = channel.attr(CHAMPION_ID).get();
+    public static ChampionEnum getChampionIdByChannel(Channel channel) {
+        ChampionEnum championId = channel.attr(CHAMPION_ID).get();
         if (championId == null) {
             System.out.println(">>> [Log in ChannelManager.getChampionIdByChannel()] Cannot get championId, it is not set for the channel.");
             return null;
         }
         return championId;
     }
+    
 
-
-    public static Map<Short, ChampionEnum> getSlot2ChampionIdByChannel(Channel channel) {
-        Short slot = ChannelManager.getSlotByChannel(channel);
-        Short championId = ChannelManager.getChampionIdByChannel(channel);
-        if (slot != null && championId != null) {
-            return Map.of(slot, ChampionEnum.fromShort(championId));
+    public static Map<Short, ChampionEnum> getSlot2ChampionId(String gameId) {
+        Set<Channel> channels = gameChannels.get(gameId);
+        if (channels == null || channels.isEmpty()) {
+            System.out.println(">>> No channels found for gameId: " + gameId);
+            return Collections.emptyMap();
         }
-        System.out.println(">>> [Log in ChannelManager.getSlot2ChampionIdByChannel()] Cannot get slot or championId, they are not set for the channel.");
-        return Map.of();
-    }
 
+        Map<Short, ChampionEnum> slot2ChampionId = new HashMap<>();
+        for (Channel channel : channels) {
+            Short slot = getSlotByChannel(channel);
+            ChampionEnum championId = getChampionIdByChannel(channel);
+            if (slot != null && championId != null) {
+                slot2ChampionId.put(slot, championId);
+            }
+        }
+        return slot2ChampionId;
+    }
 
     public static Boolean isUserReady(Channel channel) {
         Boolean isReady = channel.attr(IS_READY).get();
@@ -227,7 +235,7 @@ public class ChannelManager {
         channel.attr(SLOT).set(slot);
     }
     
-    public static void setChampionId2Channel(short championId, Channel channel) {
+    public static void setChampionId2Channel(ChampionEnum championId, Channel channel) {
         channel.attr(CHAMPION_ID).set(championId);
     }
 
