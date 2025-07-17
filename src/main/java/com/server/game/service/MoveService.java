@@ -37,7 +37,7 @@ public class MoveService {
             System.currentTimeMillis()
         );
 
-        // Lưu mục tiêu
+        // Lưu mục tiêu và xoá mục tiêu cũ nếu có
         moveTargets.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
             .put(slot, target);
     }

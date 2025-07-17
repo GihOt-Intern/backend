@@ -1,18 +1,14 @@
 package com.server.game.netty.receiveMessageHandler;
 
-import java.util.Map;
-
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.receiveObject.PositionReceive;
-import com.server.game.service.PositionService;
 import com.server.game.service.MoveService;
-import com.server.game.service.PositionBroadcastService;
+import com.server.game.service.PositionService;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +26,7 @@ public class PositionHandler {
 
         String gameId = ChannelManager.getGameIdByChannel(channel);
         Short slot = receiveObject.getSlot();
+        long timestamp = receiveObject.getTimestamp();
         
         if (gameId == null || slot == null) {
             System.out.println(">>> Invalid gameId for position update");
@@ -48,11 +45,11 @@ public class PositionHandler {
             slot,
             receiveObject.getX(),
             receiveObject.getY(),
-            5.0f
+            100.0f
         );
 
         System.out.println(">>> Position updated for gameId: " + gameId + ", slot: " + slot +
-            ", x: " + receiveObject.getX() + ", y: " + receiveObject.getY());
+            ", x: " + receiveObject.getX() + ", y: " + receiveObject.getY() + ", timestamp: " + timestamp);
     }
     
     // Inner class để lưu trữ dữ liệu vị trí

@@ -57,14 +57,14 @@ public class PositionBroadcastService {
     }
     
     /**
-     * Broadcast position mỗi 100ms (10 lần/giây)
+     * Broadcast position mỗi 1000ms (1 lần/giây)
      */
-    @Scheduled(fixedRate = 50) // 50ms = 20 times per second = 20 fps
+    @Scheduled(fixedDelay = 1000) // 1000ms = 1 times per second = 1 fps for testing
     public void broadcastPositions() {
-        for (String gameId : activeGames) {
+
+        for (String gameId : activeGames) {  
             try {
                 moveService.updatePositions(gameId);
-
                 broadcastGamePositions(gameId);
             } catch (Exception e) {
                 log.error("Error broadcasting positions for game: {}", gameId, e);
@@ -101,16 +101,18 @@ public class PositionBroadcastService {
                     newPosition.getX(),
                     newPosition.getY()
                 ));
-                log.debug("Broadcasting position for slot {} at ({}, {})", 
-                         playerSlot, newPosition.getX(), newPosition.getY());
+                System.out.println(">>> Player slot " + playerSlot + 
+                    " position changed to (" + newPosition.getX() + ", " + newPosition.getY() + ")"
+                );
             }
         }
         
         // Nếu có player thay đổi vị trí, broadcast
         if (!playerDataList.isEmpty()) {
             // Tạo message để broadcast
-            PositionSend positionSend = new PositionSend(playerDataList, System.currentTimeMillis());
-            
+            long currentTime = System.currentTimeMillis();
+            PositionSend positionSend = new PositionSend(playerDataList, currentTime);
+
             // Lấy tất cả channel trong game
             Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
             
@@ -118,9 +120,13 @@ public class PositionBroadcastService {
                 // Broadcast cho tất cả player trong game, chỉ cần writeAndFlush cho channel đầu tiên
                 Channel firstChannel = channels.iterator().next();
                 firstChannel.writeAndFlush(positionSend);
-                
-                log.debug("Broadcasted position update for game: {}, players: {}", 
-                         gameId, playerDataList.size());
+
+                System.out.println(">>> Broadcasted positions for gameId: " + gameId + 
+                    ", players updated: " + playerDataList.size()
+                );
+            } else {
+                // Không có player nào trong game, không cần broadcast, xoá game khỏi activeGames
+                unregisterGame(gameId);
             }
             
             // Cập nhật main cache với vị trí mới
@@ -133,6 +139,8 @@ public class PositionBroadcastService {
             
             // Xóa pending positions sau khi đã broadcast
             positionService.clearPendingPositions(gameId);
+            long elapsedTime = System.currentTimeMillis() - currentTime;
+            log.info("Broadcast positions for game {} completed in {} ms", gameId, elapsedTime);
         }
     }
     

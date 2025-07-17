@@ -14,6 +14,7 @@ import com.server.game.netty.messageObject.sendObject.ErrorSend;
 import com.server.game.netty.messageObject.sendObject.TestGameStartResponseSend;
 import com.server.game.netty.messageObject.sendObject.TestGameStartResponseSend.PlayerInfo;
 import com.server.game.service.PositionBroadcastService;
+import com.server.game.service.PositionService;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TestGameHandler {
 
     private final PositionBroadcastService positionBroadcastService;
+    private final PositionService positionService;
     private final Random random = new Random();
 
     @MessageMapping(TestGameStartAnnounceReceive.class)
@@ -61,6 +63,15 @@ public class TestGameHandler {
 
             //Add to player info list
             playerInfoList.add(new PlayerInfo(slot, championId));
+
+            //Set first position for the player
+            positionService.updatePosition(
+                gameId,
+                slot,
+                -70, // Initial X position
+                -2, // Initial Y position
+                System.currentTimeMillis()
+            );
 
             //Increment slot
             slot++;
