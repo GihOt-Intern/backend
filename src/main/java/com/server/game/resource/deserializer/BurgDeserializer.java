@@ -2,7 +2,7 @@ package com.server.game.resource.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.server.game.resource.model.GameMap.SlotInfo.Burg;
+import com.server.game.resource.model.SlotInfo.Burg;
 
 import java.io.IOException;
 

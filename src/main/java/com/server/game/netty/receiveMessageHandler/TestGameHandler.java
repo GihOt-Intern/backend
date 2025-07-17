@@ -64,6 +64,8 @@ public class TestGameHandler {
             //Add to player info list
             playerInfoList.add(new PlayerInfo(slot, championId));
 
+
+            // TODO: You can use resource/service/GameMapService.getIntialPositionsData(gameMapId, slot) to get initial positions
             //Set first position for the player
             positionService.updatePosition(
                 gameId,

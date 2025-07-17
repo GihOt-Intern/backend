@@ -38,7 +38,4 @@ public class GameServerApplication {
 			System.exit(1);
 		}
 	}
-
-	// TODO: before channel disconnect, channel will send a message to server to notify,
-	// server must receive a message to confirm.
 }

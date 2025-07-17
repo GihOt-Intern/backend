@@ -5,37 +5,53 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.server.game.map.component.Vector2;
-import com.server.game.resource.deserializer.BurgDeserializer;
 import com.server.game.resource.deserializer.GoldMineDeserializer;
-import com.server.game.resource.deserializer.TowerDeserializer;
 
-// import org.springframework.data.annotation.Id;
 
 import lombok.AccessLevel;
 
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GameMap {
-    @JsonIgnore
-    short id = 2;
-    @JsonProperty("mapName")
+    short id;
     String name;
     List<Vector2> boundary;
-    @JsonProperty("gold_mine")
     GoldMine goldMine;
-    @JsonProperty("slot_info")
-    List<SlotInfo> slotInfo;
+    List<SlotInfo> slotInfos;
+
+    final Map<Short, SlotInfo> slotInfoMap = new HashMap<>();
 
 
+    @JsonCreator
+    public GameMap(
+        @JsonProperty("id") short id,
+        @JsonProperty("mapName") String name,
+        @JsonProperty("boundary") List<Vector2> boundary,
+        @JsonProperty("gold_mine") GoldMine goldMine,
+        @JsonProperty("slot_info") List<SlotInfo> slotInfos
+    ) {
+        this.id = id;
+        this.name = name;
+        this.boundary = boundary;
+        this.goldMine = goldMine;
+        this.slotInfos = slotInfos;
+
+        if (slotInfos != null) {
+            for (SlotInfo slotInfo : slotInfos) {
+                slotInfoMap.put(slotInfo.getSlot(), slotInfo);
+            }
+            System.out.println(">>> Created Slot Info Map");
+        }
+    }
 
 
     @Data
@@ -51,49 +67,19 @@ public class GameMap {
     }
 
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @FieldDefaults(level = AccessLevel.PRIVATE)
-    public static class SlotInfo {
-        short slot;
-        @JsonProperty("spawn_position")
-        Spawn spawn;
-        Burg burg;
-        List<Tower> towers;
-
-        @Data
-        @AllArgsConstructor
-        @NoArgsConstructor
-        public static class Spawn {
-            String id;
-            Vector2 position;
-            float rotate;
+    public Vector2 getInitialPosition(short slot) {
+        if (slotInfoMap.containsKey(slot)) {
+            return slotInfoMap.get(slot).getInitialPosition();
         }
-    
-
-        @Data
-        @AllArgsConstructor
-        @NoArgsConstructor
-        @JsonDeserialize(using = BurgDeserializer.class)
-        public static class Burg {
-            String id;
-            Vector2 position;
-            float width;
-            float length;
-        }
-
-        @Data
-        @AllArgsConstructor
-        @NoArgsConstructor
-        @JsonDeserialize(using = TowerDeserializer.class)
-        public static class Tower {
-            String id;
-            Vector2 position;
-            float width;
-            float length;
-        }
+        System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
+        return null;
     }
 
-
+    public Float getInitialRotate(short slot) {
+        if (slotInfoMap.containsKey(slot)) {
+            return slotInfoMap.get(slot).getInitialRotate();
+        }
+        System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
+        return null;
+    }
 }
