@@ -3,8 +3,6 @@ package com.server.game.resource.service;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.ChampionInitialHPsSend.ChampionInitialHPData;
 import com.server.game.resource.model.Champion;
-import com.server.game.resource.model.GameMap;
-import com.server.game.resource.model.SlotInfo;
 import com.server.game.resource.repository.mongo.ChampionRepository;
 import com.server.game.util.ChampionEnum;
 

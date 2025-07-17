@@ -57,7 +57,6 @@ public class ChampionInitialHPsSend implements TLVEncodable {
     
 
 
-
     //************* ChampionInitialHPData class *************//
     @Data
     @AllArgsConstructor

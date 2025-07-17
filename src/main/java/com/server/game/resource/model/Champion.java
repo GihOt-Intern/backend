@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.experimental.Delegate;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
@@ -35,7 +36,9 @@ public class Champion {
     Short id;
     String name;
     String role;
+    @Delegate
     ChampionStats stats;
+    @Delegate
     ChampionAbility ability;
 
 
