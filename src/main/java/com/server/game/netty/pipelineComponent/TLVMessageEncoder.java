@@ -1,10 +1,13 @@
 package com.server.game.netty.pipelineComponent;
 
 
+import java.nio.ByteBuffer;
+
 import com.server.game.netty.pipelineComponent.outboundSendMessage.OutboundSendMessage;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.tlv.codec.TLVEncoder;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
+import com.server.game.util.Util;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -32,7 +35,9 @@ public class TLVMessageEncoder extends ChannelOutboundHandlerAdapter {
 
         ByteBuf encodedBuf = Unpooled.wrappedBuffer(encoded); // wrap the byte array into a ByteBuf
         //System.out.println(">>> Server Encoded TLVEncodable object (" + sendObject.getClass().getSimpleName() + ") to ByteBuf");
-        
+        System.out.println(">>> Send byte: ");
+        ByteBuffer byteBuffer = encodedBuf.nioBuffer();
+        Util.printHex(byteBuffer, true);
         // Get send target from the TLVEncodable object
         SendTarget sendTarget = sendObject.getSendTarget(ctx.channel());
 

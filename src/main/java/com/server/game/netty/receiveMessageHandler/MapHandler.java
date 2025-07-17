@@ -47,7 +47,7 @@ public class MapHandler {
 
         ChampionInitialPositionsSend championPositionsSend = 
             new ChampionInitialPositionsSend(gameMapId, championPositionsData);
-
+        System.out.println(">>> Send loading map messsage");
         channel.writeAndFlush(championPositionsSend);        
     }
 

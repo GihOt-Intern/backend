@@ -57,9 +57,9 @@ public class PositionBroadcastService {
     }
     
     /**
-     * Broadcast position mỗi 1000ms (1 lần/giây)
+     * Broadcast position mỗi 50ms (20 lần/giây)
      */
-    @Scheduled(fixedDelay = 1000) // 1000ms = 1 times per second = 1 fps for testing
+    @Scheduled(fixedDelay = 50) // 50ms = 20 times per second = 20 fps for testing
     public void broadcastPositions() {
 
         for (String gameId : activeGames) {  

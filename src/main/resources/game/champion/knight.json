@@ -1,0 +1,18 @@
+{
+  "id": 1,
+  "name": "Knight",
+  "role": "Assassin",
+  "stats": {
+    "hp": 800,
+    "defense": 50,
+    "attack": 160,
+    "move_speed": 10.0,
+    "attack_speed": 1.5,
+    "attack_range": 0.75,
+    "resource_claiming_speed": 5.0
+  },
+  "ability": {
+    "name": "Knight's Skill name",
+    "cool_down": 8.0
+  }
+}

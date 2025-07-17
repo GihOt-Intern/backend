@@ -45,7 +45,7 @@ public class PositionHandler {
             slot,
             receiveObject.getX(),
             receiveObject.getY(),
-            100.0f
+            5.0f
         );
 
         System.out.println(">>> Position updated for gameId: " + gameId + ", slot: " + slot +

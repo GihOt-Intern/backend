@@ -40,7 +40,7 @@ public class Writer {
     public void writeMaps() {
         for (String mapName : mapNames) {
             if (mapRepository.existsByName(mapName)
-                // && false
+                && false
              ) { // remove && false when not debugging
                 System.out.println("Map already exists: " + mapName);
                 continue;
