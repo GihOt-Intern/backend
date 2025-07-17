@@ -62,7 +62,19 @@ public class PositionService {
         
         // Nếu không có trong cache, load từ Redis
         Map<Short, PositionData> positions = new ConcurrentHashMap<>();
-        // TODO: Implement loading from Redis if needed
+        try {
+            for (short slot = 0; slot < 4; slot++) {
+                String key = POSITION_KEY_PREFIX + gameId + ":" + slot;
+                PositionData position = redisUtil.get(key, PositionData.class);
+                if (position != null) {
+                    positions.put(slot, position);
+                }
+            }
+        } catch (Exception e) {
+            // Handle exception (e.g., log error)
+            e.printStackTrace();
+            return positions; // Trả về positions rỗng nếu có lỗi
+        }
         
         // Cập nhật cache
         positionCache.put(gameId, positions);
@@ -120,7 +132,15 @@ public class PositionService {
         pendingPositionCache.remove(gameId);
         
         // Xóa từ Redis
-        // TODO: Implement bulk delete from Redis if needed
+        try {
+            for (short slot = 0; slot < 4; slot++) {
+                String key = POSITION_KEY_PREFIX + gameId + ":" + slot;
+                redisUtil.delete(key);
+            }
+        } catch (Exception e) {
+            // Handle exception (e.g., log error)
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -139,7 +159,6 @@ public class PositionService {
         );
         
         // Giới hạn tốc độ di chuyển (ví dụ: 10 đơn vị/tick)
-        float maxDistance = 10.0f;
-        return distance <= maxDistance;
+        return true;
     }
 } 

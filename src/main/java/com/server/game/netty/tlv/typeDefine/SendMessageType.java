@@ -18,6 +18,7 @@ public enum SendMessageType {
     CHAMPION_POSITIONS_SEND((short) 11),
     POSITION_UPDATE_SEND((short) 20),
     DISTANCE_SEND((short) 998),
+    TEST_GAME_START_RESPONSE((short) 2026),
     ;
 
     short type;
