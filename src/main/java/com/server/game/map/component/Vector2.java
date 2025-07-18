@@ -42,4 +42,9 @@ public record Vector2(float x, float y) {
 
         return crossingCount % 2 != 0; // Odd crossings mean inside
     }
+
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ")";
+    }
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.server.game.map.component.Vector2;
 import com.server.game.netty.receiveMessageHandler.PositionHandler.PositionData;
+import com.server.game.resource.service.GameMapService;
 
 import lombok.Data;
 
@@ -16,6 +17,9 @@ public class MoveService {
     
     @Autowired
     private PositionService positionService;
+
+    @Autowired
+    private GameMapService gameMapService;
 
     private final Map<String, Map<Short, MoveTarget>> moveTargets = new ConcurrentHashMap<>();
 
@@ -37,7 +41,18 @@ public class MoveService {
             return;
         }
 
+
+
+        // Điều chỉnh vị trí mục tiêu không vượt ra biên của map
+
+        // TODO: need to add arg to get current game map
+
         Vector2 startPosition = currentPos.getPosition();
+
+        targetPosition = gameMapService.adjustTargetToMap(startPosition, targetPosition);
+
+
+
         MoveTarget target = new MoveTarget(
             startPosition,
             targetPosition,

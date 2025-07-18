@@ -44,6 +44,7 @@ node_modules/
 **/src/main/resources/vps-env.properties
 **/src/main/resources/META-INF/
 **/src/main/resources/static/
+**/src/main/java/com/server/game/netty/receiveMessageHandler/pos.md
 logs/
 .env
 
