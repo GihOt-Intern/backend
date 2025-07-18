@@ -89,6 +89,7 @@ public class GameMapService {
 
         NavPolygon navBoundaryMap = this.getNavPolygonById(gameMapId);
 
+        // TODO: contains but can move outside the map
         if (navBoundaryMap.contains(targetPosition)) {
             return targetPosition; // Target is within the map boundary
         }
