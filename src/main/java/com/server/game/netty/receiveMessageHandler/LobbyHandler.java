@@ -21,14 +21,15 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class LobbyHandler {
 
-    private final MapHandler mapHandler;
+    // private final MapHandler mapHandler;
+    private final GameHandler gameHandler;
 
 
     @MessageMapping(ChooseChampionReceive.class)
     public ChooseChampionSend handleChooseChampion(ChooseChampionReceive receiveObject, Channel channel) {
         ChampionEnum championId = receiveObject.getChampionEnum();
         short slot = ChannelManager.getSlotByChannel(channel);
-        ChannelManager.setChampionId2Channel(championId.getChampionId(), channel);
+        ChannelManager.setChampionId2Channel(championId, channel);
         System.out.println("Slot " + slot + " chose Champion ID: " + championId);
         return new ChooseChampionSend(slot, championId);
     }
@@ -54,7 +55,8 @@ public class LobbyHandler {
             if (future.isSuccess()) {
                 if (isAllPlayersReady) {
                     System.out.println(">>> [Log in LobbyHandler.handlePlayerReady] All players are ready. Proceeding to map loading.");
-                    mapHandler.handleInitialGameStateLoading(channel);
+                    gameHandler.handleGameStart(channel);
+                    // mapHandler.handleInitialGameStateLoading(channel);
                 } else {
                     System.out.println(">>> [Log in LobbyHandler.handlePlayerReady] Not all players are ready yet.");
                 }

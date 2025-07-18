@@ -8,6 +8,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.server.game.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.PositionSend;
 import com.server.game.netty.receiveMessageHandler.PositionHandler.PositionData;
@@ -61,11 +62,10 @@ public class PositionBroadcastService {
             if (hasPositionChanged(oldPosition, newPosition)) {
                 playerDataList.add(new PositionSend.PlayerPositionData(
                     playerSlot,
-                    newPosition.getX(),
-                    newPosition.getY()
+                    newPosition.getPosition()
                 ));
                 System.out.println(">>> Player slot " + playerSlot + 
-                    " position changed to (" + newPosition.getX() + ", " + newPosition.getY() + ")"
+                    " position changed to (" + newPosition.getPosition().x() + ", " + newPosition.getPosition().y() + ")"
                 );
             }
         }
@@ -97,7 +97,7 @@ public class PositionBroadcastService {
                 short playerSlot = entry.getKey();
                 PositionData position = entry.getValue();
                 positionService.updatePosition(gameId, playerSlot, 
-                    position.getX(), position.getY(), position.getTimestamp());
+                    position.getPosition(), position.getTimestamp());
             }
             
             // Xóa pending positions sau khi đã broadcast
@@ -115,11 +115,15 @@ public class PositionBroadcastService {
             return true; // Lần đầu, coi như thay đổi
         }
         
+        
         // So sánh vị trí với ngưỡng thay đổi nhỏ
         float threshold = 0.01f; // Ngưỡng thay đổi tối thiểu
-        float deltaX = Math.abs(newPosition.getX() - oldPosition.getX());
-        float deltaY = Math.abs(newPosition.getY() - oldPosition.getY());
         
-        return deltaX > threshold || deltaY > threshold;
+        
+        Vector2 oldPos = oldPosition.getPosition();
+        Vector2 newPos = newPosition.getPosition();
+        Vector2 delta = newPos.subtract(oldPos);
+        float dPos = delta.length();
+        return dPos > threshold;
     }
 } 

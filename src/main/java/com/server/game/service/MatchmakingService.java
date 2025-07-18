@@ -58,7 +58,6 @@ public class MatchmakingService {
         } catch (Exception ignored) {}
         if (match == null) return null;
         if (match instanceof Map) {
-            @SuppressWarnings("unchecked")
             Map<String, Object> matchMap = (Map<String, Object>) match;
             return matchMap;
         }

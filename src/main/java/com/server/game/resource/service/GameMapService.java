@@ -71,5 +71,4 @@ public class GameMapService {
         }
         return gameMap.getInitialRotate(slot);
     }
-
 }

@@ -16,6 +16,8 @@ public enum SendMessageType {
     INFO_PLAYERS_IN_ROOM_SEND((short) 5),
     PLAYER_READY_SEND((short) 9),
     INITIAL_POSITIONS_SEND((short) 11),
+    CHAMPION_INITIAL_HPS_SEND((short) 12),
+    CHAMPION_INITIAL_STATS_SEND((short) 13),
     POSITION_UPDATE_SEND((short) 20),
     DISTANCE_SEND((short) 998),
     TEST_GAME_START_RESPONSE((short) 2026),

@@ -3,6 +3,7 @@ package com.server.game.netty.receiveMessageHandler;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
+import com.server.game.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.receiveObject.PositionReceive;
 import com.server.game.service.MoveService;
@@ -42,20 +43,18 @@ public class PositionHandler {
         moveService.setMoveTarget(
             gameId,
             slot,
-            receiveObject.getX(),
-            receiveObject.getY(),
+            receiveObject.getPosition(),
             5.0f
         );
 
         System.out.println(">>> Position updated for gameId: " + gameId + ", slot: " + slot +
-            ", x: " + receiveObject.getX() + ", y: " + receiveObject.getY() + ", timestamp: " + timestamp);
+            ", X: " + receiveObject.getPosition().x() + ", Y: " + receiveObject.getPosition().y() + ", timestamp: " + timestamp);
     }
     
     // Inner class để lưu trữ dữ liệu vị trí
     @Data
     public static class PositionData {
-        private final float x;
-        private final float y;
+        private final Vector2 position;
         private final long timestamp;
     }
 } 
