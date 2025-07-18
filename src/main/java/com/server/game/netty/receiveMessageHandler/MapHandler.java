@@ -18,6 +18,9 @@ import com.server.game.resource.service.GameMapService;
 import com.server.game.util.ChampionEnum;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.DefaultChannelPromise;
+import io.netty.util.concurrent.ImmediateEventExecutor;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,22 +33,24 @@ public class MapHandler {
 
     GameMapService gameMapService;
     ChampionService championService;
-    
+
     // This method is called by LobbyHandler when all players are ready
-    public void handleInitialGameStateLoading(Channel channel) {
+    public List<InitialPositionData> handleInitialGameStateLoading(Channel channel) {
         Set<Channel> playersInRoom = ChannelManager.getGameChannelsByInnerChannel(channel);
         Short numPlayers = (short) playersInRoom.size();
 
         // GameMap id is determined by the number of players
         Short gameMapId = numPlayers;
 
-        this.handleInitialPositionsLoading(channel, gameMapId);
+        List<InitialPositionData> initialPositionDatas = this.handleInitialPositionsLoading(channel, gameMapId);        
         this.handleChampionInitialHPsLoading(channel);
         this.handleChampionInitialStatsLoading(channel);
+
+        return initialPositionDatas;
     }
 
 
-    private void handleInitialPositionsLoading(Channel channel, Short gameMapId) {
+    private List<InitialPositionData> handleInitialPositionsLoading(Channel channel, Short gameMapId) {
         List<InitialPositionData> initialPositionsData = 
             gameMapService.getInitialPositionsData(gameMapId);
 
@@ -53,9 +58,10 @@ public class MapHandler {
             new InitialPositionsSend(gameMapId, initialPositionsData);
         System.out.println(">>> Send loading initial positions message");
         channel.writeAndFlush(championPositionsSend);     
+        return initialPositionsData;
     }
 
-    private void handleChampionInitialHPsLoading(Channel channel) {
+    private ChannelFuture handleChampionInitialHPsLoading(Channel channel) {
         String gameId = ChannelManager.getGameIdByChannel(channel);
         List<ChampionInitialHPData> initialHPsData = 
             championService.getChampionInitialHPsData(gameId);
@@ -63,12 +69,13 @@ public class MapHandler {
         ChampionInitialHPsSend championInitialHPsSend = 
             new ChampionInitialHPsSend(initialHPsData);
         System.out.println(">>> Send loading initial HPs message");
-        channel.writeAndFlush(championInitialHPsSend);     
+        return channel.writeAndFlush(championInitialHPsSend);     
     }
 
-    private void handleChampionInitialStatsLoading(Channel channel) {
+    private ChannelFuture handleChampionInitialStatsLoading(Channel channel) {
         // Send message is unicast, need to get all channels in room and send one by one
         Set<Channel> playersInRoom = ChannelManager.getGameChannelsByInnerChannel(channel);
+        ChannelFuture lastFuture = null;
         for (Channel playerChannel : playersInRoom) {
             ChampionEnum championId = ChannelManager.getChampionIdByChannel(playerChannel);
             Champion champion = championService.getChampionById(championId);
@@ -76,10 +83,13 @@ public class MapHandler {
                 ChampionInitialStatsSend championInitialStatsSend = 
                     new ChampionInitialStatsSend(champion);
                 System.out.println(">>> Send loading initial stats message for Champion ID: " + championId);
-                playerChannel.writeAndFlush(championInitialStatsSend);
+                lastFuture = playerChannel.writeAndFlush(championInitialStatsSend);
             } else {
                 System.out.println(">>> [Log in MapHandler.handleChampionInitialStatsLoading] Champion with ID " + championId + " not found.");
             }
         }
+        return lastFuture != null
+            ? lastFuture
+            : new DefaultChannelPromise(null, ImmediateEventExecutor.INSTANCE).setSuccess(); 
     }
 }

@@ -21,7 +21,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class LobbyHandler {
 
-    private final MapHandler mapHandler;
+    // private final MapHandler mapHandler;
+    private final GameHandler gameHandler;
 
 
     @MessageMapping(ChooseChampionReceive.class)
@@ -54,7 +55,8 @@ public class LobbyHandler {
             if (future.isSuccess()) {
                 if (isAllPlayersReady) {
                     System.out.println(">>> [Log in LobbyHandler.handlePlayerReady] All players are ready. Proceeding to map loading.");
-                    mapHandler.handleInitialGameStateLoading(channel);
+                    gameHandler.handleGameStart(channel);
+                    // mapHandler.handleInitialGameStateLoading(channel);
                 } else {
                     System.out.println(">>> [Log in LobbyHandler.handlePlayerReady] Not all players are ready yet.");
                 }
