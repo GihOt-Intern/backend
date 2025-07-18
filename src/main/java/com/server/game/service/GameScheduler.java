@@ -67,10 +67,10 @@ public class GameScheduler {
     }
 
     /**
-     * Main game loop - runs every 50ms (20 FPS)
+     * Main game loop - runs every 33ms (~30 FPS)
      * Handles all game-related periodic tasks
      */
-    @Scheduled(fixedDelay = 50) // 50ms = 20 times per second = 20 fps
+    @Scheduled(fixedDelay = 33) // 33ms = ~30 times per second = ~30 fps
     public void gameLoop() {
         for (String gameId : activeGames) {  
             try {
