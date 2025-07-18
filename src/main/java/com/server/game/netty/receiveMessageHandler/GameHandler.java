@@ -34,17 +34,24 @@ import lombok.experimental.FieldDefaults;
 public class GameHandler {
 
     MapHandler mapHandler;
-    private final PositionBroadcastService positionBroadcastService;
-    private final PositionService positionService;
+    PositionBroadcastService positionBroadcastService;
+    PositionService positionService;
     
-    public ChannelFuture handleGameStart(Channel channel) {
+    public void handleGameStart(Channel channel) {
+        
         List<InitialPositionData> initialPositionDatas = mapHandler.handleInitialGameStateLoading(channel);
 
         String gameId = ChannelManager.getGameIdByChannel(channel);
         positionBroadcastService.registerGame(gameId);
 
-        for(InitiaPositionData initi)
 
-        return null;
+        for(InitialPositionData initialPositionsData : initialPositionDatas) {
+            positionService.updatePosition(
+                gameId, 
+                initialPositionsData.getSlot(), 
+                initialPositionsData.getPosition(),
+                System.currentTimeMillis()
+            );
+        }
     }
 }

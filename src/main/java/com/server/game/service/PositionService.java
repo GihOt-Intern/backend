@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
+import com.server.game.map.component.Vector2;
 import com.server.game.netty.receiveMessageHandler.PositionHandler.PositionData;
 import com.server.game.util.RedisUtil;
 
@@ -27,9 +28,9 @@ public class PositionService {
     /**
      * Cập nhật vị trí của player vào pending cache (chưa broadcast)
      */
-    public void updatePendingPosition(String gameId, short slot, float x, float y, long timestamp) {
-        PositionData positionData = new PositionData(x, y, timestamp);
-        
+    public void updatePendingPosition(String gameId, short slot, Vector2 position, long timestamp) {
+        PositionData positionData = new PositionData(position, timestamp);
+
         // Cập nhật pending cache
         pendingPositionCache.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
                            .put(slot, positionData);
@@ -38,9 +39,9 @@ public class PositionService {
     /**
      * Cập nhật vị trí của player vào main cache (sau khi broadcast)
      */
-    public void updatePosition(String gameId, short slot, float x, float y, long timestamp) {
-        PositionData positionData = new PositionData(x, y, timestamp);
-        
+    public void updatePosition(String gameId, short slot, Vector2 position, long timestamp) {
+        PositionData positionData = new PositionData(position, timestamp);
+
         // Cập nhật main cache
         positionCache.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
                     .put(slot, positionData);
@@ -146,17 +147,15 @@ public class PositionService {
     /**
      * Kiểm tra xem vị trí có hợp lệ không (chống hack)
      */
-    public boolean isValidPosition(String gameId, short slot, float x, float y) {
+    public boolean isValidPosition(String gameId, short slot, Vector2 position) {
         PositionData lastPosition = getPlayerPosition(gameId, slot);
         if (lastPosition == null) {
             return true; // Lần đầu di chuyển
         }
-        
-        // Tính khoảng cách di chuyển
-        float distance = (float) Math.sqrt(
-            Math.pow(x - lastPosition.getX(), 2) + 
-            Math.pow(y - lastPosition.getY(), 2)
-        );
+
+        Vector2 newPos = position;
+        Vector2 oldPos = lastPosition.getPosition();
+        float distance = newPos.distance(oldPos);
         
         // Giới hạn tốc độ di chuyển (ví dụ: 10 đơn vị/tick)
         return true;

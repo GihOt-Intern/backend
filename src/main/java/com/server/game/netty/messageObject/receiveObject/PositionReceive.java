@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.ReceiveType;
+import com.server.game.map.component.Vector2;
 import com.server.game.netty.tlv.interf4ce.TLVDecodable;
 import com.server.game.netty.tlv.typeDefine.ReceiveMessageType;
 
@@ -20,15 +21,13 @@ import lombok.experimental.FieldDefaults;
 @Component
 public class PositionReceive implements TLVDecodable {
     short slot;
-    float x;
-    float y;
+    Vector2 position;
     long timestamp;
 
     @Override
     public void decode(ByteBuffer buffer) {
         slot = buffer.getShort();
-        x = buffer.getFloat();
-        y = buffer.getFloat();
+        position = new Vector2(buffer.getFloat(), buffer.getFloat());
         timestamp = buffer.getLong();
     }
 } 

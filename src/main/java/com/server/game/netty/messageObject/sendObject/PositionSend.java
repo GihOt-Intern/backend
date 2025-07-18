@@ -8,6 +8,7 @@ import java.util.List;
 
 import io.netty.channel.Channel;
 
+import com.server.game.map.component.Vector2;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
@@ -42,18 +43,21 @@ public class PositionSend implements TLVEncodable {
             
             // Write each player's data
             for (PlayerPositionData player : players) {
-                dos.writeShort(player.getSlot());
-                dos.writeFloat(player.getX());
-                dos.writeFloat(player.getY());
-                System.out.println("Slot: " + player.getSlot() + ", X: " + player.getX() + ", Y: " + player.getY());
+                dos.write(player.encode());
             }
             
             // Write timestamp
             dos.writeLong(timestamp);
-            System.out.println("PositionSend byte");
+
+
+
+            System.out.println("PositionSend byte:");
             // Util.printHex(new ByteBuffer(baos.toByteArray()), true);
             ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
             Util.printHex(buffer, true);
+            
+            
+            
             return baos.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException("Cannot encode PositionSend", e);
@@ -70,7 +74,24 @@ public class PositionSend implements TLVEncodable {
     @AllArgsConstructor
     public static class PlayerPositionData {
         short slot;
-        float x;
-        float y;
+        Vector2 position;
+
+
+        public byte[] encode() {
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(baos);
+
+                dos.writeShort(slot);
+                dos.writeFloat(position.x());
+                dos.writeFloat(position.y());
+
+                System.out.println("Slot: " + slot + ", X: " + position.x() + ", Y: " + position.y());
+
+                return baos.toByteArray();
+            } catch (IOException e) {
+                throw new RuntimeException("Cannot encode PlayerPositionData", e);
+            }
+        }
     }
 } 

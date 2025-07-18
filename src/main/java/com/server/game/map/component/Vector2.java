@@ -12,6 +12,16 @@ public record Vector2(float x, float y) {
 
     public Vector2 subtract(Vector2 other) { return new Vector2(x - other.x, y - other.y); }
 
+    public Vector2 multiply(float scalar) { return new Vector2(x * scalar, y * scalar); }
+
+    public float length() {
+        return (float) Math.sqrt(x * x + y * y);
+    }
+
+
+    public float distance(Vector2 other) {
+        return this.subtract(other).length();
+    }
 
     // Ray crossing algorithm to check if a point is inside a polygon
     public boolean inside(NavPolygon navPolygon) {

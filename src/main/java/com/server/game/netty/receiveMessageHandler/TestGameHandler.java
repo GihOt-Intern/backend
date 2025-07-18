@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.server.game.netty.ChannelManager;
 import com.server.game.annotation.customAnnotation.MessageMapping;
+import com.server.game.map.component.Vector2;
 import com.server.game.netty.messageObject.receiveObject.TestGameStartAnnounceReceive;
 import com.server.game.netty.messageObject.sendObject.ErrorSend;
 import com.server.game.netty.messageObject.sendObject.TestGameStartResponseSend;
@@ -70,8 +71,10 @@ public class TestGameHandler {
             positionService.updatePosition(
                 gameId,
                 slot,
-                -70, // Initial X position
-                -2, // Initial Y position
+                new Vector2(
+                    -70, // Initial X position
+                    -2 // Initial Y position
+                ),
                 System.currentTimeMillis()
             );
 
