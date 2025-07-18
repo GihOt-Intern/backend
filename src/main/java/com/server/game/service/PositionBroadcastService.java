@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.server.game.map.component.Vector2;
@@ -28,55 +26,20 @@ public class PositionBroadcastService {
     @Autowired
     private MoveService moveService;
     
-    // Lưu trữ các game đang hoạt động
-    private final Set<String> activeGames = ConcurrentHashMap.newKeySet();
-    
     /**
-     * Đăng ký game để broadcast position
-     */
-    public void registerGame(String gameId) {
-        activeGames.add(gameId);
-        log.info("Registered game for position broadcasting: {}", gameId);
-    }
-    
-    /**
-     * Hủy đăng ký game
+     * Hủy đăng ký game - được gọi từ GameScheduler
      */
     public void unregisterGame(String gameId) {
-        activeGames.remove(gameId);
         positionService.clearGamePositions(gameId);
         moveService.clearMoveTargets(gameId);
         ChannelManager.clearGameSlotMappings(gameId);
         log.info("Unregistered game from position broadcasting: {}", gameId);
     }
-
-    /**
-     * Kiểm tra xem game có hoạt động hay không
-     */
-    public boolean isGameActive(String gameId) {
-        return activeGames.contains(gameId);
-    }
     
     /**
-     * Broadcast position mỗi 50ms (20 lần/giây)
+     * Broadcast vị trí cho một game cụ thể - được gọi từ GameScheduler
      */
-    @Scheduled(fixedDelay = 50) // 50ms = 20 times per second = 20 fps for testing
-    public void broadcastPositions() {
-
-        for (String gameId : activeGames) {  
-            try {
-                moveService.updatePositions(gameId);
-                broadcastGamePositions(gameId);
-            } catch (Exception e) {
-                log.error("Error broadcasting positions for game: {}", gameId, e);
-            }
-        }
-    }
-    
-    /**
-     * Broadcast vị trí cho một game cụ thể
-     */
-    private void broadcastGamePositions(String gameId) {
+    public void broadcastGamePositions(String gameId) {
         // Lấy pending positions (vị trí mới từ client)
         Map<Short, PositionData> pendingPositions = positionService.getPendingPositions(gameId);
         
