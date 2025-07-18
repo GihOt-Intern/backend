@@ -16,7 +16,6 @@ import com.server.game.netty.messageObject.sendObject.TestGameStartResponseSend;
 import com.server.game.netty.messageObject.sendObject.TestGameStartResponseSend.PlayerInfo;
 import com.server.game.service.GameScheduler;
 import com.server.game.resource.service.GameMapService;
-import com.server.game.map.component.Vector2;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
