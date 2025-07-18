@@ -49,7 +49,6 @@ public class GameMap {
             for (SlotInfo slotInfo : slotInfos) {
                 slotInfoMap.put(slotInfo.getSlot(), slotInfo);
             }
-            System.out.println(">>> Created Slot Info Map");
         }
     }
 

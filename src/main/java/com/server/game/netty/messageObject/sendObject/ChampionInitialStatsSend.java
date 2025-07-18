@@ -3,12 +3,10 @@ package com.server.game.netty.messageObject.sendObject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
 
 import io.netty.channel.Channel;
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
-import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.SendMessageType;
@@ -62,6 +60,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
             dos.writeFloat(attackSpeed);
             dos.writeFloat(attackRange);
             dos.writeFloat(resourceClaimingSpeed);
+            dos.writeFloat(skillCooldown);
 
 
             return baos.toByteArray();
