@@ -13,8 +13,9 @@ import com.server.game.netty.messageObject.receiveObject.TestGameStartAnnounceRe
 import com.server.game.netty.messageObject.sendObject.ErrorSend;
 import com.server.game.netty.messageObject.sendObject.TestGameStartResponseSend;
 import com.server.game.netty.messageObject.sendObject.TestGameStartResponseSend.PlayerInfo;
-import com.server.game.service.PositionBroadcastService;
-import com.server.game.service.PositionService;
+import com.server.game.service.GameScheduler;
+import com.server.game.resource.service.GameMapService;
+import com.server.game.map.component.Vector2;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,9 +27,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TestGameHandler {
 
-    private final PositionBroadcastService positionBroadcastService;
-    private final PositionService positionService;
+    private final GameScheduler gameScheduler;
+    private final GameMapService gameMapService;
     private final Random random = new Random();
+    
+    // Test game uses map ID 2 (map_2.json)
+    private static final short TEST_GAME_MAP_ID = 2;
 
     @MessageMapping(TestGameStartAnnounceReceive.class)
     public void handleTestGameStart(TestGameStartAnnounceReceive receiveObject, ChannelHandlerContext ctx) {
@@ -45,7 +49,7 @@ public class TestGameHandler {
         }
 
         //Register game for position broadcasting if not already
-        positionBroadcastService.registerGame(gameId);
+        gameScheduler.registerGame(gameId);
 
         //Get all channels in this game
         Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
@@ -64,14 +68,27 @@ public class TestGameHandler {
             //Add to player info list
             playerInfoList.add(new PlayerInfo(slot, championId));
 
+            // Get initial spawn position from map data
+            Vector2 spawnPosition = gameMapService.getInitialPosition(TEST_GAME_MAP_ID, slot);
+            float spawnX = -70; // Default fallback
+            float spawnY = 1.3f; // Default fallback
+            
+            if (spawnPosition != null) {
+                spawnX = spawnPosition.x();
+                spawnY = spawnPosition.y();
+                System.out.println(">>> Using spawn position from map for slot " + slot + 
+                    ": (" + spawnX + ", " + spawnY + ")");
+            } else {
+                System.out.println(">>> Warning: Could not get spawn position for slot " + slot + 
+                    ", using default position (" + spawnX + ", " + spawnY + ")");
+            }
 
-            // TODO: You can use resource/service/GameMapService.getIntialPositionsData(gameMapId, slot) to get initial positions
-            //Set first position for the player
-            positionService.updatePosition(
+            //Set initial position for the player based on map data
+            gameScheduler.updatePosition(
                 gameId,
                 slot,
-                -70, // Initial X position
-                -2, // Initial Y position
+                spawnX, // X position from map spawn data
+                spawnY, // Y position from map spawn data
                 System.currentTimeMillis()
             );
 
