@@ -15,6 +15,7 @@ import com.server.game.netty.messageObject.sendObject.ChampionInitialStatsSend;
 import com.server.game.resource.model.Champion;
 import com.server.game.resource.service.ChampionService;
 import com.server.game.resource.service.GameMapService;
+import com.server.game.service.GameScheduler;
 import com.server.game.service.PositionBroadcastService;
 import com.server.game.service.PositionService;
 import com.server.game.util.ChampionEnum;
@@ -34,19 +35,18 @@ import lombok.experimental.FieldDefaults;
 public class GameHandler {
 
     MapHandler mapHandler;
-    PositionBroadcastService positionBroadcastService;
-    PositionService positionService;
+    GameScheduler gameScheduler;
     
     public void handleGameStart(Channel channel) {
         
         List<InitialPositionData> initialPositionDatas = mapHandler.handleInitialGameStateLoading(channel);
 
         String gameId = ChannelManager.getGameIdByChannel(channel);
-        positionBroadcastService.registerGame(gameId);
+        gameScheduler.registerGame(gameId);
 
 
         for(InitialPositionData initialPositionsData : initialPositionDatas) {
-            positionService.updatePosition(
+            gameScheduler.updatePosition(
                 gameId, 
                 initialPositionsData.getSlot(), 
                 initialPositionsData.getPosition(),

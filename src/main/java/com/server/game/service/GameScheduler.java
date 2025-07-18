@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.server.game.map.component.Vector2;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -18,6 +20,9 @@ public class GameScheduler {
     
     @Autowired
     private MoveService moveService;
+
+    @Autowired
+    private PositionService positionService;
     
     // Lưu trữ các game đang hoạt động
     private final Set<String> activeGames = ConcurrentHashMap.newKeySet();
@@ -46,7 +51,21 @@ public class GameScheduler {
     public boolean isGameActive(String gameId) {
         return activeGames.contains(gameId);
     }
-    
+
+    /**
+     * Cập nhật vị trí của người chơi
+     */
+    public void updatePosition(String gameId, short slot, Vector2 position, long timestamp) {
+        if (!isGameActive(gameId)) {
+            log.warn("Attempted to update position for inactive game: {}", gameId);
+            return;
+        }
+        
+        // Update position in the PositionService
+        positionService.updatePosition(gameId, slot, position, timestamp);
+        log.info("Updated position for gameId: {}, slot: {}, position: {}", gameId, slot, position);
+    }
+
     /**
      * Main game loop - runs every 50ms (20 FPS)
      * Handles all game-related periodic tasks

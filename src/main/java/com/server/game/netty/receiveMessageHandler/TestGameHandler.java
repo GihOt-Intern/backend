@@ -88,12 +88,7 @@ public class TestGameHandler {
             gameScheduler.updatePosition(
                 gameId,
                 slot,
-                new Vector2(
-                    -70, // Initial X position
-                    -2 // Initial Y position
-                ),
-                spawnX, // X position from map spawn data
-                spawnY, // Y position from map spawn data
+                spawnPosition,
                 System.currentTimeMillis()
             );
 
