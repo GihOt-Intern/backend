@@ -1,7 +1,6 @@
 package com.server.game.service;
 
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +98,16 @@ public class MoveService {
 
     public void clearMoveTargets(String gameId) {
         moveTargets.remove(gameId);
+    }
+    
+    /**
+     * Clear move target for a specific player
+     */
+    public void clearMoveTarget(String gameId, short slot) {
+        Map<Short, MoveTarget> targets = moveTargets.get(gameId);
+        if (targets != null) {
+            targets.remove(slot);
+        }
     }
 
     @Data

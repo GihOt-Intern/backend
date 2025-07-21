@@ -24,6 +24,12 @@ public class GameScheduler {
     @Autowired
     private PositionService positionService;
     
+    @Autowired
+    private AttackTargetingService attackTargetingService;
+    
+    @Autowired
+    private PvPService pvpService;
+    
     // Lưu trữ các game đang hoạt động
     private final Set<String> activeGames = ConcurrentHashMap.newKeySet();
     
@@ -77,11 +83,13 @@ public class GameScheduler {
                 // Update movement positions
                 moveService.updatePositions(gameId);
                 
+                // Process attack targeting and continuous combat
+                attackTargetingService.processAllAttackers(gameId);
+                
                 // Broadcast position updates
                 positionBroadcastService.broadcastGamePositions(gameId);
                 
                 // TODO: Add other game systems here
-                // - Combat/Attack system updates
                 // - Troop AI updates
                 // - Resource management
                 // - Spell/ability cooldowns

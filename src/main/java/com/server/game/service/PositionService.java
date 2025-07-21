@@ -152,10 +152,6 @@ public class PositionService {
         if (lastPosition == null) {
             return true; // Lần đầu di chuyển
         }
-
-        Vector2 newPos = position;
-        Vector2 oldPos = lastPosition.getPosition();
-        float distance = newPos.distance(oldPos);
         
         // Giới hạn tốc độ di chuyển (ví dụ: 10 đơn vị/tick)
         return true;
