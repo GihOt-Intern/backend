@@ -28,8 +28,8 @@ public class PositionService {
     /**
      * Cập nhật vị trí của player vào pending cache (chưa broadcast)
      */
-    public void updatePendingPosition(String gameId, short slot, Vector2 position, long timestamp) {
-        PositionData positionData = new PositionData(position, timestamp);
+    public void updatePendingPosition(String gameId, short slot, Vector2 position, float speed, long timestamp) {
+        PositionData positionData = new PositionData(position, speed, timestamp);
 
         // Cập nhật pending cache
         pendingPositionCache.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
@@ -39,8 +39,8 @@ public class PositionService {
     /**
      * Cập nhật vị trí của player vào main cache (sau khi broadcast)
      */
-    public void updatePosition(String gameId, short slot, Vector2 position, long timestamp) {
-        PositionData positionData = new PositionData(position, timestamp);
+    public void updatePosition(String gameId, short slot, Vector2 position, float speed, long timestamp) {
+        PositionData positionData = new PositionData(position, speed, timestamp);
 
         // Cập nhật main cache
         positionCache.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
