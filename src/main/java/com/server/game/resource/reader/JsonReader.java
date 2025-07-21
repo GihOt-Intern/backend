@@ -3,6 +3,7 @@ package com.server.game.resource.reader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.game.resource.model.Champion;
 import com.server.game.resource.model.GameMap;
+import com.server.game.resource.model.GameMapGrid;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ public class JsonReader {
 
     ObjectMapper objectMapper;
 
-    public GameMap readMapFromJson(String mapName) {
+    public GameMap readGameMapFromJson(String mapName) {
         try {
             InputStream is = getClass().getClassLoader().getResourceAsStream("game/map/" + mapName + ".json");
             if (is == null) {
@@ -37,6 +38,23 @@ public class JsonReader {
             return null;
         }
     }
+
+    public GameMapGrid readGameMapGridFromJson(String mapName) {
+        try {
+            InputStream is = getClass().getClassLoader().getResourceAsStream("game/map/" + mapName + "_grid.json");
+            if (is == null) {
+                // throw new FileNotFoundException("File not found: resources/game/map/" + mapName + "_grid.json");
+                System.out.println(">>> File not found: resources/game/map/" + mapName + "_grid.json");
+                return null;
+            }
+            return objectMapper.readValue(is, GameMapGrid.class);
+
+        } catch (IOException e) {
+            // e.printStackTrace();
+            System.out.println(">>> Error reading map grid JSON: " + e.getMessage());
+            return null;
+        }
+    }   
 
     public Champion readChampionFromJson(String championName) {
         try {

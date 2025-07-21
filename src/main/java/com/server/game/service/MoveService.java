@@ -53,7 +53,9 @@ public class MoveService {
 
         Vector2 startPosition = currentPos.getPosition();
 
-        Vector2 targetAdj = gameMapService.adjustTargetToMap(startPosition, targetPosition);
+        Vector2 targetAdj = null;
+        
+        // gameMapService.adjustTargetToMap(startPosition, targetPosition);
 
         targetPosition = targetAdj != null ? targetAdj : targetPosition;
 

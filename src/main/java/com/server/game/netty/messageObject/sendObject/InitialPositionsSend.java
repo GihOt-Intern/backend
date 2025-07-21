@@ -5,6 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import org.locationtech.jts.geom.Coordinate;
+
 import io.netty.channel.Channel;
 
 import com.server.game.map.component.Vector2;
@@ -70,7 +72,7 @@ public class InitialPositionsSend implements TLVEncodable {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public static class InitialPositionData {
         short slot;
-        Vector2 position;
+        Coordinate position;
         float rotate;
 
         public InitialPositionData(SlotInfo slotInfo) {
@@ -86,8 +88,8 @@ public class InitialPositionsSend implements TLVEncodable {
                 DataOutputStream dos = new DataOutputStream(baos);
 
                 dos.writeShort(slot);
-                dos.writeFloat(position.x());
-                dos.writeFloat(position.y());
+                dos.writeFloat((float) position.getX());
+                dos.writeFloat((float) position.getY());
                 dos.writeFloat(rotate);
 
                 return baos.toByteArray();

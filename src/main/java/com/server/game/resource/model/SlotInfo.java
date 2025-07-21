@@ -7,9 +7,10 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
+import org.locationtech.jts.geom.Coordinate;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.server.game.map.component.Vector2;
 import com.server.game.resource.deserializer.BurgDeserializer;
 import com.server.game.resource.deserializer.TowerDeserializer;
 
@@ -33,7 +34,7 @@ public class SlotInfo {
     @NoArgsConstructor
     public static class Spawn {
         String id;
-        Vector2 position;
+        Coordinate position;
         float rotate;
     }
 
@@ -44,7 +45,7 @@ public class SlotInfo {
     @JsonDeserialize(using = BurgDeserializer.class)
     public static class Burg {
         String id;
-        Vector2 position;
+        Coordinate position;
         float width;
         float length;
     }
@@ -55,12 +56,12 @@ public class SlotInfo {
     @JsonDeserialize(using = TowerDeserializer.class)
     public static class Tower {
         String id;
-        Vector2 position;
+        Coordinate position;
         float width;
         float length;
     }        
 
-    public Vector2 getInitialPosition() {
+    public Coordinate getInitialPosition() {
         if (spawn != null) {
             return spawn.getPosition();
         }

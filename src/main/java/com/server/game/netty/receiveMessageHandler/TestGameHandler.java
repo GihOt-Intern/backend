@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.Vector;
 
+import org.locationtech.jts.geom.Coordinate;
 import org.springframework.stereotype.Component;
 
 import com.server.game.netty.ChannelManager;
@@ -49,7 +51,7 @@ public class TestGameHandler {
         }
 
         //Register game for position broadcasting if not already
-        gameScheduler.registerGame(gameId);
+        // gameScheduler.registerGame(gameId);
 
         //Get all channels in this game
         Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
@@ -69,13 +71,14 @@ public class TestGameHandler {
             playerInfoList.add(new PlayerInfo(slot, championId));
 
             // Get initial spawn position from map data
-            Vector2 spawnPosition = gameMapService.getInitialPosition(TEST_GAME_MAP_ID, slot);
+            Coordinate spawnPosition = gameMapService.getInitialPosition(TEST_GAME_MAP_ID, slot);
+
             float spawnX = -70; // Default fallback
             float spawnY = 1.3f; // Default fallback
             
             if (spawnPosition != null) {
-                spawnX = spawnPosition.x();
-                spawnY = spawnPosition.y();
+                spawnX = (float) spawnPosition.getX();
+                spawnY = (float) spawnPosition.getY();
                 System.out.println(">>> Using spawn position from map for slot " + slot + 
                     ": (" + spawnX + ", " + spawnY + ")");
             } else {
@@ -83,11 +86,13 @@ public class TestGameHandler {
                     ", using default position (" + spawnX + ", " + spawnY + ")");
             }
 
+            Vector2 vSpawnPosition = new Vector2(spawnPosition);
+
             //Set initial position for the player based on map data
             gameScheduler.updatePosition(
                 gameId,
                 slot,
-                spawnPosition,
+                vSpawnPosition,
                 5.0f,
                 System.currentTimeMillis()
             );

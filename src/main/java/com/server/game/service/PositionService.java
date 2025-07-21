@@ -20,6 +20,7 @@ public class PositionService {
     private static final int POSITION_TTL = 300; // 5 phút
     
     // Cache trong bộ nhớ để tăng tốc độ truy cập
+    // <gameId, <slot, PositionData>>
     private final Map<String, Map<Short, PositionData>> positionCache = new ConcurrentHashMap<>();
     
     // Cache tạm thời để lưu vị trí mới từ client (chưa broadcast)
@@ -160,4 +161,5 @@ public class PositionService {
         // Giới hạn tốc độ di chuyển (ví dụ: 10 đơn vị/tick)
         return true;
     }
+
 } 

@@ -3,6 +3,8 @@ package com.server.game.util;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Base64;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -89,16 +91,29 @@ public class Util {
         return ByteBuffer.allocate(size).order(ByteOrder.BIG_ENDIAN);
     }
 
-    // public static Map<String, String> handleQueryString(String query) {
-    //     return Arrays.stream(query.split("&"))
-    //         .map(pair -> pair.split("=", 2)) // split by '=' but limit to 2 parts
-    //         .filter(keyValue -> keyValue.length == 2) // filter out pairs that do not have both key and value
-    //         .collect(Collectors.toMap(   // convert to Map
-    //             keyValue -> keyValue[0],
-    //             keyValue -> keyValue[1],
-    //             (v1, v2) -> v2,               // if duplicate key, get the last value
-    //             HashMap::new
-    //         ));
-    // }
 
+    public static String compressBooleanArray(boolean[] array) {
+        int byteLength = (int) Math.ceil(array.length / 8.0);
+        byte[] packed = new byte[byteLength];
+
+        for (int i = 0; i < array.length; i++) {
+            if (array[i]) {
+                packed[i / 8] |= 1 << (7 - (i % 8));
+            }
+        }
+
+        return Base64.getEncoder().encodeToString(packed);
+    }
+
+
+    public static boolean[] decompressBooleanArray(String base64, int arrayLength) {
+        byte[] packed = Base64.getDecoder().decode(base64);
+        boolean[] array = new boolean[arrayLength];
+
+        for (int i = 0; i < arrayLength; i++) {
+            array[i] = (packed[i / 8] & (1 << (7 - (i % 8)))) != 0;
+        }
+
+        return array;
+    }
 }
