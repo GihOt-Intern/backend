@@ -88,6 +88,7 @@ public class TestGameHandler {
                 gameId,
                 slot,
                 spawnPosition,
+                5.0f,
                 System.currentTimeMillis()
             );
 

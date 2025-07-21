@@ -62,7 +62,8 @@ public class PositionBroadcastService {
             if (hasPositionChanged(oldPosition, newPosition)) {
                 playerDataList.add(new PositionSend.PlayerPositionData(
                     playerSlot,
-                    newPosition.getPosition()
+                    newPosition.getPosition(),
+                    newPosition.getSpeed()
                 ));
                 System.out.println(">>> Player slot " + playerSlot + 
                     " position changed to (" + newPosition.getPosition().x() + ", " + newPosition.getPosition().y() + ")"
@@ -97,7 +98,7 @@ public class PositionBroadcastService {
                 short playerSlot = entry.getKey();
                 PositionData position = entry.getValue();
                 positionService.updatePosition(gameId, playerSlot, 
-                    position.getPosition(), position.getTimestamp());
+                    position.getPosition(), position.getSpeed(), position.getTimestamp());
             }
             
             // Xóa pending positions sau khi đã broadcast

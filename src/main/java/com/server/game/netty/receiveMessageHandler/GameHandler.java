@@ -36,6 +36,7 @@ public class GameHandler {
                 gameId, 
                 initialPositionsData.getSlot(), 
                 initialPositionsData.getPosition(),
+                5.0f,
                 System.currentTimeMillis()
             );
         }

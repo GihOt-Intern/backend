@@ -55,6 +55,7 @@ public class PositionHandler {
     @Data
     public static class PositionData {
         private final Vector2 position;
+        private final float speed;
         private final long timestamp;
     }
 } 

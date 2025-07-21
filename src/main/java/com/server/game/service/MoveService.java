@@ -31,11 +31,15 @@ public class MoveService {
         PositionData currentPos = positionService.getPlayerPosition(gameId, slot);
         
         if (currentPos == null) {
-            currentPos = new PositionData(targetPosition, System.currentTimeMillis());
+            currentPos = new PositionData(targetPosition, 
+            speed,
+            System.currentTimeMillis());
+
             positionService.updatePendingPosition(
                 gameId, 
                 slot, 
-                targetPosition, 
+                targetPosition,
+                speed,
                 System.currentTimeMillis()
             );
             return;
@@ -53,6 +57,7 @@ public class MoveService {
 
         targetPosition = targetAdj != null ? targetAdj : targetPosition;
 
+        
 
 
         MoveTarget target = new MoveTarget(
@@ -97,6 +102,7 @@ public class MoveService {
                     gameId, 
                     slot, 
                     target.getTargetPosition(), 
+                    target.getSpeed(),
                     currentTime
                 );
 
@@ -108,7 +114,7 @@ public class MoveService {
                 Vector2 dTarget = dPosition.multiply(ratio);
                 Vector2 newPosition = startPosition.add(dTarget);
 
-                positionService.updatePendingPosition(gameId, slot, newPosition, currentTime);
+                positionService.updatePendingPosition(gameId, slot, newPosition, target.getSpeed(), currentTime);
             }
         }
     }
