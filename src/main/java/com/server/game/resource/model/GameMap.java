@@ -24,7 +24,6 @@ import lombok.AccessLevel;
 public class GameMap {
     short id;
     String name;
-    List<Vector2> boundary;
     GoldMine goldMine;
     List<SlotInfo> slotInfos;
 
@@ -35,13 +34,11 @@ public class GameMap {
     public GameMap(
         @JsonProperty("id") short id,
         @JsonProperty("mapName") String name,
-        @JsonProperty("boundary") List<Vector2> boundary,
         @JsonProperty("gold_mine") GoldMine goldMine,
         @JsonProperty("slot_info") List<SlotInfo> slotInfos
     ) {
         this.id = id;
         this.name = name;
-        this.boundary = boundary;
         this.goldMine = goldMine;
         this.slotInfos = slotInfos;
 

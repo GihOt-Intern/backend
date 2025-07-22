@@ -47,15 +47,8 @@ public class MoveService {
 
 
 
-        // Điều chỉnh vị trí mục tiêu không vượt ra biên của map
-
-        // TODO: need to add arg to get current game map
-
+      
         Vector2 startPosition = currentPos.getPosition();
-
-        Vector2 targetAdj = gameMapService.adjustTargetToMap(startPosition, targetPosition);
-
-        targetPosition = targetAdj != null ? targetAdj : targetPosition;
 
         
 
