@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-import org.locationtech.jts.geom.Coordinate;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.server.game.map.component.Vector2;
 import com.server.game.resource.deserializer.GameMapGridDeserializer;
 
 
@@ -19,9 +19,14 @@ import lombok.AccessLevel;
 public class GameMapGrid {
     short id;
     String name;
-    Coordinate cornerA;
-    Coordinate cornerB;
+    Vector2 cornerA;
+    Vector2 cornerB;
     Integer nRows;
     Integer nCols;
+    float cellSize;
     boolean[][] grid;
+
+    public Vector2 getOrigin() {
+        return cornerA;
+    }
 }

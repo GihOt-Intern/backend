@@ -9,7 +9,6 @@ import com.server.game.map.component.Vector2;
 import java.io.IOException;
 import java.util.function.Function;
 
-import org.locationtech.jts.geom.Coordinate;
 
 
 public abstract class AbstractSizedObjectDeserializer<T> extends JsonDeserializer<T> {
@@ -19,9 +18,9 @@ public abstract class AbstractSizedObjectDeserializer<T> extends JsonDeserialize
         JsonNode node = codec.readTree(p);
 
         String id = node.get("id").asText();
-        Coordinate position = new Coordinate(
-                node.get("position").get("x").asDouble(),
-                node.get("position").get("y").asDouble()
+        Vector2 position = new Vector2(
+                (float) node.get("position").get("x").asDouble(),
+                (float) node.get("position").get("y").asDouble()
         );
         float width = (float) node.get("size").get("width").asDouble();
         float length = (float) node.get("size").get("length").asDouble();
@@ -29,6 +28,6 @@ public abstract class AbstractSizedObjectDeserializer<T> extends JsonDeserialize
         return builder.apply(new SizedObject(id, position, width, length));
     }
 
-    protected record SizedObject(String id, Coordinate position, float width, float length) {
+    protected record SizedObject(String id, Vector2 position, float width, float length) {
     }
 }

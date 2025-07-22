@@ -6,8 +6,8 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
-import org.locationtech.jts.geom.Coordinate;
 
+import com.server.game.map.component.Vector2;
 
 import lombok.AccessLevel;
 
@@ -18,9 +18,10 @@ import lombok.AccessLevel;
 public class GameMapGridCompress {
     Short id;
     String name;
-    Coordinate cornerA;
-    Coordinate cornerB;
+    Vector2 cornerA;
+    Vector2 cornerB;
     Integer nRows;
     Integer nCols;
+    float cellSize;
     List<String> gridCompressed;
 }

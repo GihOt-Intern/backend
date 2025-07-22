@@ -7,7 +7,6 @@ import lombok.experimental.FieldDefaults;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.jts.geom.Coordinate;
 import org.springframework.stereotype.Service;
 
 import com.server.game.resource.model.GameMapGrid;
@@ -40,6 +39,7 @@ public class GameMapGridService {
             gameMapGrid.getCornerB(),
             gameMapGrid.getNRows(),
             gameMapGrid.getNCols(),
+            gameMapGrid.getCellSize(),
             gridCompressed
         );
     }
@@ -59,6 +59,7 @@ public class GameMapGridService {
             gameMapGridCompress.getCornerB(),
             gameMapGridCompress.getNRows(),
             gameMapGridCompress.getNCols(),
+            gameMapGridCompress.getCellSize(),
             grid
         );
     }

@@ -2,7 +2,7 @@ package com.server.game;
 
 
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
+import com.server.game.map.component.GridCell;
 
 import com.server.game.map.AStarPathfinder;
 
@@ -20,15 +20,15 @@ class AStarPathfinderTest {
             {true, true, true}
         };
 
-        Coordinate start = new Coordinate(0, 0); // hàng 0, cột 0
-        Coordinate end = new Coordinate(2, 2);   // hàng 2, cột 2
+        GridCell start = new GridCell(0, 0); // hàng 0, cột 0
+        GridCell end = new GridCell(2, 2);   // hàng 2, cột 2
 
-        List<Coordinate> path = AStarPathfinder.findPath(grid, start, end);
+        List<GridCell> path = AStarPathfinder.findPath(grid, start, end);
 
         assertNotNull(path);
         assertFalse(path.isEmpty());
-        assertEquals(new Coordinate(0, 0), path.get(0));
-        assertEquals(new Coordinate(2, 2), path.get(path.size() - 1));
+        assertEquals(new GridCell(0, 0), path.get(0));
+        assertEquals(new GridCell(2, 2), path.get(path.size() - 1));
     }
 
     @Test
@@ -39,14 +39,14 @@ class AStarPathfinderTest {
             {true, true, true}
         };
 
-        Coordinate start = new Coordinate(0, 0);
-        Coordinate end = new Coordinate(0, 2); // bị chặn
+        GridCell start = new GridCell(0, 0);
+        GridCell end = new GridCell(0, 2); // bị chặn
 
-        List<Coordinate> path = AStarPathfinder.findPath(grid, start, end);
+        List<GridCell> path = AStarPathfinder.findPath(grid, start, end);
 
         assertNotNull(path);
         assertFalse(path.isEmpty());
-        assertEquals(new Coordinate(0, 0), path.get(0));
+        assertEquals(new GridCell(0, 0), path.get(0));
         // Không đến được end, nên điểm cuối KHÁC end
         assertNotEquals(end, path.get(path.size() - 1));
     }
@@ -56,9 +56,9 @@ class AStarPathfinderTest {
         boolean[][] grid = {
             {true}
         };
-        Coordinate point = new Coordinate(0, 0);
+        GridCell point = new GridCell(0, 0);
 
-        List<Coordinate> path = AStarPathfinder.findPath(grid, point, point);
+        List<GridCell> path = AStarPathfinder.findPath(grid, point, point);
 
         assertEquals(1, path.size());
         assertEquals(point, path.get(0));
@@ -71,10 +71,10 @@ class AStarPathfinderTest {
             {true, true}
         };
 
-        Coordinate start = new Coordinate(0, 0); // blocked
-        Coordinate end = new Coordinate(1, 1);
+        GridCell start = new GridCell(0, 0); // blocked
+        GridCell end = new GridCell(1, 1);
 
-        List<Coordinate> path = AStarPathfinder.findPath(grid, start, end);
+        List<GridCell> path = AStarPathfinder.findPath(grid, start, end);
 
         assertTrue(path.isEmpty());
     }
@@ -87,14 +87,14 @@ class AStarPathfinderTest {
             {true, true, true}
         };
 
-        Coordinate start = new Coordinate(0, 0);
-        Coordinate end = new Coordinate(1, 1); // blocked
+        GridCell start = new GridCell(0, 0);
+        GridCell end = new GridCell(1, 1); // blocked
 
-        List<Coordinate> path = AStarPathfinder.findPath(grid, start, end);
+        List<GridCell> path = AStarPathfinder.findPath(grid, start, end);
 
         assertNotNull(path);
         assertFalse(path.isEmpty());
-        assertEquals(new Coordinate(0, 0), path.get(0));
+        assertEquals(new GridCell(0, 0), path.get(0));
         // Không bằng end nhưng gần đó
         assertNotEquals(end, path.get(path.size() - 1));
     }
@@ -109,22 +109,22 @@ class AStarPathfinderTest {
             {true, true,  true,  true,  true}
         };
 
-        Coordinate start = new Coordinate(0, 0);
-        Coordinate end = new Coordinate(4, 4);
+        GridCell start = new GridCell(0, 0);
+        GridCell end = new GridCell(4, 4);
 
-        List<Coordinate> path = AStarPathfinder.findPath(grid, start, end);
+        List<GridCell> path = AStarPathfinder.findPath(grid, start, end);
 
 
         System.out.println(">>> [TEST 7] Path:");
-        for (Coordinate coord : path) {
-            System.out.print("(" + (int)coord.getX() + ", " + (int)coord.getY() + ")  ");
+        for (GridCell cell : path) {
+            System.out.print(cell + "  ");
         }
         System.out.println();
 
         assertNotNull(path);
         assertFalse(path.isEmpty());
-        assertEquals(new Coordinate(0, 0), path.get(0));
-        assertEquals(new Coordinate(4, 4), path.get(path.size() - 1));
+        assertEquals(new GridCell(0, 0), path.get(0));
+        assertEquals(new GridCell(4, 4), path.get(path.size() - 1));
     }
 
     @Test
@@ -137,21 +137,49 @@ class AStarPathfinderTest {
             {true, false,  true,  true,  true}
         };
 
-        Coordinate start = new Coordinate(0, 0);
-        Coordinate end = new Coordinate(4, 4);
+        GridCell start = new GridCell(0, 0);
+        GridCell end = new GridCell(4, 4);
 
-        List<Coordinate> path = AStarPathfinder.findPath(grid, start, end);
+        List<GridCell> path = AStarPathfinder.findPath(grid, start, end);
 
 
         System.out.println(">>> [TEST 8] Path:");
-        for (Coordinate coord : path) {
-            System.out.print("(" + (int)coord.getX() + ", " + (int)coord.getY() + ")  ");
+        for (GridCell cell : path) {
+            System.out.print(cell + "  ");
         }
         System.out.println();
 
         assertNotNull(path);
         assertFalse(path.isEmpty());
-        assertEquals(new Coordinate(0, 0), path.get(0));
-        assertNotEquals(new Coordinate(4, 4), path.get(path.size() - 1));
+        assertEquals(new GridCell(0, 0), path.get(0));
+        assertNotEquals(new GridCell(4, 4), path.get(path.size() - 1));
+    }
+
+    @Test
+    void test9() {
+        boolean[][] grid = {
+            {true, true,  false,  true,  true},
+            {true, true,  false, false, true},
+            {false, true,  true,  false, true},
+            {true, false, false, false, true},
+            {true, false,  true,  true,  false}
+        };
+
+        GridCell start = new GridCell(0, 0);
+        GridCell end = new GridCell(4, 4);
+
+        List<GridCell> path = AStarPathfinder.findPath(grid, start, end);
+
+
+        System.out.println(">>> [TEST 9] Path:");
+        for (GridCell cell : path) {
+            System.out.print(cell + "  ");
+        }
+        System.out.println();
+
+        assertNotNull(path);
+        assertFalse(path.isEmpty());
+        assertEquals(new GridCell(0, 0), path.get(0));
+        assertNotEquals(new GridCell(4, 4), path.get(path.size() - 1));
     }
 }

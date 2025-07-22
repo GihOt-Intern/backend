@@ -1,6 +1,7 @@
 package com.server.game.map;
 
-import org.locationtech.jts.geom.Coordinate;
+
+import com.server.game.map.component.GridCell;
 
 import java.util.*;
 
@@ -18,18 +19,13 @@ public class AStarPathfinder {
         {1, 1}    // diagonal down right
     };
 
-    public static List<Coordinate> findPath(boolean[][] grid, Coordinate start, Coordinate end) {
+    public static List<GridCell> findPath(boolean[][] grid, GridCell start, GridCell end) {
         int rows = grid.length;
         int cols = grid[0].length;
 
-        // X = row, Y = col
-        int startRow = (int) start.getX();
-        int startCol = (int) start.getY();
-        int endRow = (int) end.getX();
-        int endCol = (int) end.getY();
 
         // Nếu điểm bắt đầu hoặc kết thúc không đi được
-        if (!isValid(startRow, startCol, grid) || !grid[startRow][startCol]) {
+        if (!isValid(start.r(), start.c(), grid) || !isValid(end.r(), end.c(), grid) || !grid[start.r()][start.c()]) {
             return Collections.emptyList();
         }
 
@@ -38,24 +34,25 @@ public class AStarPathfinder {
         Map<String, Node> allNodes = new HashMap<>();
         boolean[][] visited = new boolean[rows][cols];
 
-        Node startNode = new Node(startRow, startCol, null, 0, heuristic(startRow, startCol, endRow, endCol));
+        Node startNode = new Node(start.r(), start.c(), null, 0, 
+                                    heuristic(start.r(), start.c(), end.r(), end.c()));
         openSet.add(startNode);
-        allNodes.put(key(startRow, startCol), startNode);
+        allNodes.put(key(start.r(), start.c()), startNode);
 
         Node closest = startNode;
 
         while (!openSet.isEmpty()) {
             Node current = openSet.poll();
 
-            if (current.row == endRow && current.col == endCol) {
+            if (current.row == end.r() && current.col == end.c()) {
                 return reconstructPath(current);
             }
 
             visited[current.row][current.col] = true;
 
             // Cập nhật node gần nhất với end (nếu không tìm được end)
-            if (heuristic(current.row, current.col, endRow, endCol) <
-                heuristic(closest.row, closest.col, endRow, endCol)) {
+            if (heuristic(current.row, current.col, end.r(), end.c()) <
+                heuristic(closest.row, closest.col, end.r(), end.c())) {
                 closest = current;
             }
 
@@ -88,7 +85,7 @@ public class AStarPathfinder {
                 
                 if (tentativeG < neighbor.g) {
                     neighbor.g = tentativeG;
-                    neighbor.h = heuristic(newRow, newCol, endRow, endCol);
+                    neighbor.h = heuristic(newRow, newCol, end.r(), end.c());
                     neighbor.f = neighbor.g + neighbor.h;
                     neighbor.parent = current;
 
@@ -119,13 +116,15 @@ public class AStarPathfinder {
         return row + "," + col;
     }
 
-    private static List<Coordinate> reconstructPath(Node node) {
-        LinkedList<Coordinate> path = new LinkedList<>();
+    private static List<GridCell> reconstructPath(Node node) {
+        // Use LinkedList to efficiently add elements at the beginning
+        LinkedList<GridCell> path = new LinkedList<>();
         while (node != null) {
-            path.addFirst(new Coordinate(node.row, node.col));
+            path.addFirst(new GridCell(node.row, node.col));
             node = node.parent;
         }
-        return path;
+        // Convert LinkedList to ArrayList to access by index later
+        return new ArrayList<>(path);
     }
 
 

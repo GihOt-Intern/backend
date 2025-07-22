@@ -1,7 +1,6 @@
 package com.server.game.service;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.server.game.map.component.Vector2;
-// import com.server.game.netty.receiveMessageHandler.GameHandler.GameState;
+import com.server.game.model.GameState;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,8 +28,6 @@ public class GameScheduler {
     // Lưu trữ các game đang hoạt động
     private final Map<String, GameState> activeGames = new ConcurrentHashMap<>();
     
-    public static class GameState {}; // TODO
-
 
     /**
      * Đăng ký game để thực hiện các task định kỳ
@@ -59,6 +56,15 @@ public class GameScheduler {
      */
     public boolean isGameActive(String gameId) {
         return activeGames.containsKey(gameId);
+    }
+
+
+    public GameState getGameState(String gameId) {
+        if (!isGameActive(gameId)) {
+            log.warn("Attempted to get state for inactive game: {}", gameId);
+            return null;
+        }
+        return activeGames.get(gameId);
     }
 
     /**

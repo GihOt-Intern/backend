@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 
 import com.server.game.map.component.Vector2;
-import com.server.game.netty.receiveMessageHandler.PositionHandler.PositionData;
+import com.server.game.service.MoveService.PositionData;
 import com.server.game.util.RedisUtil;
 
 import lombok.RequiredArgsConstructor;

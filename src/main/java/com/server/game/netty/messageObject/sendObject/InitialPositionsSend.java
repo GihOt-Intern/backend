@@ -4,8 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
-
-import org.locationtech.jts.geom.Coordinate;
+import java.util.stream.Collectors;
 
 import io.netty.channel.Channel;
 
@@ -23,11 +22,19 @@ import lombok.experimental.FieldDefaults;
 
 
 @Data
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InitialPositionsSend implements TLVEncodable {
     short mapId;
     List<InitialPositionData> championPositionsData;
+
+    
+    public InitialPositionsSend(short mapId, List<SlotInfo> slotInfos) {
+        this.mapId = mapId;
+        this.championPositionsData = slotInfos.stream()
+            .map(slotInfo -> new InitialPositionData(slotInfo))
+            .collect(Collectors.toList());
+    }
+
 
     @Override
     public SendMessageType getType() {
@@ -72,7 +79,7 @@ public class InitialPositionsSend implements TLVEncodable {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public static class InitialPositionData {
         short slot;
-        Coordinate position;
+        Vector2 position;
         float rotate;
 
         public InitialPositionData(SlotInfo slotInfo) {
@@ -88,8 +95,8 @@ public class InitialPositionsSend implements TLVEncodable {
                 DataOutputStream dos = new DataOutputStream(baos);
 
                 dos.writeShort(slot);
-                dos.writeFloat((float) position.getX());
-                dos.writeFloat((float) position.getY());
+                dos.writeFloat((float) position.x());
+                dos.writeFloat((float) position.y());
                 dos.writeFloat(rotate);
 
                 return baos.toByteArray();
