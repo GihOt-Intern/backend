@@ -1,16 +1,22 @@
 package com.server.game.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import com.server.game.map.AStarPathfinder;
+import com.server.game.map.component.GridCell;
 import com.server.game.map.component.Vector2;
-import com.server.game.netty.receiveMessageHandler.PositionHandler.PositionData;
-import com.server.game.resource.service.GameMapService;
+import com.server.game.model.GameState;
+import com.server.game.resource.model.GameMapGrid;
+import com.server.game.service.MoveService.MoveTarget.PathComponent;
 
 import lombok.Data;
+import lombok.experimental.Delegate;
 
 @Service
 public class MoveService {
@@ -19,7 +25,9 @@ public class MoveService {
     private PositionService positionService;
 
     @Autowired
-    private GameMapService gameMapService;
+    @Lazy
+    private GameScheduler gameScheduler;
+
 
     private final Map<String, Map<Short, MoveTarget>> moveTargets = new ConcurrentHashMap<>();
 
@@ -27,37 +35,49 @@ public class MoveService {
     /**
      * Đặt mục tiêu di chuyển mới cho người chơi
      */
-    public void setMoveTarget(String gameId, short slot, Vector2 targetPosition, float speed) {
+    public void setMoveTarget(String gameId, short slot, Vector2 targetPosition) {
+        
+        GameState gameState = gameScheduler.getGameState(gameId);
+
+        float slotSpeed = gameState.getSpeed(slot);
+        
         PositionData currentPos = positionService.getPlayerPosition(gameId, slot);
         
         if (currentPos == null) {
-            currentPos = new PositionData(targetPosition, 
-            speed,
-            System.currentTimeMillis());
+            currentPos = new PositionData(
+                targetPosition,
+                slotSpeed,
+                System.currentTimeMillis()
+            );
 
             positionService.updatePendingPosition(
                 gameId, 
                 slot, 
                 targetPosition,
-                speed,
+                slotSpeed,
                 System.currentTimeMillis()
             );
             return;
         }
 
 
-
-      
-        Vector2 startPosition = currentPos.getPosition();
-
         
 
+        GameMapGrid gameMapGrid = gameState.getGameMapGrid();
+
+        Vector2 startPosition = currentPos.getPosition();
+        GridCell startCell = gameState.toGridCell(startPosition);
+        GridCell targetCell = gameState.toGridCell(targetPosition);
+
+        List<GridCell> path = AStarPathfinder.findPath(gameMapGrid.getGrid(), startCell, targetCell);
+        PathComponent pathComponent = new PathComponent(path);
 
         MoveTarget target = new MoveTarget(
             startPosition,
             targetPosition,
-            speed,
-            System.currentTimeMillis()
+            System.currentTimeMillis(),
+            slotSpeed,
+            pathComponent
         );
 
         // Lưu mục tiêu và xoá mục tiêu cũ nếu có
@@ -75,6 +95,7 @@ public class MoveService {
             return;
         }
 
+        GameState gameState = gameScheduler.getGameState(gameId);
         long currentTime = System.currentTimeMillis();
 
         for (Map.Entry<Short, MoveTarget> entry : targets.entrySet()) {
@@ -83,32 +104,39 @@ public class MoveService {
 
             float elapsedTime = (currentTime - target.getStartTime()) / 1000.0f;
 
-            Vector2 startPosition = target.getStartPosition();
-            Vector2 targetPosition = target.getTargetPosition();
-            Vector2 dPosition = targetPosition.subtract(startPosition);
-            float distance = dPosition.length();
+            float targetSpeed = target.getSpeed();
 
-            float timeToTarget = distance / target.getSpeed();
+            Vector2 position = target.getCurrentPosition();
+            float remainingDistance = targetSpeed * elapsedTime;
 
-            if (elapsedTime >= timeToTarget) {
-                positionService.updatePendingPosition(
-                    gameId, 
-                    slot, 
-                    target.getTargetPosition(), 
-                    target.getSpeed(),
-                    currentTime
-                );
+            while(target.path.hasNext()) {
+                GridCell nextCell = target.path.getNextCell();
+                Vector2 nextPosition = gameState.toPosition(nextCell);
+                
+                float distanceToNext = position.distanceTo(nextPosition);
 
-                //Xoá mục tiêu
-                targets.remove(slot);
-            } else {
-
-                float ratio = elapsedTime / timeToTarget;
-                Vector2 dTarget = dPosition.multiply(ratio);
-                Vector2 newPosition = startPosition.add(dTarget);
-
-                positionService.updatePendingPosition(gameId, slot, newPosition, target.getSpeed(), currentTime);
+                if (remainingDistance >= distanceToNext) {
+                    // if distance slot can go in elapsed time is longer than the distance to the next cell,
+                    // temporarily set position to next cell and reduce remaining distance 
+                    position = nextPosition;
+                    remainingDistance -= distanceToNext;
+                } else {
+                    // if distance slot can go in elapsed time is shorter than the distance to the next cell,
+                    // calculate the new position along the direction to the next cell
+                    Vector2 direction = nextPosition.subtract(position).normalize();
+                    position = position.add(direction.multiply(remainingDistance));
+                    break; // no need to check further cells
+                }
             }
+
+            // Cập nhật vị trí mới
+            positionService.updatePendingPosition(
+                gameId, 
+                slot,
+                position, 
+                targetSpeed,
+                currentTime
+            );
         }
     }
 
@@ -116,11 +144,48 @@ public class MoveService {
         moveTargets.remove(gameId);
     }
 
+
     @Data
     public static class MoveTarget {
-        private final Vector2 startPosition;
+        private final Vector2 currentPosition;
         private final Vector2 targetPosition;
-        private final float speed;
         private final long startTime;
+        private final float speed;
+        @Delegate
+        private final PathComponent path;
+
+
+
+
+        public static class PathComponent {
+            private List<GridCell> path;
+            private int index;
+
+            public PathComponent(List<GridCell> path) {
+                this.path = path;
+                this.index = 0;
+            }
+
+            public boolean hasNext() {
+                return index < path.size();
+            }
+
+            public GridCell getNextCell() {
+                if (!hasNext()) {
+                    System.out.println(">>> No more cells in path, returning null.");
+                    return null; // Hoặc có thể ném ngoại lệ nếu không có vị trí tiếp theo
+                }
+                return path.get(index++);
+            }
+        }
+    }
+
+
+    // Inner class để lưu trữ dữ liệu vị trí
+    @Data
+    public static class PositionData {
+        private final Vector2 position;
+        private final float speed;
+        private final long timestamp;
     }
 }

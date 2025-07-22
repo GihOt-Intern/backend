@@ -1,6 +1,6 @@
 package com.server.game.service;
 
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.server.game.map.component.Vector2;
+import com.server.game.model.GameState;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,13 +26,14 @@ public class GameScheduler {
     private PositionService positionService;
     
     // Lưu trữ các game đang hoạt động
-    private final Set<String> activeGames = ConcurrentHashMap.newKeySet();
+    private final Map<String, GameState> activeGames = new ConcurrentHashMap<>();
     
+
     /**
      * Đăng ký game để thực hiện các task định kỳ
      */
-    public void registerGame(String gameId) {
-        activeGames.add(gameId);
+    public void registerGame(String gameId, GameState gameState) {
+        activeGames.put(gameId, gameState);
         log.info("Registered game for scheduling: {}", gameId);
     }
     
@@ -39,6 +41,10 @@ public class GameScheduler {
      * Hủy đăng ký game
      */
     public void unregisterGame(String gameId) {
+        if (!this.isGameActive(gameId)) {
+            log.warn("Attempted to unregister non-existent game: {}", gameId);
+            return;
+        }
         activeGames.remove(gameId);
         // Notify services to clean up game data
         positionBroadcastService.unregisterGame(gameId);
@@ -49,7 +55,16 @@ public class GameScheduler {
      * Kiểm tra xem game có hoạt động hay không
      */
     public boolean isGameActive(String gameId) {
-        return activeGames.contains(gameId);
+        return activeGames.containsKey(gameId);
+    }
+
+
+    public GameState getGameState(String gameId) {
+        if (!isGameActive(gameId)) {
+            log.warn("Attempted to get state for inactive game: {}", gameId);
+            return null;
+        }
+        return activeGames.get(gameId);
     }
 
     /**
@@ -72,7 +87,7 @@ public class GameScheduler {
      */
     @Scheduled(fixedDelay = 33) // 33ms = ~30 times per second = ~30 fps
     public void gameLoop() {
-        for (String gameId : activeGames) {  
+        for (String gameId : activeGames.keySet()) {
             try {
                 // Update movement positions
                 moveService.updatePositions(gameId);
@@ -100,7 +115,7 @@ public class GameScheduler {
      */
     @Scheduled(fixedDelay = 200) // 200ms = 5 times per second
     public void slowGameLoop() {
-        for (String gameId : activeGames) {
+        for (String gameId : activeGames.keySet()) {
             try {
                 // TODO: Add slower update systems here
                 // - Troop spawning

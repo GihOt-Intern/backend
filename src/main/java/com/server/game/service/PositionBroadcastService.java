@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.PositionSend;
-import com.server.game.netty.receiveMessageHandler.PositionHandler.PositionData;
+import com.server.game.service.MoveService.PositionData;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;

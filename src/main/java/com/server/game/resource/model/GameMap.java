@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -27,7 +28,7 @@ public class GameMap {
     GoldMine goldMine;
     List<SlotInfo> slotInfos;
 
-    final Map<Short, SlotInfo> slotInfoMap = new HashMap<>();
+    final Map<Short, SlotInfo> slot2SlotInfo = new HashMap<>();
 
 
     @JsonCreator
@@ -44,7 +45,7 @@ public class GameMap {
 
         if (slotInfos != null) {
             for (SlotInfo slotInfo : slotInfos) {
-                slotInfoMap.put(slotInfo.getSlot(), slotInfo);
+                slot2SlotInfo.put(slotInfo.getSlot(), slotInfo);
             }
         }
     }
@@ -63,17 +64,17 @@ public class GameMap {
     }
 
 
-    public Vector2 getInitialPosition(short slot) {
-        if (slotInfoMap.containsKey(slot)) {
-            return slotInfoMap.get(slot).getInitialPosition();
+    public Vector2 getSpawnPosition(short slot) {
+        if (slot2SlotInfo.containsKey(slot)) {
+            return slot2SlotInfo.get(slot).getSpawnPosition();
         }
         System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
         return null;
     }
 
     public Float getInitialRotate(short slot) {
-        if (slotInfoMap.containsKey(slot)) {
-            return slotInfoMap.get(slot).getInitialRotate();
+        if (slot2SlotInfo.containsKey(slot)) {
+            return slot2SlotInfo.get(slot).getInitialRotate();
         }
         System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
         return null;

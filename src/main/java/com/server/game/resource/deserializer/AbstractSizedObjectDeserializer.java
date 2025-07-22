@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.function.Function;
 
 
+
 public abstract class AbstractSizedObjectDeserializer<T> extends JsonDeserializer<T> {
 
     protected T parse(JsonParser p, Function<SizedObject, T> builder) throws IOException {
