@@ -123,6 +123,10 @@ public class AStarPathfinder {
             path.addFirst(new GridCell(node.row, node.col));
             node = node.parent;
         }
+
+        // print path for debugging
+        System.out.println("Path found: " + path);
+
         // Convert LinkedList to ArrayList to access by index later
         return new ArrayList<>(path);
     }

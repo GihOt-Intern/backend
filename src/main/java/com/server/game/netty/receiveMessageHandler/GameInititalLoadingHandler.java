@@ -48,6 +48,8 @@ public class GameInititalLoadingHandler {
                     ChannelManager.getGameIdByChannel(channel), 
                     gameState
                 );
+                String gameId = ChannelManager.getGameIdByChannel(channel);
+                this.setSpawnPosition2Cache(gameId, gameState);
             } else {
                 System.err.println(">>> [Log in GameLoadingHandler.loadInitial] Initial loading messages failed: " + f.cause());
             }
@@ -91,5 +93,23 @@ public class GameInititalLoadingHandler {
         return lastFuture == null 
             ? channel.newSucceededFuture() 
             : lastFuture;
+    }
+
+    private void setSpawnPosition2Cache(String gameId, GameState gameState) {
+        // Set spawn position for each player in the game state
+        for (Short slot : gameState.getChampions().keySet()) {
+            Champion champion = gameState.getChampionBySlot(slot);
+            if (champion != null) {
+                gameScheduler.updatePosition(
+                    gameId, 
+                    slot, 
+                    gameState.getSpawnPosition(slot), 
+                    gameState.getSpeed(slot), 
+                    System.currentTimeMillis()
+                );
+            } else {
+                System.out.println(">>> [Log in GameLoadingHandler.setSpawnPosition2Cache] Champion with slot " + slot + " not found.");
+            }
+        }
     }
 }

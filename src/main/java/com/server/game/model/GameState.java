@@ -48,19 +48,18 @@ public class GameState {
     public Vector2 toPosition(GridCell gridCell) {
         Vector2 origin = gameMapGrid.getOrigin();
         float cellSize = gameMapGrid.getCellSize();
-        return new Vector2(
-            origin.x() + gridCell.c() * cellSize + cellSize / 2,
-            origin.y() + gridCell.r() * cellSize + cellSize / 2
-        );
+        float x = origin.x() + gridCell.c() * cellSize + cellSize / 2;
+        float y = origin.y() - gridCell.r() * cellSize - cellSize / 2;
+        return new Vector2(x, y);
     }
 
 
     public GridCell toGridCell(Vector2 position) {
-        Vector2 origin = gameMapGrid.getOrigin();
+        Vector2 origin = gameMapGrid.getOrigin(); // (-100; 30)
         float cellSize = gameMapGrid.getCellSize();
 
-        int row = (int) ((position.x() - origin.x()) / cellSize);
-        int col = (int) ((position.y() - origin.y()) / cellSize);
+        int col = (int) ((position.x() - origin.x()) / cellSize);
+        int row = (int) ((origin.y() - position.y()) / cellSize); // flip Y axis
         return new GridCell(row, col);
     }
 }

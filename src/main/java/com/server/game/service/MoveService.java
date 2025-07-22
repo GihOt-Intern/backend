@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,10 @@ import com.server.game.service.MoveService.MoveTarget.PathComponent;
 
 import lombok.Data;
 import lombok.experimental.Delegate;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class MoveService {
     
     @Autowired
@@ -69,6 +72,9 @@ public class MoveService {
         GridCell startCell = gameState.toGridCell(startPosition);
         GridCell targetCell = gameState.toGridCell(targetPosition);
 
+        log.info("Setting move target for slot {}: from {} to {}", slot, startPosition, targetPosition);
+        log.info("Calculating path for slot {} from cell {} to cell {}", slot, startCell, targetCell);
+
         List<GridCell> path = AStarPathfinder.findPath(gameMapGrid.getGrid(), startCell, targetCell);
         PathComponent pathComponent = new PathComponent(path);
 
@@ -118,18 +124,31 @@ public class MoveService {
                 if (remainingDistance >= distanceToNext) {
                     // if distance slot can go in elapsed time is longer than the distance to the next cell,
                     // temporarily set position to next cell and reduce remaining distance 
+                    
                     position = nextPosition;
                     remainingDistance -= distanceToNext;
+
+                    log.info(">>> Moving slot {} to next pos: {} (remaining distance: {})", slot, nextPosition, remainingDistance);
+
+
+
                 } else {
                     // if distance slot can go in elapsed time is shorter than the distance to the next cell,
                     // calculate the new position along the direction to the next cell
-                    Vector2 direction = nextPosition.subtract(position).normalize();
-                    position = position.add(direction.multiply(remainingDistance));
+                    
+                    // Vector2 direction = nextPosition.subtract(position).normalize();
+                    // position = position.add(direction.multiply(remainingDistance));
+                    position = nextPosition;
+                    log.info(">>> Slot {} cannot reach next pos: {} (remaining distance: {}), calculating new position", slot, nextPosition, remainingDistance);
+
+                    
                     break; // no need to check further cells
                 }
             }
 
             // Cập nhật vị trí mới
+
+            log.info(">>> Updating pending position for slot {}: {}", slot, position);
             positionService.updatePendingPosition(
                 gameId, 
                 slot,
@@ -137,6 +156,10 @@ public class MoveService {
                 targetSpeed,
                 currentTime
             );
+
+            if (!target.path.hasNext()) {
+                targets.remove(slot);
+            }
         }
     }
 

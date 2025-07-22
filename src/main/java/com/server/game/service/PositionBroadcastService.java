@@ -95,6 +95,7 @@ public class PositionBroadcastService {
             
             // Cập nhật main cache với vị trí mới
             for (Map.Entry<Short, PositionData> entry : pendingPositions.entrySet()) {
+                log.info("Updating position for slot {}: {}", entry.getKey(), entry.getValue());
                 short playerSlot = entry.getKey();
                 PositionData position = entry.getValue();
                 positionService.updatePosition(gameId, playerSlot, 

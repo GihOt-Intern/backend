@@ -34,6 +34,7 @@ public class GameScheduler {
      */
     public void registerGame(String gameId, GameState gameState) {
         activeGames.put(gameId, gameState);
+        
         log.info("Registered game for scheduling: {}", gameId);
     }
     
