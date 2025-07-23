@@ -53,13 +53,13 @@ public class GameMapService {
         }
     }
 
-    public Vector2 getInitialPosition(Short gameMapId, short slot) {
+    public Vector2 getSpawnPosition(Short gameMapId, short slot) {
         GameMap gameMap = getGameMapById(gameMapId);
         if (gameMap == null) {
             System.out.println(">>> [Log in GameMapService] GameMap with id " + gameMapId + " not found.");
             return null;
         }
-        return gameMap.getInitialPosition(slot);
+        return gameMap.getSpawnPosition(slot);
     }
 
 
@@ -71,4 +71,5 @@ public class GameMapService {
         }
         return gameMap.getInitialRotate(slot);
     }
+
 }

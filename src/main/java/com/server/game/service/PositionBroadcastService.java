@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.PositionSend;
-import com.server.game.netty.receiveMessageHandler.PositionHandler.PositionData;
+import com.server.game.service.MoveService.PositionData;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +62,8 @@ public class PositionBroadcastService {
             if (hasPositionChanged(oldPosition, newPosition)) {
                 playerDataList.add(new PositionSend.PlayerPositionData(
                     playerSlot,
-                    newPosition.getPosition()
+                    newPosition.getPosition(),
+                    newPosition.getSpeed()
                 ));
                 System.out.println(">>> Player slot " + playerSlot + 
                     " position changed to (" + newPosition.getPosition().x() + ", " + newPosition.getPosition().y() + ")"
@@ -94,10 +95,11 @@ public class PositionBroadcastService {
             
             // Cập nhật main cache với vị trí mới
             for (Map.Entry<Short, PositionData> entry : pendingPositions.entrySet()) {
+                log.info("Updating position for slot {}: {}", entry.getKey(), entry.getValue());
                 short playerSlot = entry.getKey();
                 PositionData position = entry.getValue();
                 positionService.updatePosition(gameId, playerSlot, 
-                    position.getPosition(), position.getTimestamp());
+                    position.getPosition(), position.getSpeed(), position.getTimestamp());
             }
             
             // Xóa pending positions sau khi đã broadcast

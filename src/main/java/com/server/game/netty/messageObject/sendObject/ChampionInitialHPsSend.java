@@ -3,7 +3,9 @@ package com.server.game.netty.messageObject.sendObject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import io.netty.channel.Channel;
 
@@ -11,6 +13,7 @@ import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.SendMessageType;
+import com.server.game.resource.model.Champion;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,6 +26,17 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChampionInitialHPsSend implements TLVEncodable {
     List<ChampionInitialHPData> championInitialHPsData;
+
+    public ChampionInitialHPsSend(Map<Short, Champion> slot2Champion) {
+        this.championInitialHPsData = new ArrayList<>();
+        for (Map.Entry<Short, Champion> entry : slot2Champion.entrySet()) {
+            Short slot = entry.getKey();
+            Champion champion = entry.getValue();
+            ChampionInitialHPData initialHPData = new ChampionInitialHPData(slot, champion.getInitialHP());
+            this.championInitialHPsData.add(initialHPData);
+        }
+    }
+
 
     @Override
     public SendMessageType getType() {

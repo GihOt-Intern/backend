@@ -183,12 +183,8 @@ public class AttackTargetingService {
             return;
         }
         
-        // Get champion's move speed
-        ChampionEnum attackerChampion = getChampionForSlot(gameId, attackerSlot);
-        float moveSpeed = getChampionMoveSpeed(attackerChampion);
-        
         // Set movement target
-        moveService.setMoveTarget(gameId, attackerSlot, targetPosition, moveSpeed);
+        moveService.setMoveTarget(gameId, attackerSlot, targetPosition);
         
         log.debug("Moving slot {} towards attack target at position {}", attackerSlot, targetPosition);
     }

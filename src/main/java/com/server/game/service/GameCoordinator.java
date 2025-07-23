@@ -52,14 +52,14 @@ public class GameCoordinator {
     /**
      * Cập nhật vị trí của người chơi
      */
-    public void updatePosition(String gameId, short slot, Vector2 position, long timestamp) {
+    public void updatePosition(String gameId, short slot, Vector2 position, float speed, long timestamp) {
         if (!isGameActive(gameId)) {
             log.warn("Attempted to update position for inactive game: {}", gameId);
             return;
         }
         
         // Update position in the PositionService
-        positionService.updatePosition(gameId, slot, position, timestamp);
+        positionService.updatePosition(gameId, slot, position, speed, timestamp);
         log.debug("Updated position for gameId: {}, slot: {}, position: {}", gameId, slot, position);
     }
     
