@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,7 @@ public class MoveService {
 
     @Autowired
     @Lazy
-    private GameScheduler gameScheduler;
+    private GameCoordinator gameCoordinator;
 
 
     private final Map<String, Map<Short, MoveTarget>> moveTargets = new ConcurrentHashMap<>();
@@ -40,7 +39,7 @@ public class MoveService {
      */
     public void setMoveTarget(String gameId, short slot, Vector2 targetPosition) {
         
-        GameState gameState = gameScheduler.getGameState(gameId);
+        GameState gameState = gameCoordinator.getGameState(gameId);
 
         float slotSpeed = gameState.getSpeed(slot);
         
@@ -101,7 +100,7 @@ public class MoveService {
             return;
         }
 
-        GameState gameState = gameScheduler.getGameState(gameId);
+        GameState gameState = gameCoordinator.getGameState(gameId);
         long currentTime = System.currentTimeMillis();
 
         for (Map.Entry<Short, MoveTarget> entry : targets.entrySet()) {

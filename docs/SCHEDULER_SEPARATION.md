@@ -105,4 +105,15 @@ The system uses Spring's `@Scheduled` annotation with separate thread pools:
 
 ## Backward Compatibility
 
-The old `GameScheduler` is still available but deprecated. It delegates all calls to the new `GameCoordinator` and will be removed in future versions.
+The old `GameScheduler` is still available but **deprecated**. It delegates all calls to the new `GameCoordinator` and will be removed in future versions.
+
+**Migration is now complete for all core services:**
+- ✅ `TestGameHandler` - Uses `GameCoordinator`
+- ✅ `MoveService` - Updated to use `GameCoordinator` 
+- ✅ `GameScheduler` - Deprecated, delegates to `GameCoordinator`
+
+## Next Steps
+
+1. **Remove deprecated `GameScheduler`** in next release cycle
+2. **Update any remaining references** to use `GameCoordinator`
+3. **Clean up scheduling documentation** to reflect final architecture
