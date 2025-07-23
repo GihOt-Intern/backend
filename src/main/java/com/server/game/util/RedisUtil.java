@@ -31,9 +31,7 @@ public class RedisUtil {
             String pong = connectionFactory.getConnection().ping();
             boolean isReady = "PONG".equals(pong);
             
-            if (isReady) {
-                System.out.println("Redis connection is ready - PONG received");
-            } else {
+            if (!isReady) {
                 System.err.println("Redis ping failed - received: " + pong);
             }
             

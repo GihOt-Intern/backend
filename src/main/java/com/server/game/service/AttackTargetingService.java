@@ -224,14 +224,6 @@ public class AttackTargetingService {
     }
     
     /**
-     * Get champion's move speed
-     */
-    private float getChampionMoveSpeed(ChampionEnum championEnum) {
-        var champion = championService.getChampionById(championEnum);
-        return champion != null ? champion.getMoveSpeed() : 5.0f; // Default speed
-    }
-    
-    /**
      * Clear all attack targets for a game (when game ends)
      */
     public void clearGameTargets(String gameId) {

@@ -14,8 +14,8 @@ import com.server.game.netty.messageObject.sendObject.ChampionInitialStatsSend;
 import com.server.game.netty.messageObject.sendObject.InitialPositionsSend;
 import com.server.game.resource.model.Champion;
 import com.server.game.resource.model.SlotInfo;
-import com.server.game.resource.service.GameStateService;
-import com.server.game.service.GameScheduler;
+import com.server.game.resource.service.GameStateBuilderService;
+import com.server.game.service.GameCoordinator;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -29,12 +29,12 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameInititalLoadingHandler {
 
-    GameStateService gameStateService;
-    GameScheduler gameScheduler;
+    GameStateBuilderService gameStateBuilderService;
+    GameCoordinator gameCoordinator;
     
     // This method is called by LobbyHandler when all players are ready
     public void loadInitial(Channel channel) {
-        GameState gameState = gameStateService.getGameState(channel);
+        GameState gameState = gameStateBuilderService.getGameState(channel);
         ChannelFuture future = 
             this.sendInitialPositions(channel, gameState);
         future = this.sendChampionInitialHPs(channel, gameState);
@@ -43,8 +43,8 @@ public class GameInititalLoadingHandler {
         future.addListener(f -> {
             if (f.isSuccess()) {
                 System.out.println(">>> [Log in GameLoadingHandler.loadInitial] Initial loading messages sent successfully.");
-                // Send initial game state successfully, register game to gameScheduler
-                gameScheduler.registerGame(
+                // Send initial game state successfully, register game to gameCoordinator
+                gameCoordinator.registerGame(
                     ChannelManager.getGameIdByChannel(channel), 
                     gameState
                 );
@@ -100,7 +100,7 @@ public class GameInititalLoadingHandler {
         for (Short slot : gameState.getChampions().keySet()) {
             Champion champion = gameState.getChampionBySlot(slot);
             if (champion != null) {
-                gameScheduler.updatePosition(
+                gameCoordinator.updatePosition(
                     gameId, 
                     slot, 
                     gameState.getSpawnPosition(slot), 

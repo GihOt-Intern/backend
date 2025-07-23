@@ -27,7 +27,7 @@ import lombok.AccessLevel;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
-public class GameStateService {
+public class GameStateBuilderService {
 
 
     GameMapService gameMapService;
