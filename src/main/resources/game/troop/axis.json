@@ -1,0 +1,32 @@
+{
+  "id": 0,
+  "name": "Axis",
+  "type": "melee",
+  "role": "Tank",
+  "stats": {
+    "hp": 400,
+    "defense": 80,
+    "attack": 60,
+    "move_speed": 3.5,
+    "attack_speed": 1.2,
+    "attack_range": 0.8,
+    "detection_range": 5.0,
+    "cost": 100
+  },
+  "ability": {
+    "name": "Shield Wall",
+    "description": "Increases defense by 50% for 5 seconds",
+    "cool_down": 20.0,
+    "effect": {
+      "type": "defense_boost",
+      "value": 0.5,
+      "duration": 5.0
+    }
+  },
+  "ai_behavior": {
+    "aggression": 0.7,
+    "pursuit_range": 8.0,
+    "retreat_health_threshold": 0.2,
+    "group_behavior": "formation_tank"
+  }
+}

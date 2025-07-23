@@ -18,6 +18,12 @@ public record Vector2(float x, float y) {
         return (float) Math.sqrt(x * x + y * y);
     }
 
+    public Vector2 normalize() {
+        float len = length();
+        if (len == 0) return new Vector2(0, 0);
+        return new Vector2(x / len, y / len);
+    }
+
 
     public float distance(Vector2 other) {
         return this.subtract(other).length();

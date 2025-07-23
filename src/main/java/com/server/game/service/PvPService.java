@@ -10,8 +10,12 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.MessageSend;
 import com.server.game.netty.messageObject.sendObject.pvp.AttackAnimationDisplaySend;
 import com.server.game.netty.messageObject.sendObject.pvp.HealthUpdateSend;
+import com.server.game.service.gameState.GameStateBroadcastService;
+import com.server.game.service.troop.TroopManager;
+import com.server.game.service.troop.TroopInstance;
 
 import com.server.game.util.ChampionEnum;
+import com.server.game.util.TroopEnum;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
@@ -24,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PvPService {
+    GameStateBroadcastService gameStateBroadcastService;
+    TroopManager troopManager;
     
     // Store combat data for each game
     private final Map<String, Map<Short, CombatData>> combatDataMap = new ConcurrentHashMap<>();
@@ -93,6 +99,32 @@ public class PvPService {
         
         // 3. Send health update for the champion being attacked
         broadcastHealthUpdate(gameId, defenderSlot, damage, timestamp);
+    }
+    
+    /**
+     * Handle troop attacking a player (called by troop AI system)
+     */
+    public void handleTroopAttackPlayer(String gameId, String troopId, short targetPlayerSlot, long timestamp) {
+        log.info("Troop {} attacking player in slot {} in game {} at timestamp {}", 
+                troopId, targetPlayerSlot, gameId, timestamp);
+        
+        // Get the troop instance to calculate damage
+        TroopInstance attackingTroop = troopManager.getTroop(gameId, troopId);
+        if (attackingTroop == null) {
+            log.warn("Attacking troop not found: {} in game {}", troopId, gameId);
+            return;
+        }
+        
+        // Calculate troop damage against player
+        int damage = calculateTroopDamageToPlayer(attackingTroop);
+        
+        // 1. Send attack animation
+        broadcastTargetAttackerAnimation(gameId, troopId, timestamp);
+        
+        // 2. Apply damage to player and broadcast health update
+        broadcastHealthUpdate(gameId, targetPlayerSlot, damage, timestamp);
+        
+        log.info("Troop {} dealt {} damage to player slot {}", troopId, damage, targetPlayerSlot);
     }
     
     /**
@@ -210,11 +242,21 @@ public class PvPService {
     }
     
     /**
-     * Calculate damage dealt to PvE targets
+     * Calculate damage dealt to PvE targets (troops)
      */
     private int calculatePvEDamage(String targetId) {
-        // Simplified PvE damage calculation
-        // In a real game, this would consider champion stats, target armor, etc.
+        // For troop targets, use a base damage with some randomness
+        // In a real implementation, this would consider the attacking champion's stats
+        
+        // Check if this is a troop instance ID (UUID format)
+        if (targetId.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
+            // Base champion attack damage against troops
+            int baseDamage = 75; // Base damage for champions attacking troops
+            int variation = (int) (baseDamage * 0.3); // ±30% variation
+            return baseDamage + (int) (Math.random() * variation * 2) - variation;
+        }
+        
+        // Fallback for non-troop targets (legacy system)
         if (targetId.startsWith("boss_")) {
             return 150 + (int) (Math.random() * 50); // 150-200 damage to bosses
         } else if (targetId.startsWith("elite_")) {
@@ -222,6 +264,29 @@ public class PvPService {
         } else {
             return 80 + (int) (Math.random() * 20); // 80-100 damage to normal enemies
         }
+    }
+    
+    /**
+     * Calculate damage dealt by a troop to a player
+     */
+    private int calculateTroopDamageToPlayer(TroopInstance attackingTroop) {
+        // Get base damage from troop type configuration
+        // This would typically come from the troop's attack stat in JSON config
+        int baseDamage = switch (attackingTroop.getTroopType()) {
+            case AXIS -> 45;      // Tank troops do moderate damage
+            case SHADOW -> 80;    // Assassin troops do high damage  
+            case CROSSBAWL -> 60; // Ranged troops do good damage
+            case HEALER -> 25;    // Healers do low damage
+        };
+        
+        // Apply damage multiplier if troop is buffed
+        if (attackingTroop.isBuffed()) {
+            baseDamage = (int) (baseDamage * attackingTroop.getDamageMultiplier());
+        }
+        
+        // Add some randomness (±20%)
+        int variation = (int) (baseDamage * 0.2);
+        return baseDamage + (int) (Math.random() * variation * 2) - variation;
     }
     
     /**
@@ -323,21 +388,8 @@ public class PvPService {
     private void broadcastHealthUpdate(String gameId, short targetSlot, int damage, long timestamp) {
         log.debug("Broadcasting health update for slot {} with damage {}", targetSlot, damage);
         
-        // TODO: Get actual health values from game state/health management system
-        int maxHealth = 1000; // Placeholder value
-        int currentHealth = Math.max(0, maxHealth - damage); // Simplified calculation
-        
-        HealthUpdateSend healthUpdate = new HealthUpdateSend(targetSlot, currentHealth, maxHealth, damage, timestamp);
-        
-        // Broadcast to all players in the game
-        Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
-        if (gameChannels != null) {
-            gameChannels.forEach(channel -> {
-                if (channel != null && channel.isActive()) {
-                    channel.writeAndFlush(healthUpdate);
-                }
-            });
-        }
+        // Use the enhanced broadcast service
+        gameStateBroadcastService.broadcastHealthUpdate(gameId, targetSlot, damage, timestamp);
     }
     
     /**
@@ -346,9 +398,27 @@ public class PvPService {
     private void broadcastHealthUpdateForTarget(String gameId, String targetId, int damage, long timestamp) {
         log.debug("Broadcasting health update for target {} with damage {}", targetId, damage);
         
-        // TODO: Get actual health values from target/NPC management system
-        int maxHealth = calculateTargetMaxHealth(targetId);
-        int currentHealth = Math.max(0, maxHealth - damage); // Simplified calculation
+        // Get the actual troop instance from TroopManager
+        TroopInstance targetTroop = troopManager.getTroop(gameId, targetId);
+        if (targetTroop == null) {
+            log.warn("Target troop not found: {} in game {}", targetId, gameId);
+            return;
+        }
+        
+        // Apply damage to the troop
+        targetTroop.takeDamage(damage);
+        
+        // Get actual health values after damage
+        int currentHealth = targetTroop.getCurrentHP();
+        int maxHealth = targetTroop.getMaxHP();
+        
+        log.info("Target {} took {} damage - HP: {}/{}", targetId, damage, currentHealth, maxHealth);
+        
+        // If troop died, remove it from the game
+        if (!targetTroop.isAlive()) {
+            troopManager.removeTroop(gameId, targetId);
+            log.info("Target troop {} has been killed and removed from game {}", targetId, gameId);
+        }
         
         HealthUpdateSend healthUpdate = new HealthUpdateSend(targetId, currentHealth, maxHealth, damage, timestamp);
         
@@ -360,22 +430,11 @@ public class PvPService {
                     channel.writeAndFlush(healthUpdate);
                 }
             });
+            
+            log.info("Broadcasted health update for target {} in game {} - HP: {}/{} (damage: {})", 
+                    targetId, gameId, currentHealth, maxHealth, damage);
         }
     }
-    
-    /**
-     * Calculate max health for target based on type
-     */
-    private int calculateTargetMaxHealth(String targetId) {
-        if (targetId.startsWith("boss_")) {
-            return 5000; // Boss targets have more health
-        } else if (targetId.startsWith("elite_")) {
-            return 2000; // Elite targets have moderate health
-        } else {
-            return 1000; // Normal targets have standard health
-        }
-    }
-
     /**
      * Get attack animation type based on champion enum
      */

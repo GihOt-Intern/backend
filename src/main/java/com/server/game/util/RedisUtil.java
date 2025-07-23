@@ -22,14 +22,61 @@ public class RedisUtil {
     public boolean isRedisReady() {
         try {
             RedisConnectionFactory connectionFactory = redisTemplate.getConnectionFactory();
-            if (connectionFactory == null || connectionFactory.getConnection() == null) {
+            if (connectionFactory == null) {
+                System.err.println("Redis connection factory is null");
                 return false;
             }
+            
+            // Test the connection with a simple ping
             String pong = connectionFactory.getConnection().ping();
-            return "PONG".equals(pong);
+            boolean isReady = "PONG".equals(pong);
+            
+            if (isReady) {
+                System.out.println("Redis connection is ready - PONG received");
+            } else {
+                System.err.println("Redis ping failed - received: " + pong);
+            }
+            
+            return isReady;
         } catch (Exception e) {
+            System.err.println("Redis connection failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Test Redis connection with detailed logging
+     */
+    public void testConnection() {
+        System.out.println("=== Testing Redis Connection ===");
+        try {
+            // Test 1: Basic ping
+            boolean ready = isRedisReady();
+            System.out.println("Redis ready: " + ready);
+            
+            if (ready) {
+                // Test 2: Set and get a test value
+                String testKey = "connection_test";
+                String testValue = "test_value_" + System.currentTimeMillis();
+                
+                set(testKey, testValue);
+                Object retrieved = get(testKey);
+                
+                if (testValue.equals(retrieved)) {
+                    System.out.println("Redis read/write test: PASSED");
+                } else {
+                    System.err.println("Redis read/write test: FAILED - Expected: " + testValue + ", Got: " + retrieved);
+                }
+                
+                // Cleanup
+                delete(testKey);
+            }
+        } catch (Exception e) {
+            System.err.println("Redis connection test failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println("=== Redis Connection Test Complete ===");
     }
 
     // ===== Key-Value =====

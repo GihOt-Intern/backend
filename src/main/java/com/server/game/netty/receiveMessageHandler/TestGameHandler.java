@@ -14,7 +14,7 @@ import com.server.game.netty.messageObject.receiveObject.TestGameStartAnnounceRe
 import com.server.game.netty.messageObject.sendObject.ErrorSend;
 import com.server.game.netty.messageObject.sendObject.TestGameStartResponseSend;
 import com.server.game.netty.messageObject.sendObject.TestGameStartResponseSend.PlayerInfo;
-import com.server.game.service.GameScheduler;
+import com.server.game.service.GameCoordinator;
 import com.server.game.resource.service.GameMapService;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TestGameHandler {
 
-    private final GameScheduler gameScheduler;
+    private final GameCoordinator gameCoordinator;
     private final GameMapService gameMapService;
     private final Random random = new Random();
     
@@ -48,7 +48,7 @@ public class TestGameHandler {
         }
 
         //Register game for position broadcasting if not already
-        gameScheduler.registerGame(gameId);
+        gameCoordinator.registerGame(gameId);
 
         //Get all channels in this game
         Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
@@ -83,7 +83,7 @@ public class TestGameHandler {
             }
 
             //Set initial position for the player based on map data
-            gameScheduler.updatePosition(
+            gameCoordinator.updatePosition(
                 gameId,
                 slot,
                 spawnPosition,
