@@ -108,55 +108,54 @@ public class MoveService {
             MoveTarget target = entry.getValue();
 
             float elapsedTime = (currentTime - target.getStartTime()) / 1000.0f;
-
             float targetSpeed = target.getSpeed();
 
             Vector2 position = target.getCurrentPosition();
-            float remainingDistance = targetSpeed * elapsedTime;
+            float totalDistanceCovered = targetSpeed * elapsedTime;
+            float remainingDistance = totalDistanceCovered;
 
-            while(target.path.hasNext()) {
-                GridCell nextCell = target.path.getNextCell();
+            boolean reachedFinalDestination = false;
+            while (target.path.hasNext() && !reachedFinalDestination) {
+                GridCell nextCell = target.peekNextCell();
                 Vector2 nextPosition = gameState.toPosition(nextCell);
-                
-                float distanceToNext = position.distanceTo(nextPosition);
+
+                float distanceToNext = position.distance(nextPosition);
 
                 if (remainingDistance >= distanceToNext) {
-                    // if distance slot can go in elapsed time is longer than the distance to the next cell,
-                    // temporarily set position to next cell and reduce remaining distance 
-                    
                     position = nextPosition;
                     remainingDistance -= distanceToNext;
 
-                    log.info(">>> Moving slot {} to next pos: {} (remaining distance: {})", slot, nextPosition, remainingDistance);
+                    target.path.getNextCell(); // Di chuyển đến ô tiếp theo
 
+                    log.info(">>> Slot {} moved to next cell: {}, remaining distance: {}", 
+                        slot, nextCell, remainingDistance);
 
-
+                    if (!target.path.hasNext()) {
+                        reachedFinalDestination = true;
+                        log.info(">>> Slot {} reached final destination: {}", slot, nextCell);
+                    }
                 } else {
-                    // if distance slot can go in elapsed time is shorter than the distance to the next cell,
-                    // calculate the new position along the direction to the next cell
-                    
-                    // Vector2 direction = nextPosition.subtract(position).normalize();
-                    // position = position.add(direction.multiply(remainingDistance));
-                    position = nextPosition;
-                    log.info(">>> Slot {} cannot reach next pos: {} (remaining distance: {}), calculating new position", slot, nextPosition, remainingDistance);
+                    Vector2 direction = nextPosition.subtract(position).normalize();
+                    position = position.add(direction.multiply(remainingDistance));
 
+                    log.info(">>> Slot {} moved partially to: {}, remaining distance: {}", 
+                        slot, nextPosition, remainingDistance);
                     
-                    break; // no need to check further cells
+                    break;
                 }
             }
 
-            // Cập nhật vị trí mới
-
-            log.info(">>> Updating pending position for slot {}: {}", slot, position);
+            log.info(">>> Updating position for slot {}: {}", slot, position);
             positionService.updatePendingPosition(
-                gameId, 
+                gameId,
                 slot,
-                position, 
+                position,
                 targetSpeed,
                 currentTime
             );
 
-            if (!target.path.hasNext()) {
+            if (reachedFinalDestination || !target.path.hasNext()) {
+                log.info(">>> Slot {} has reached the final destination or path is complete, clearing target.", slot);
                 targets.remove(slot);
             }
         }
@@ -200,6 +199,14 @@ public class MoveService {
 
             public boolean hasNext() {
                 return index < path.size();
+            }
+
+            public GridCell peekNextCell() {
+                if (!hasNext()) {
+                    System.out.println(">>> No more cells in path, returning null.");
+                    return null; // Hoặc có thể ném ngoại lệ nếu không có vị trí tiếp theo
+                }
+                return path.get(index);
             }
 
             public GridCell getNextCell() {

@@ -20,24 +20,10 @@ import lombok.experimental.FieldDefaults;
 public class AttackAnimationDisplaySend implements TLVEncodable {
     short attackerSlot; // Champion slot that's attacking (-1 if it's a target/NPC)
     String attackerId; // Target/NPC ID that's attacking (null if it's a champion)
+    short targetSlot;
+    String targetId;
     String animationType; // Type of attack animation (e.g., "sword_slash", "magic_missile", "arrow_shot")
     long timestamp;
-
-    // Constructor for champion attacking
-    public AttackAnimationDisplaySend(short attackerSlot, String animationType, long timestamp) {
-        this.attackerSlot = attackerSlot;
-        this.attackerId = null;
-        this.animationType = animationType;
-        this.timestamp = timestamp;
-    }
-
-    // Constructor for target/NPC attacking
-    public AttackAnimationDisplaySend(String attackerId, String animationType, long timestamp) {
-        this.attackerSlot = -1;
-        this.attackerId = attackerId;
-        this.animationType = animationType;
-        this.timestamp = timestamp;
-    }
 
     @Override
     public SendMessageType getType() {

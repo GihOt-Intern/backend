@@ -21,6 +21,7 @@ public enum SendMessageType {
     POSITION_UPDATE_SEND((short) 20),
     ATTACK_ANIMATION_DISPLAY_SEND((short) 104),
     HEALTH_UPDATE_SEND((short) 105),
+    HEARTBEAT_SEND((short) 255), // Heartbeat message
     DISTANCE_SEND((short) 998),
     TEST_GAME_START_RESPONSE((short) 2026),
     ;

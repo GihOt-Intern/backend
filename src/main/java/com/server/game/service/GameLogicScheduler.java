@@ -1,5 +1,6 @@
 package com.server.game.service;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -7,8 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.server.game.netty.ChannelManager;
+import com.server.game.netty.messageObject.sendObject.HeartbeatMessage;
 import com.server.game.service.gameState.HealthRegenerationService;
 
+import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -113,6 +117,31 @@ public class GameLogicScheduler {
                 
             } catch (Exception e) {
                 log.error("Error in background game logic loop for game: {}", gameId, e);
+            }
+        }
+    }
+
+    /**
+     * Heartbeat method to keep the game logic scheduler alive
+     * @return
+     */
+    @Scheduled(fixedDelay = 30000) // 30 seconds
+    public void sendHeartbeats() {
+        for (Map.Entry<String, Channel> entry : ChannelManager.getAllUserChannels().entrySet()) {
+            String userId = entry.getKey();
+            Channel channel = entry.getValue();
+
+            if (channel.isActive()) {
+                channel.writeAndFlush(new HeartbeatMessage())
+                    .addListener(future -> {
+                        if (!future.isSuccess()) {
+                            System.out.println(">>> Heartbeat failed for user " + userId + ". Cleaning up channel.");
+                            ChannelManager.unregister(channel);
+                        }
+                });
+            } else {
+                System.out.println(">>> Inactive channel for user " + userId + ". Removing from manager.");
+                ChannelManager.unregister(channel);
             }
         }
     }

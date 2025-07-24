@@ -266,4 +266,11 @@ public class ChannelManager {
             });
         }
     }
+
+    /**
+     * Get all user channels as a map of userId to Channel
+     */
+    public static Map<String, Channel> getAllUserChannels() {
+        return Collections.unmodifiableMap(userChannels);
+    }
 }

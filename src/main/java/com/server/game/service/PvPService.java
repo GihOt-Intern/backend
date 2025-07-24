@@ -50,7 +50,7 @@ public class PvPService {
         }
         
         // 1. First send attack animation of the attacker
-        broadcastAttackerAnimation(gameId, attackerSlot, attackerChampion, timestamp);
+        broadcastAttackerAnimation(gameId, attackerSlot, targetSlot, null, attackerChampion, timestamp);
         
         // 2. Process the attack and calculate damage
         int damage = processPvPAttack(gameId, attackerSlot, attackerChampion, timestamp);
@@ -75,7 +75,7 @@ public class PvPService {
         }
         
         // 1. First send attack animation of the attacker
-        broadcastAttackerAnimation(gameId, attackerSlot, attackerChampion, timestamp);
+        broadcastAttackerAnimation(gameId, attackerSlot, (short) -1, targetId, attackerChampion, timestamp);
         
         // 2. Process PvE attack and get damage
         int damage = processPvEAttack(gameId, targetId, timestamp);
@@ -91,14 +91,14 @@ public class PvPService {
         log.info("Target {} attacking champion in slot {} in game {} at timestamp {}", 
                 attackerId, defenderSlot, gameId, timestamp);
         
-        // 1. First send attack animation of the target attacker
-        broadcastTargetAttackerAnimation(gameId, attackerId, timestamp);
+        // // 1. First send attack animation of the target attacker
+        // broadcastTargetAttackerAnimation(gameId, attackerId, timestamp);
         
-        // 2. Process target counter-attack and get damage
-        int damage = processTargetCounterAttack(gameId, attackerId, defenderSlot, timestamp);
+        // // 2. Process target counter-attack and get damage
+        // int damage = processTargetCounterAttack(gameId, attackerId, defenderSlot, timestamp);
         
-        // 3. Send health update for the champion being attacked
-        broadcastHealthUpdate(gameId, defenderSlot, damage, timestamp);
+        // // 3. Send health update for the champion being attacked
+        // broadcastHealthUpdate(gameId, defenderSlot, damage, timestamp);
     }
     
     /**
@@ -115,16 +115,16 @@ public class PvPService {
             return;
         }
         
-        // Calculate troop damage against player
-        int damage = calculateTroopDamageToPlayer(attackingTroop);
+        // // Calculate troop damage against player
+        // int damage = calculateTroopDamageToPlayer(attackingTroop);
         
-        // 1. Send attack animation
-        broadcastTargetAttackerAnimation(gameId, troopId, timestamp);
+        // // 1. Send attack animation
+        // broadcastTargetAttackerAnimation(gameId, troopId, timestamp);
         
-        // 2. Apply damage to player and broadcast health update
-        broadcastHealthUpdate(gameId, targetPlayerSlot, damage, timestamp);
+        // // 2. Apply damage to player and broadcast health update
+        // broadcastHealthUpdate(gameId, targetPlayerSlot, damage, timestamp);
         
-        log.info("Troop {} dealt {} damage to player slot {}", troopId, damage, targetPlayerSlot);
+        // log.info("Troop {} dealt {} damage to player slot {}", troopId, damage, targetPlayerSlot);
     }
     
     /**
@@ -339,14 +339,14 @@ public class PvPService {
     /**
      * Broadcast attacker animation to all players in the game
      */
-    private void broadcastAttackerAnimation(String gameId, short attackerSlot, ChampionEnum attackerChampion, long timestamp) {
+    private void broadcastAttackerAnimation(String gameId, short attackerSlot, short targetSlot, String targetId, ChampionEnum attackerChampion, long timestamp) {
         log.debug("Broadcasting attack animation for slot {} with champion {}", attackerSlot, attackerChampion);
         
         String animationType = getAttackAnimationType(attackerChampion);
         
         // Create attack animation display message
         AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(
-                attackerSlot, animationType, timestamp);
+                attackerSlot, null, targetSlot, targetId, animationType, timestamp);
         
         // Broadcast to all players in the game
         Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
@@ -362,14 +362,20 @@ public class PvPService {
     /**
      * Broadcast target attacker animation to all players in the game
      */
-    private void broadcastTargetAttackerAnimation(String gameId, String attackerId, long timestamp) {
+    private void broadcastTargetAttackerAnimation(String gameId, String attackerId, short targetSlot, String targetId, long timestamp) {
         log.debug("Broadcasting target attack animation for attacker {}", attackerId);
         
         String animationType = getTargetAnimationType(attackerId);
         
         // Create attack animation display message
         AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(
-                attackerId, animationType, timestamp);
+                (short) -1, 
+                attackerId, 
+                targetSlot, 
+                targetId, 
+                animationType, 
+                timestamp
+            );
         
         // Broadcast to all players in the game
         Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);

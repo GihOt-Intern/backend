@@ -3,6 +3,7 @@ package com.server.game.netty.receiveMessageHandler;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
@@ -16,6 +17,9 @@ import com.server.game.resource.model.Champion;
 import com.server.game.resource.model.SlotInfo;
 import com.server.game.resource.service.GameStateBuilderService;
 import com.server.game.service.GameCoordinator;
+import com.server.game.service.gameState.GameStateManager;
+import com.server.game.util.ChampionEnum;
+import com.server.game.resource.service.ChampionService;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -31,6 +35,8 @@ public class GameInititalLoadingHandler {
 
     GameStateBuilderService gameStateBuilderService;
     GameCoordinator gameCoordinator;
+    GameStateManager gameStateManager;
+    ChampionService championService;
     
     // This method is called by LobbyHandler when all players are ready
     public void loadInitial(Channel channel) {
@@ -39,6 +45,10 @@ public class GameInititalLoadingHandler {
             this.sendInitialPositions(channel, gameState);
         future = this.sendChampionInitialHPs(channel, gameState);
         future = this.sendChampionInitialStats(channel, gameState);   
+
+        // Initialize game state before completing
+        String gameId = ChannelManager.getGameIdByChannel(channel);
+        initializeGameState(gameId, gameState);
         
         future.addListener(f -> {
             if (f.isSuccess()) {
@@ -48,12 +58,35 @@ public class GameInititalLoadingHandler {
                     ChannelManager.getGameIdByChannel(channel), 
                     gameState
                 );
-                String gameId = ChannelManager.getGameIdByChannel(channel);
                 this.setSpawnPosition2Cache(gameId, gameState);
             } else {
                 System.err.println(">>> [Log in GameLoadingHandler.loadInitial] Initial loading messages failed: " + f.cause());
             }
         });
+    }
+
+    /**
+     * Initialize game state for the given gameId
+     * @param gameId
+     * @param gameState
+     * @return
+     */
+    private void initializeGameState(String gameId, GameState gameState) {
+        Map<Short, ChampionEnum> slotToChampionMap = new HashMap<>();
+
+        Map<ChampionEnum, Integer> championInitialHPMap = new HashMap<>();
+        for (ChampionEnum championId : slotToChampionMap.values()) {
+            Integer initialHP = championService.getInitialHP(championId);
+            championInitialHPMap.put(championId, initialHP);
+        }
+
+        boolean initSuccess = gameStateManager.initializeGame(gameId, slotToChampionMap, championInitialHPMap);
+
+        if (initSuccess) {
+            System.out.println(">>> [Log in GameLoadingHandler.initializeGameState] Successfully initialized game state for gameId: " + gameId);
+        } else {
+            System.err.println(">>> [Log in GameLoadingHandler.initializeGameState] Failed to initialize game state for gameId: " + gameId);
+        }
     }
 
     private ChannelFuture sendInitialPositions(Channel channel, GameState gameState) {

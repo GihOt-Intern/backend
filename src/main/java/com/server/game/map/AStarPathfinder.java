@@ -77,26 +77,37 @@ public class AStarPathfinder {
                     }
                 }
 
-                // Nếu đi thẳng thì cost = 1, nếu đi chéo thì cost = sqrt(2)
-                double cost = (dir[0] != 0 && dir[1] != 0) ? Math.sqrt(2) : 1.0;
-                double tentativeG = current.g + cost;
                 String key = key(newRow, newCol);
                 Node neighbor = allNodes.getOrDefault(key, new Node(newRow, newCol));
-                
+
+                double tentativeG;
+                Node pathParent;
+
+                if (current.parent != null && lineOfSight(current.parent.row, current.parent.col, newRow, newCol, grid)) {
+                    double directCost = Math.hypot(current.parent.row - newRow, current.parent.col - newCol);
+                    tentativeG = current.g + directCost;
+                    pathParent = current.parent;
+                } else {
+                    double moveCost = (dir[0] != 0 && dir[1] != 0 ) ? Math.sqrt(2) : 1.0;
+                    tentativeG = current.g + moveCost;
+                    pathParent = current;
+                }
+
                 if (tentativeG < neighbor.g) {
                     neighbor.g = tentativeG;
                     neighbor.h = heuristic(newRow, newCol, end.r(), end.c());
                     neighbor.f = neighbor.g + neighbor.h;
-                    neighbor.parent = current;
+                    neighbor.parent = pathParent;
 
-                     // Nếu neighbor đã tồn tại trong openSet, remove nó trước khi thêm lại
-                    // if (openSet.contains(neighbor)) {
-                    //     openSet.remove(neighbor);
-                    // }
-                    openSet.add(neighbor);
                     allNodes.put(key, neighbor);
+                    openSet.add(neighbor);
                 }
             }
+        }
+
+        // Log the path to debug
+        for(Node node : allNodes.values()) {
+            System.out.println("Node: (" + node.row + ", " + node.col + ")");
         }
 
         // Không tìm được đường đi đến end ⇒ trả về đường đi gần nhất
@@ -106,6 +117,36 @@ public class AStarPathfinder {
     private static double heuristic(int r1, int c1, int r2, int c2) {
         // Dùng khoảng cách Euclidean cho di chuyển chéo
         return Math.hypot(r1 - r2, c1 - c2);
+    }
+
+    private static boolean lineOfSight(int x0, int y0, int x1, int y1, boolean[][] grid) {
+        int dx = Math.abs(x1-x0);
+        int dy = Math.abs(y1-y0);
+        int sx = (x0 < x1) ? 1 : -1;
+        int sy = (y0 < y1) ? 1 : -1;
+        int err = dx - dy;
+
+        int x = x0;
+        int y = y0;
+
+        while (x != x1 || y != y1) {
+            if (!isValid(x, y, grid) || !grid[x][y]) {
+                return false; // Không có đường đi
+            }
+            if (x == x1 && y == y1) {
+                return true; // Đã đến đích
+            }
+            int err2 = err * 2;
+            if (err2 > -dy) {
+                err -= dy;
+                x += sx;
+            }
+            if (err2 < dx) {
+                err += dx;
+                y += sy;
+            }
+        }
+        return true; // Đã đến đích
     }
 
     private static boolean isValid(int row, int col, boolean[][] grid) {
