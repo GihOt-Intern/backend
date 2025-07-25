@@ -18,6 +18,7 @@ public enum ReceiveMessageType {
     CHAMPION_ATTACK_TARGET_RECEIVE((short) 101),
     TARGET_ATTACK_CHAMPION_RECEIVE((short) 102),
     TARGET_ATTACK_TARGET_RECEIVE((short) 103),
+    TROOP_SPAWN_RECEIVE((short) 200),
     DISTANCE_RECEIVE((short) 999),
     TEST_GAME_START_ANNOUNCE((short) 2025),
     ;

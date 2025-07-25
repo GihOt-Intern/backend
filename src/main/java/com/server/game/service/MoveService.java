@@ -12,8 +12,11 @@ import com.server.game.map.AStarPathfinder;
 import com.server.game.map.component.GridCell;
 import com.server.game.map.component.Vector2;
 import com.server.game.model.GameState;
+import com.server.game.netty.ChannelManager;
 import com.server.game.resource.model.GameMapGrid;
+import com.server.game.resource.service.ChampionService;
 import com.server.game.service.MoveService.MoveTarget.PathComponent;
+import com.server.game.util.ChampionEnum;
 
 import lombok.Data;
 import lombok.experimental.Delegate;
@@ -29,6 +32,9 @@ public class MoveService {
     @Autowired
     @Lazy
     private GameCoordinator gameCoordinator;
+
+    @Autowired
+    private ChampionService championService;
 
 
     private final Map<String, Map<Short, MoveTarget>> moveTargets = new ConcurrentHashMap<>();
@@ -127,25 +133,17 @@ public class MoveService {
 
                     target.path.getNextCell(); // Di chuyển đến ô tiếp theo
 
-                    log.info(">>> Slot {} moved to next cell: {}, remaining distance: {}", 
-                        slot, nextCell, remainingDistance);
-
                     if (!target.path.hasNext()) {
                         reachedFinalDestination = true;
-                        log.info(">>> Slot {} reached final destination: {}", slot, nextCell);
                     }
                 } else {
                     Vector2 direction = nextPosition.subtract(position).normalize();
                     position = position.add(direction.multiply(remainingDistance));
-
-                    log.info(">>> Slot {} moved partially to: {}, remaining distance: {}", 
-                        slot, nextPosition, remainingDistance);
                     
                     break;
                 }
             }
 
-            log.info(">>> Updating position for slot {}: {}", slot, position);
             positionService.updatePendingPosition(
                 gameId,
                 slot,
@@ -155,7 +153,6 @@ public class MoveService {
             );
 
             if (reachedFinalDestination || !target.path.hasNext()) {
-                log.info(">>> Slot {} has reached the final destination or path is complete, clearing target.", slot);
                 targets.remove(slot);
             }
         }
@@ -173,6 +170,111 @@ public class MoveService {
         if (targets != null) {
             targets.remove(slot);
         }
+    }
+
+    private static final float PATH_RECALCULATION_THRESHOLD = 1.5f; // Distance in grid units
+    private static final long PATH_RECALCULATION_COOLDOWN = 300; // Milliseconds
+    private final Map<String, Map<Short, Long>> lastPathCalculationTime = new ConcurrentHashMap<>();
+
+    /**
+     * Set move target for combat - optimized for frequent updates
+     */
+    public void setCombatMoveTarget(String gameId, short attackerSlot, short targetSlot) {
+        GameState gameState = gameCoordinator.getGameState(gameId);
+        PositionData attackerPos = positionService.getPlayerPosition(gameId, attackerSlot);
+        PositionData targetPos = positionService.getPlayerPosition(gameId, targetSlot);
+        
+        if (attackerPos == null || targetPos == null) {
+            return;
+        }
+        
+        // Get current time
+        long currentTime = System.currentTimeMillis();
+        
+        // Check if we're still in cooldown period
+        Map<Short, Long> lastCalcTimes = lastPathCalculationTime.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>());
+        Long lastCalcTime = lastCalcTimes.get(attackerSlot);
+        if (lastCalcTime != null && (currentTime - lastCalcTime) < PATH_RECALCULATION_COOLDOWN) {
+            log.debug("Path recalculation on cooldown for slot {}", attackerSlot);
+            return;
+        }
+        
+        // Check if target has moved significantly
+        MoveTarget currentTarget = moveTargets.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>()).get(attackerSlot);
+        if (currentTarget != null) {
+            Vector2 lastTargetPos = currentTarget.getTargetPosition();
+            float targetMoveDist = lastTargetPos.distance(targetPos.getPosition());
+            
+            if (targetMoveDist < PATH_RECALCULATION_THRESHOLD) {
+                log.debug("Target hasn't moved enough to recalculate path");
+                return;
+            }
+        }
+        
+        // Calculate optimal position to attack from (slightly closer than max attack range)
+        ChampionEnum attackerChampion = getChampionForSlot(gameId, attackerSlot);
+        if (attackerChampion == null) {
+            log.warn("No champion found for slot {} in game {}", attackerSlot, gameId);
+            return;
+        }
+        
+        float attackRange = getChampionAttackRange(attackerChampion) * 0.9f; // 90% of max range
+        Vector2 direction = attackerPos.getPosition().subtract(targetPos.getPosition()).normalize();
+        Vector2 optimalPosition = targetPos.getPosition().add(direction.multiply(attackRange));
+        
+        // For very close targets, use direct following instead of pathfinding
+        if (attackerPos.getPosition().distance(targetPos.getPosition()) < attackRange * 1.5f) {
+            // Simple direct movement toward target
+            Vector2 directMoveTarget = targetPos.getPosition().add(
+                direction.multiply(attackRange * 0.9f)
+            );
+            
+            // Update position directly without pathfinding
+            positionService.updatePendingPosition(
+                gameId, attackerSlot, directMoveTarget, 
+                gameState.getSpeed(attackerSlot), currentTime
+            );
+            lastCalcTimes.put(attackerSlot, currentTime);
+            return;
+        }
+        
+        // Find path to the optimal position
+        GameMapGrid gameMapGrid = gameState.getGameMapGrid();
+        GridCell startCell = gameState.toGridCell(attackerPos.getPosition());
+        GridCell targetCell = gameState.toGridCell(optimalPosition);
+        
+        List<GridCell> path = AStarPathfinder.findPath(gameMapGrid.getGrid(), startCell, targetCell);
+        
+        // Set the new target
+        MoveTarget target = new MoveTarget(
+            attackerPos.getPosition(),
+            optimalPosition,
+            currentTime,
+            gameState.getSpeed(attackerSlot),
+            new PathComponent(path)
+        );
+        
+        // Store the target and update last calculation time
+        moveTargets.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>()).put(attackerSlot, target);
+        lastCalcTimes.put(attackerSlot, currentTime);
+        
+        log.info("Combat move target set for slot {} to attack slot {}", attackerSlot, targetSlot);
+    }
+
+    /**
+     * Get champion enum for a slot
+     */
+    private ChampionEnum getChampionForSlot(String gameId, short slot) {
+        Map<Short, ChampionEnum> slot2ChampionId = ChannelManager.getSlot2ChampionId(gameId);
+        return slot2ChampionId != null ? slot2ChampionId.get(slot) : null;
+    }
+    
+    /**
+     * Get champion's attack range
+     */
+    private float getChampionAttackRange(ChampionEnum championEnum) {
+        var champion = championService.getChampionById(championEnum);
+        return champion != null ? champion.getAttackRange() : 1.0f; // Default range
     }
 
 

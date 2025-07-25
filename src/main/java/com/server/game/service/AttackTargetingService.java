@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.resource.service.ChampionService;
+import com.server.game.service.MoveService.PositionData;
 import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
@@ -105,22 +106,93 @@ public class AttackTargetingService {
         return inRange;
     }
     
+    // Optimized target following constants
+    private static final float ATTACK_RANGE_BUFFER = 0.8f; // Stay slightly closer than max range
+    private static final float MOVEMENT_UPDATE_THRESHOLD = 1.0f; // Grid units
+    private static final long POSITION_UPDATE_COOLDOWN = 100; // Milliseconds
+    private final Map<String, Map<Short, Long>> lastPositionUpdate = new ConcurrentHashMap<>();
+    private final Map<String, Map<Short, Vector2>> lastKnownTargetPositions = new ConcurrentHashMap<>();
+
     /**
-     * Process continuous attacking while in range
+     * Process continuous attacking while in range - Enhanced with smart movement
      */
     public boolean processContinuousAttack(String gameId, short attackerSlot) {
-        if (!isInAttackRange(gameId, attackerSlot)) {
-            // Target moved out of range, move towards it again
-            AttackTarget target = getAttackTarget(gameId, attackerSlot);
-            if (target != null) {
-                moveToAttackTarget(gameId, attackerSlot, target);
-            }
+        AttackTarget target = getAttackTarget(gameId, attackerSlot);
+        if (target == null) {
             return false;
         }
+
+        // Check if we're in attack range
+        if (isInAttackRange(gameId, attackerSlot)) {
+            // In range - stop movement and check if we can attack (cooldown)
+            moveService.clearMoveTarget(gameId, attackerSlot);
+            
+            // Get champion info to check cooldown
+            ChampionEnum attackerChampion = getChampionForSlot(gameId, attackerSlot);
+            if (attackerChampion != null) {
+                // Check if champion can attack (not on cooldown)
+                boolean canAttack = pvpService.canChampionAttack(gameId, attackerSlot, attackerChampion);
+                if (canAttack) {
+                    // Trigger attack based on target type
+                    long currentTime = System.currentTimeMillis();
+                    if (target.getType() == AttackTargetType.CHAMPION) {
+                        pvpService.handleChampionAttackChampion(gameId, attackerSlot, target.getChampionSlot(), currentTime);
+                    } else {
+                        pvpService.handleChampionAttackTarget(gameId, attackerSlot, target.getTargetId(), currentTime);
+                    }
+                    return true;
+                } else {
+                    // Still in range but on cooldown, stay in position
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        // Out of range - use smart following logic
+        return handleSmartTargetFollowing(gameId, attackerSlot, target);
+    }
+
+    /**
+     * Smart target following that minimizes pathfinding recalculations
+     */
+    private boolean handleSmartTargetFollowing(String gameId, short attackerSlot, AttackTarget target) {
+        long currentTime = System.currentTimeMillis();
         
-        // Stop movement if in range
-        moveService.clearMoveTarget(gameId, attackerSlot);
-        return true;
+        // Check cooldown to prevent excessive updates
+        Map<Short, Long> gameLastUpdates = lastPositionUpdate.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>());
+        Long lastUpdate = gameLastUpdates.get(attackerSlot);
+        if (lastUpdate != null && (currentTime - lastUpdate) < POSITION_UPDATE_COOLDOWN) {
+            return false; // Still in cooldown
+        }
+
+        Vector2 currentTargetPos = getTargetPosition(gameId, target);
+        if (currentTargetPos == null) {
+            return false;
+        }
+
+        // Check if target has moved significantly
+        Map<Short, Vector2> gameLastPositions = lastKnownTargetPositions.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>());
+        Vector2 lastKnownPos = gameLastPositions.get(attackerSlot);
+        
+        if (lastKnownPos != null) {
+            float distanceMoved = lastKnownPos.distance(currentTargetPos);
+            if (distanceMoved < MOVEMENT_UPDATE_THRESHOLD) {
+                return false; // Target hasn't moved enough to warrant an update
+            }
+        }
+
+        // Update tracking and initiate movement
+        gameLastUpdates.put(attackerSlot, currentTime);
+        gameLastPositions.put(attackerSlot, currentTargetPos);
+        
+        // Use appropriate movement strategy based on target type
+        moveToAttackTarget(gameId, attackerSlot, target);
+        
+        log.debug("Smart following activated for slot {} targeting {}", attackerSlot, 
+                target.getType() == AttackTargetType.CHAMPION ? "champion " + target.getChampionSlot() : "target " + target.getTargetId());
+        
+        return false; // Still moving towards target
     }
     
     /**
@@ -174,19 +246,60 @@ public class AttackTargetingService {
     }
     
     /**
-     * Move champion towards their attack target
+     * Move champion towards their attack target - Enhanced with predictive positioning
      */
     private void moveToAttackTarget(String gameId, short attackerSlot, AttackTarget target) {
-        Vector2 targetPosition = getTargetPosition(gameId, target);
-        if (targetPosition == null) {
-            log.warn("Could not find target position for attack target: {}", target);
-            return;
+        if (target.getType() == AttackTargetType.CHAMPION) {
+            // Use optimized combat movement with prediction for champion targets
+            Vector2 predictedPosition = getPredictedTargetPosition(gameId, target);
+            if (predictedPosition != null) {
+                moveService.setCombatMoveTarget(gameId, attackerSlot, target.getChampionSlot());
+            }
+            log.debug("Moving slot {} towards champion target in slot {} (predicted movement)", 
+                    attackerSlot, target.getChampionSlot());
+        } else {
+            // Use standard movement for non-champion targets
+            Vector2 targetPosition = getTargetPosition(gameId, target);
+            if (targetPosition == null) {
+                log.warn("Could not find target position for attack target: {}", target);
+                return;
+            }
+            
+            moveService.setMoveTarget(gameId, attackerSlot, targetPosition);
+            log.debug("Moving slot {} towards target at position {}", attackerSlot, targetPosition);
+        }
+    }
+
+    /**
+     * Predict target position based on movement patterns (for better interception)
+     */
+    private Vector2 getPredictedTargetPosition(String gameId, AttackTarget target) {
+        if (target.getType() != AttackTargetType.CHAMPION) {
+            return getTargetPosition(gameId, target);
+        }
+
+        PositionData targetPosData = positionService.getPlayerPosition(gameId, target.getChampionSlot());
+        if (targetPosData == null) {
+            return null;
+        }
+
+        Vector2 currentPos = targetPosData.getPosition();
+        float speed = targetPosData.getSpeed();
+        
+        // Simple prediction: assume target continues in current direction
+        // In a real implementation, you'd store velocity/direction data
+        Map<Short, Vector2> gameLastPositions = lastKnownTargetPositions.get(gameId);
+        if (gameLastPositions != null) {
+            Vector2 lastPos = gameLastPositions.get(target.getChampionSlot());
+            if (lastPos != null) {
+                // Calculate movement direction
+                Vector2 direction = currentPos.subtract(lastPos).normalize();
+                float predictionTime = 0.5f; // Predict 0.5 seconds ahead
+                return currentPos.add(direction.multiply(speed * predictionTime));
+            }
         }
         
-        // Set movement target
-        moveService.setMoveTarget(gameId, attackerSlot, targetPosition);
-        
-        log.debug("Moving slot {} towards attack target at position {}", attackerSlot, targetPosition);
+        return currentPos; // Fallback to current position
     }
     
     /**
@@ -228,7 +341,53 @@ public class AttackTargetingService {
      */
     public void clearGameTargets(String gameId) {
         attackTargets.remove(gameId);
-        log.info("Cleared attack targets for game {}", gameId);
+        lastPositionUpdate.remove(gameId);
+        lastKnownTargetPositions.remove(gameId);
+        log.info("Cleared attack targets and tracking data for game {}", gameId);
+    }
+
+    /**
+     * Set attack target by champion slot (for PvP combat)
+     */
+    public void setChampionAttackTarget(String gameId, short attackerSlot, short targetSlot) {
+        AttackTarget target = new AttackTarget(targetSlot, System.currentTimeMillis());
+        setAttackTarget(gameId, attackerSlot, target);
+        log.info("Set champion attack target: slot {} attacking slot {} in game {}", 
+                attackerSlot, targetSlot, gameId);
+    }
+
+    /**
+     * Set attack target by target ID (for PvE combat)
+     */
+    public void setTargetAttackTarget(String gameId, short attackerSlot, String targetId) {
+        AttackTarget target = new AttackTarget(targetId, System.currentTimeMillis());
+        setAttackTarget(gameId, attackerSlot, target);
+        log.info("Set target attack target: slot {} attacking target {} in game {}", 
+                attackerSlot, targetId, gameId);
+    }
+
+    /**
+     * Check if a champion has any attack target
+     */
+    public boolean hasAttackTarget(String gameId, short attackerSlot) {
+        return getAttackTarget(gameId, attackerSlot) != null;
+    }
+
+    /**
+     * Get current combat status for debugging
+     */
+    public String getCombatStatus(String gameId, short attackerSlot) {
+        AttackTarget target = getAttackTarget(gameId, attackerSlot);
+        if (target == null) {
+            return "No target";
+        }
+        
+        boolean inRange = isInAttackRange(gameId, attackerSlot);
+        String targetInfo = target.getType() == AttackTargetType.CHAMPION 
+            ? "champion " + target.getChampionSlot() 
+            : "target " + target.getTargetId();
+            
+        return String.format("Attacking %s - %s", targetInfo, inRange ? "IN RANGE" : "OUT OF RANGE");
     }
     
     /**

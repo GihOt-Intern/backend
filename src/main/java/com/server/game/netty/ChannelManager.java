@@ -115,6 +115,15 @@ public class ChannelManager {
                 RoomRedisService roomRedisService = SpringContextHolder.getBean(RoomRedisService.class);
                 roomRedisService.deleteById(gameId);
                 System.out.println(">>> [Log in gameUnregister()] Removed room from redis cache for roomId: " + gameId);
+                
+                // Notify GameCleanupService that this game is now empty
+                try {
+                    com.server.game.service.GameCleanupService gameCleanupService = 
+                        SpringContextHolder.getBean(com.server.game.service.GameCleanupService.class);
+                    gameCleanupService.notifyGameEmpty(gameId);
+                } catch (Exception e) {
+                    System.out.println(">>> [Warning] Could not notify GameCleanupService for empty game: " + gameId + " - " + e.getMessage());
+                }
             }
 
             System.out.println(">>> Unregistered channel for gameId: " + gameId);

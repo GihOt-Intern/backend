@@ -10,12 +10,13 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.MessageSend;
 import com.server.game.netty.messageObject.sendObject.pvp.AttackAnimationDisplaySend;
 import com.server.game.netty.messageObject.sendObject.pvp.HealthUpdateSend;
+import com.server.game.resource.model.Champion;
+import com.server.game.resource.service.ChampionService;
 import com.server.game.service.gameState.GameStateBroadcastService;
 import com.server.game.service.troop.TroopManager;
 import com.server.game.service.troop.TroopInstance;
 
 import com.server.game.util.ChampionEnum;
-import com.server.game.util.TroopEnum;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
@@ -30,9 +31,109 @@ import lombok.extern.slf4j.Slf4j;
 public class PvPService {
     GameStateBroadcastService gameStateBroadcastService;
     TroopManager troopManager;
+    ChampionService championService;
     
     // Store combat data for each game
     private final Map<String, Map<Short, CombatData>> combatDataMap = new ConcurrentHashMap<>();
+    
+    // Store attack cooldowns for each champion in each game
+    private final Map<String, Map<Short, Long>> attackCooldowns = new ConcurrentHashMap<>();
+    
+    /**
+     * Check if a champion can attack (not on cooldown)
+     */
+    public boolean canChampionAttack(String gameId, short attackerSlot, ChampionEnum championEnum) {
+        Map<Short, Long> gameCooldowns = attackCooldowns.get(gameId);
+        if (gameCooldowns == null) {
+            return true; // No cooldowns recorded, can attack
+        }
+        
+        Long lastAttackTime = gameCooldowns.get(attackerSlot);
+        if (lastAttackTime == null) {
+            return true; // Never attacked, can attack
+        }
+        
+        // Get champion's attack speed to calculate cooldown
+        float attackCooldownSeconds = getChampionAttackCooldown(championEnum);
+        long cooldownMillis = (long) (attackCooldownSeconds * 1000);
+        
+        long currentTime = System.currentTimeMillis();
+        boolean canAttack = (currentTime - lastAttackTime) >= cooldownMillis;
+        
+        if (!canAttack) {
+            long remainingCooldown = cooldownMillis - (currentTime - lastAttackTime);
+            log.debug("Champion {} in slot {} still on cooldown for {}ms", 
+                    championEnum, attackerSlot, remainingCooldown);
+        }
+        
+        return canAttack;
+    }
+    
+    /**
+     * Set attack cooldown for a champion
+     */
+    private void setAttackCooldown(String gameId, short attackerSlot, long timestamp) {
+        attackCooldowns.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
+                     .put(attackerSlot, timestamp);
+    }
+    
+    /**
+     * Get champion's attack cooldown in seconds (1 / attack_speed)
+     */
+    private float getChampionAttackCooldown(ChampionEnum championEnum) {
+        Champion champion = championService.getChampionById(championEnum);
+        if (champion == null) {
+            log.warn("Champion not found: {}, using default cooldown", championEnum);
+            return 1.0f; // Default 1 second cooldown
+        }
+        
+        float attackSpeed = champion.getAttackSpeed();
+        if (attackSpeed <= 0) {
+            log.warn("Invalid attack speed {} for champion {}, using default", attackSpeed, championEnum);
+            return 1.0f;
+        }
+        
+        // Attack cooldown = 1 / attack_speed
+        return 1.0f / attackSpeed;
+    }
+    
+    /**
+     * Clean up cooldowns when game ends
+     */
+    public void cleanupGameCooldowns(String gameId) {
+        attackCooldowns.remove(gameId);
+        log.debug("Cleaned up attack cooldowns for game: {}", gameId);
+    }
+    
+    /**
+     * Get remaining cooldown time for a champion in milliseconds
+     */
+    public long getRemainingCooldown(String gameId, short attackerSlot, ChampionEnum championEnum) {
+        Map<Short, Long> gameCooldowns = attackCooldowns.get(gameId);
+        if (gameCooldowns == null) {
+            return 0; // No cooldowns recorded
+        }
+        
+        Long lastAttackTime = gameCooldowns.get(attackerSlot);
+        if (lastAttackTime == null) {
+            return 0; // Never attacked
+        }
+        
+        float attackCooldownSeconds = getChampionAttackCooldown(championEnum);
+        long cooldownMillis = (long) (attackCooldownSeconds * 1000);
+        
+        long currentTime = System.currentTimeMillis();
+        long elapsed = currentTime - lastAttackTime;
+        
+        return Math.max(0, cooldownMillis - elapsed);
+    }
+    
+    /**
+     * Get attack cooldown duration for a champion in seconds
+     */
+    public float getChampionAttackCooldownDuration(ChampionEnum championEnum) {
+        return getChampionAttackCooldown(championEnum);
+    }
     
     /**
      * Handle champion attacking another champion
@@ -48,6 +149,16 @@ public class PvPService {
             log.warn("No champion found for slot {} in game {}", attackerSlot, gameId);
             return;
         }
+        
+        // Check attack cooldown
+        if (!canChampionAttack(gameId, attackerSlot, attackerChampion)) {
+            log.debug("Champion {} in slot {} is on attack cooldown, ignoring attack request", 
+                    attackerChampion, attackerSlot);
+            return;
+        }
+        
+        // Set attack cooldown
+        setAttackCooldown(gameId, attackerSlot, timestamp);
         
         // 1. First send attack animation of the attacker
         broadcastAttackerAnimation(gameId, attackerSlot, targetSlot, null, attackerChampion, timestamp);
@@ -73,6 +184,16 @@ public class PvPService {
             log.warn("No champion found for slot {} in game {}", attackerSlot, gameId);
             return;
         }
+        
+        // Check attack cooldown
+        if (!canChampionAttack(gameId, attackerSlot, attackerChampion)) {
+            log.debug("Champion {} in slot {} is on attack cooldown, ignoring attack request", 
+                    attackerChampion, attackerSlot);
+            return;
+        }
+        
+        // Set attack cooldown
+        setAttackCooldown(gameId, attackerSlot, timestamp);
         
         // 1. First send attack animation of the attacker
         broadcastAttackerAnimation(gameId, attackerSlot, (short) -1, targetId, attackerChampion, timestamp);
@@ -342,7 +463,7 @@ public class PvPService {
     private void broadcastAttackerAnimation(String gameId, short attackerSlot, short targetSlot, String targetId, ChampionEnum attackerChampion, long timestamp) {
         log.debug("Broadcasting attack animation for slot {} with champion {}", attackerSlot, attackerChampion);
         
-        String animationType = getAttackAnimationType(attackerChampion);
+        String animationType = "Attack";
         
         // Create attack animation display message
         AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(

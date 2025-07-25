@@ -1,5 +1,6 @@
 package com.server.game.service;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,6 +12,10 @@ import org.springframework.stereotype.Service;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.HeartbeatMessage;
 import com.server.game.service.gameState.HealthRegenerationService;
+import com.server.game.service.troop.TroopAI;
+import com.server.game.service.troop.TroopInstance;
+import com.server.game.service.troop.TroopManager;
+import com.server.game.util.TroopEnum;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +32,12 @@ public class GameLogicScheduler {
     
     @Autowired
     private HealthRegenerationService healthRegenerationService;
+
+    @Autowired
+    private TroopManager troopManager;
+
+    @Autowired
+    private TroopAI troopAI;
     
     // Lưu trữ các game đang hoạt động cho game logic
     private final Set<String> activeGames = ConcurrentHashMap.newKeySet();
@@ -58,7 +69,7 @@ public class GameLogicScheduler {
      * Main game logic loop - runs every 50ms (20 FPS)
      * Handles movement updates and combat logic
      */
-    @Scheduled(fixedDelay = 50) // 50ms = 20 FPS for responsive gameplay
+    @Scheduled(fixedDelay = 16) // 16ms = 62.5 FPS for responsive gameplay
     public void gameLogicLoop() {
         for (String gameId : activeGames) {
             try {
@@ -87,8 +98,8 @@ public class GameLogicScheduler {
     public void slowGameLogicLoop() {
         for (String gameId : activeGames) {
             try {
+                processTroopMovement(gameId);
                 // TODO: Add slower update systems here
-                // - Troop spawning
                 // - Resource generation
                 // - AI decision making
                 // - Game statistics updates
@@ -109,6 +120,7 @@ public class GameLogicScheduler {
     public void backgroundGameLogicLoop() {
         for (String gameId : activeGames) {
             try {
+                processTroopAI(gameId);
                 // TODO: Add background systems here
                 // - Game session cleanup
                 // - Performance metrics collection
@@ -158,5 +170,45 @@ public class GameLogicScheduler {
      */
     public int getActiveGameCount() {
         return activeGames.size();
+    }
+
+    /**
+     * Process troop movement for all troops in the game
+     */
+    private void processTroopMovement(String gameId) {
+        Collection<TroopInstance> troops = troopManager.getGameTroops(gameId);
+        if (troops.isEmpty()) {
+            return;
+        }
+
+        for (TroopInstance troop : troops) {
+            if (troop.isAlive() && troop.isMoving() && troop.getTargetPosition() != null) {
+                float deltaTime = 0.2f;
+                float moveSpeed = getTroopMoveSpeed(troop.getTroopType());
+
+                troop.moveTowards(troop.getTargetPosition(), moveSpeed, deltaTime);
+            }
+            troop.updateEffects();
+        }
+    }
+
+    /**
+     * Process troop AI
+     */
+    private void processTroopAI(String gameId) {
+        troopAI.processGameAI(gameId);
+    }
+
+    /**
+     * Get the movement speed for a troop type
+     */
+    private float getTroopMoveSpeed(TroopEnum troopType) {
+        return switch (troopType) {
+            case CROSSBAWL -> 1.5f;  // Slower ranged unit
+            case AXIS -> 2.5f;       // Fast melee unit
+            case SHADOW -> 3.0f;     // Very fast assassin
+            case HEALER -> 1.8f;     // Medium speed support
+            default -> 2.0f;         // Default speed
+        };
     }
 }

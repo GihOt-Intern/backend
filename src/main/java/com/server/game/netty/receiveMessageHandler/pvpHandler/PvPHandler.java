@@ -55,9 +55,8 @@ public class PvPHandler {
         log.info("Processing champion vs champion attack from slot {} to slot {} in game {} at timestamp {}", 
                 attackerSlot, targetSlot, gameId, timestamp);
         
-        // Set attack target - this will trigger movement towards target
-        AttackTargetingService.AttackTarget target = new AttackTargetingService.AttackTarget(targetSlot, timestamp);
-        attackTargetingService.setAttackTarget(gameId, attackerSlot, target);
+        // Set attack target using the new utility method - this will trigger optimized movement towards target
+        attackTargetingService.setChampionAttackTarget(gameId, attackerSlot, targetSlot);
         
         // Check if already in range and can attack immediately
         if (attackTargetingService.isInAttackRange(gameId, attackerSlot)) {
@@ -83,9 +82,8 @@ public class PvPHandler {
         log.info("Processing champion vs target attack against {} in game {} at timestamp {}", 
                 targetId, gameId, timestamp);
         
-        // Set attack target - this will trigger movement towards target
-        AttackTargetingService.AttackTarget target = new AttackTargetingService.AttackTarget(targetId, timestamp);
-        attackTargetingService.setAttackTarget(gameId, attackerSlot, target);
+        // Set attack target using the new utility method - this will trigger movement towards target
+        attackTargetingService.setTargetAttackTarget(gameId, attackerSlot, targetId);
         
         // Check if already in range and can attack immediately
         if (attackTargetingService.isInAttackRange(gameId, attackerSlot)) {

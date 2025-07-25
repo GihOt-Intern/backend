@@ -1,6 +1,8 @@
 package com.server.game.service;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,9 @@ public class GameCoordinator {
     
     @Autowired
     private GameStateService gameStateService;
+    
+    @Autowired
+    private PvPService pvpService;
     
     // Store GameState (model) for game map/champion data access
     private final Map<String, GameState> gameStates = new ConcurrentHashMap<>();
@@ -54,6 +59,7 @@ public class GameCoordinator {
         broadcastScheduler.unregisterGame(gameId);
         gameLogicScheduler.unregisterGame(gameId);
         gameStateService.cleanupGameState(gameId);
+        pvpService.cleanupGameCooldowns(gameId); // Clean up attack cooldowns
         gameStates.remove(gameId); // Remove GameState (model)
         log.info("Unregistered game from all schedulers and cleaned up game state: {}", gameId);
     }
@@ -63,6 +69,13 @@ public class GameCoordinator {
      */
     public boolean isGameActive(String gameId) {
         return broadcastScheduler.isGameActive(gameId) && gameLogicScheduler.isGameActive(gameId);
+    }
+    
+    /**
+     * Get all game IDs currently tracked by this coordinator
+     */
+    public Set<String> getAllGameIds() {
+        return new HashSet<>(gameStates.keySet());
     }
 
     /**

@@ -65,9 +65,6 @@ public class PositionBroadcastService {
                     newPosition.getPosition(),
                     newPosition.getSpeed()
                 ));
-                System.out.println(">>> Player slot " + playerSlot + 
-                    " position changed to (" + newPosition.getPosition().x() + ", " + newPosition.getPosition().y() + ")"
-                );
             }
         }
         
@@ -84,10 +81,6 @@ public class PositionBroadcastService {
                 // Broadcast cho tất cả player trong game, chỉ cần writeAndFlush cho channel đầu tiên
                 Channel firstChannel = channels.iterator().next();
                 firstChannel.writeAndFlush(positionSend);
-
-                System.out.println(">>> Broadcasted positions for gameId: " + gameId + 
-                    ", players updated: " + playerDataList.size()
-                );
             } else {
                 // Không có player nào trong game, không cần broadcast, xoá game khỏi activeGames
                 unregisterGame(gameId);
@@ -95,7 +88,6 @@ public class PositionBroadcastService {
             
             // Cập nhật main cache với vị trí mới
             for (Map.Entry<Short, PositionData> entry : pendingPositions.entrySet()) {
-                log.info("Updating position for slot {}: {}", entry.getKey(), entry.getValue());
                 short playerSlot = entry.getKey();
                 PositionData position = entry.getValue();
                 positionService.updatePosition(gameId, playerSlot, 
@@ -105,7 +97,6 @@ public class PositionBroadcastService {
             // Xóa pending positions sau khi đã broadcast
             positionService.clearPendingPositions(gameId);
             long elapsedTime = System.currentTimeMillis() - currentTime;
-            log.info("Broadcast positions for game {} completed in {} ms", gameId, elapsedTime);
         }
     }
     

@@ -15,18 +15,18 @@ public class TLVMessageDecoder extends MessageToMessageDecoder<ByteBuf> {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf buf, List<Object> out) throws Exception {
-        System.out.println(">>> Server received ByteBuf:");
+        //System.out.println(">>> Server received ByteBuf:");
         Util.printHex(buf.nioBuffer(), true);
 
-        System.out.println(">>> Server Decoding ByteBuf to TLVDecodable object");
+        //System.out.println(">>> Server Decoding ByteBuf to TLVDecodable object");
 
         short type = buf.readShort();
         int length = buf.readInt();
 
-        System.out.println(">>> Server Read TLV type: " + type + ", length: " + length);
+        //System.out.println(">>> Server Read TLV type: " + type + ", length: " + length);
 
         if (buf.readableBytes() != length) {
-            System.out.println(">>> [value] length is inconsistent with the [length] in message!!!");
+            //System.out.println(">>> [value] length is inconsistent with the [length] in message!!!");
             return;
         }
 
@@ -34,7 +34,7 @@ public class TLVMessageDecoder extends MessageToMessageDecoder<ByteBuf> {
         ByteBuffer buffer = buf.nioBuffer();
 
         TLVDecodable receiveObject = TLVDecoder.bytes2Object(type, buffer);
-        System.out.println(">>> Server Decoded ByteBuf to TLVDecodable object: " + receiveObject.getClass().getSimpleName());
+        //System.out.println(">>> Server Decoded ByteBuf to TLVDecodable object: " + receiveObject.getClass().getSimpleName());
 
         out.add(receiveObject);            
     }

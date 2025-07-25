@@ -44,7 +44,7 @@ public class GameInititalLoadingHandler {
         ChannelFuture future = 
             this.sendInitialPositions(channel, gameState);
         future = this.sendChampionInitialHPs(channel, gameState);
-        future = this.sendChampionInitialStats(channel, gameState);   
+        future = this.sendChampionInitialStats(channel, gameState);
 
         // Initialize game state before completing
         String gameId = ChannelManager.getGameIdByChannel(channel);
@@ -73,11 +73,21 @@ public class GameInititalLoadingHandler {
      */
     private void initializeGameState(String gameId, GameState gameState) {
         Map<Short, ChampionEnum> slotToChampionMap = new HashMap<>();
+        
+        // Populate slot to champion map from game state
+        for (Map.Entry<Short, Champion> entry : gameState.getChampions().entrySet()) {
+            Short slot = entry.getKey();
+            Champion champion = entry.getValue();
+            ChampionEnum championEnum = ChampionEnum.fromShort(champion.getId());
+            slotToChampionMap.put(slot, championEnum);
+            System.out.println(">>> Adding champion " + championEnum + " for slot " + slot);
+        }
 
         Map<ChampionEnum, Integer> championInitialHPMap = new HashMap<>();
         for (ChampionEnum championId : slotToChampionMap.values()) {
             Integer initialHP = championService.getInitialHP(championId);
             championInitialHPMap.put(championId, initialHP);
+            System.out.println(">>> Setting initial HP " + initialHP + " for champion " + championId);
         }
 
         boolean initSuccess = gameStateManager.initializeGame(gameId, slotToChampionMap, championInitialHPMap);

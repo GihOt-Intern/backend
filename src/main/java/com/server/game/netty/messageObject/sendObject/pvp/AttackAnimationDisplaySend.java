@@ -33,13 +33,16 @@ public class AttackAnimationDisplaySend implements TLVEncodable {
     @Override
     public byte[] encode() {
         byte[] attackerIdBytes = attackerId != null ? Util.stringToBytes(attackerId) : new byte[0];
+        byte[] targetIdBytes = targetId != null ? Util.stringToBytes(targetId) : new byte[0];
         byte[] animationTypeBytes = Util.stringToBytes(animationType);
         int attackerIdLength = attackerIdBytes.length;
+        int targetIdLength = targetIdBytes.length;
         int animationTypeLength = animationTypeBytes.length;
         
         ByteBuffer buf = Util.allocateByteBuffer(
             Util.SHORT_SIZE + // attackerSlot
             Util.SHORT_SIZE + attackerIdLength + // attackerId length + attackerId
+            Util.SHORT_SIZE + targetIdLength +
             Util.SHORT_SIZE + animationTypeLength + // animationType length + animationType
             8 // timestamp (long)
         );
@@ -48,6 +51,11 @@ public class AttackAnimationDisplaySend implements TLVEncodable {
         buf.putShort((short) attackerIdLength);
         if (attackerIdLength > 0) {
             buf.put(attackerIdBytes);
+        }
+        buf.putShort(targetSlot);
+        buf.putShort((short) targetIdLength);
+        if (targetIdLength > 0) {
+            buf.put(targetIdBytes);
         }
         buf.putShort((short) animationTypeLength);
         buf.put(animationTypeBytes);
