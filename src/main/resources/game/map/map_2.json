@@ -5,8 +5,8 @@
 
   "gold_mine": {
     "id": "gold_mine",
-    "position": { "x": 0, "y": 0 },
-    "size": { "width": 10.73, "length": 10.57 }
+    "position": { "x": 0 ,"y": 0 },
+    "size": { "width": 42.35, "length": 42.35 }
   },
 
 
@@ -22,7 +22,7 @@
 
       "burg": {
         "id": "burg_01",
-        "position": { "x": -100, "y": 0 },
+        "position": { "x": -100 ,"y": 0 },
         "size": { "width": 11.13, "length": 11.13 }
       },
 
@@ -30,12 +30,12 @@
         {
           "id": "tower_01",
           "position": { "x": -56, "y": 12.5 },
-          "size": { "width": 6.37, "length": 6.37 }
+          "size": { "width": 5, "length": 5 }
         },
         {
           "id": "tower_02",
           "position": { "x": -56, "y": -12.5 },
-          "size": { "width": 6.37, "length": 6.37 }
+          "size": { "width": 5, "length": 5 }
         }
       ]
     },
@@ -63,13 +63,13 @@
           "id": "tower_11",
           "type": "tower",
           "position": { "x": 56, "y": 12.5 },
-          "size": { "width": 6.37, "length": 6.37 }
+          "size": { "width": 5, "length": 5 }
         },
         {
           "id": "tower_12",
           "type": "tower",
           "position": { "x": 56, "y": -12.5 },
-          "size": { "width": 6.37, "length": 6.37 }
+          "size": { "width": 5, "length": 5 }
         }
       ]
     }

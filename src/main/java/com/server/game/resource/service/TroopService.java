@@ -54,6 +54,15 @@ public class TroopService {
         return troop.getInitialHP();
     }
 
+    public Float getTroopMovementSpeed(TroopEnum troopEnum) {
+        Troop troop = getTroopById(troopEnum);
+        if (troop == null) {
+            System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum + " not found");
+            return null;
+        }
+        return troop.getMoveSpeed();
+    }
+
     public Float getTroopAttackRange(TroopEnum troopEnum) {
         Troop troop = getTroopById(troopEnum);
         if (troop == null) {

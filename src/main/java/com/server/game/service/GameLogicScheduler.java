@@ -75,6 +75,7 @@ public class GameLogicScheduler {
             try {
                 // Update movement positions
                 moveService.updatePositions(gameId);
+                troopManager.updateTroopMovements(gameId, 0.05f);
                 
                 // Process attack targeting and continuous combat
                 attackTargetingService.processAllAttackers(gameId);
@@ -98,7 +99,6 @@ public class GameLogicScheduler {
     public void slowGameLogicLoop() {
         for (String gameId : activeGames) {
             try {
-                processTroopMovement(gameId);
                 // TODO: Add slower update systems here
                 // - Resource generation
                 // - AI decision making
@@ -120,7 +120,6 @@ public class GameLogicScheduler {
     public void backgroundGameLogicLoop() {
         for (String gameId : activeGames) {
             try {
-                processTroopAI(gameId);
                 // TODO: Add background systems here
                 // - Game session cleanup
                 // - Performance metrics collection
@@ -170,45 +169,5 @@ public class GameLogicScheduler {
      */
     public int getActiveGameCount() {
         return activeGames.size();
-    }
-
-    /**
-     * Process troop movement for all troops in the game
-     */
-    private void processTroopMovement(String gameId) {
-        Collection<TroopInstance> troops = troopManager.getGameTroops(gameId);
-        if (troops.isEmpty()) {
-            return;
-        }
-
-        for (TroopInstance troop : troops) {
-            if (troop.isAlive() && troop.isMoving() && troop.getTargetPosition() != null) {
-                float deltaTime = 0.2f;
-                float moveSpeed = getTroopMoveSpeed(troop.getTroopType());
-
-                troop.moveTowards(troop.getTargetPosition(), moveSpeed, deltaTime);
-            }
-            troop.updateEffects();
-        }
-    }
-
-    /**
-     * Process troop AI
-     */
-    private void processTroopAI(String gameId) {
-        troopAI.processGameAI(gameId);
-    }
-
-    /**
-     * Get the movement speed for a troop type
-     */
-    private float getTroopMoveSpeed(TroopEnum troopType) {
-        return switch (troopType) {
-            case CROSSBAWL -> 1.5f;  // Slower ranged unit
-            case AXIS -> 2.5f;       // Fast melee unit
-            case SHADOW -> 3.0f;     // Very fast assassin
-            case HEALER -> 1.8f;     // Medium speed support
-            default -> 2.0f;         // Default speed
-        };
     }
 }

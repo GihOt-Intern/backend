@@ -237,7 +237,6 @@ public class TroopManager {
      * Move troops for a player (placeholder for future implementation)
      */
     public void moveTroops(String gameId, short playerSlot, List<String> troopIds, Vector2 targetPosition) {
-        // TODO: Implement troop movement
         log.info("Move command received for player {} troops {} to position ({}, {}) - Implementation pending", 
                 playerSlot, troopIds, targetPosition.x(), targetPosition.y());
         
@@ -247,8 +246,160 @@ public class TroopManager {
             if (troop != null && troop.getOwnerSlot() == playerSlot && troop.isAlive()) {
                 troop.setMoveTarget(targetPosition);
                 troop.setAIState(TroopAIState.MOVING_TO_POSITION);
+
+                // Clear any previous attack target
+                troop.setTargetTroopId(null);
             }
         }
+    }
+
+    /**
+     * Move troop to attack a specific target
+     * @param attackerTroopId
+     * @param targetTroopId
+     * @return true if the attack was initiated, false if the troop is not found or not alive
+     */
+    public boolean moveToAttackTarget(String gameId, String attackerTroopId, String targetTroopId) {
+        TroopInstance attacker = getTroop(gameId, attackerTroopId);
+        TroopInstance target = getTroop(gameId, targetTroopId);
+
+        if (attacker == null || target == null || !attacker.isAlive() || !target.isAlive()) {
+            log.debug("Cannot move to attack");
+            return false;
+        }
+
+        boolean isEnemy = attacker.getOwnerSlot() != target.getOwnerSlot();
+        boolean isHealer = attacker.getTroopType() == TroopEnum.HEALER;
+
+        if (!isEnemy && !isHealer) {
+            log.warn("Troop {} cannot attack target {} - not an enemy or healer", attackerTroopId, targetTroopId);
+            return false;
+        }
+
+        // Set the target and update AI state
+        attacker.setTargetTroopId(targetTroopId);
+
+        if (isHealer && !isEnemy) {
+            attacker.setAIState(TroopAIState.HEALING_ALLY);
+            log.debug("Troop {} is healing ally {}", attackerTroopId, targetTroopId);
+        } else {
+            attacker.setAIState(TroopAIState.SEEKING);
+            log.debug("Troop {} set to attack enemy {}", attackerTroopId, targetTroopId);
+        }
+
+        // Calculate attack range based on troop type
+        float attackRange = troopService.getTroopAttackRange(attacker.getTroopType());
+        float currentDistance = attacker.distanceTo(target.getPosition());
+
+        if (currentDistance <= attackRange) {
+            attacker.setAIState(isHealer ? TroopAIState.HEALING_ALLY : TroopAIState.ATTACKING);
+            log.debug("Troop {} is within attack range of {}: {}", attackerTroopId, targetTroopId, target);
+            return true;
+        }
+
+        return true;
+    }
+
+    /**
+     * Update troop movements towards their targets
+     * Called periodically by the game logic
+     */
+    public void updateTroopMovements(String gameId, float deltaTime) {
+        Collection<TroopInstance> troops = getGameTroops(gameId);
+
+        for (TroopInstance troop : troops) {
+            if (!troop.isAlive()) continue;
+            
+            switch (troop.getAIState()) {
+                case SEEKING, RETREATING -> updateSeekingMovement(troop, deltaTime);
+                case HEALING_ALLY -> updateHealingMovement(troop, deltaTime);
+                case MOVING_TO_POSITION -> updateDirectMovement(troop, deltaTime);
+                default -> {}
+            }
+        }
+    }
+
+    /**
+     * Update movement for troops seeking enemies
+     */
+    private void updateSeekingMovement(TroopInstance troop, float deltaTime) {
+        String targetId = troop.getTargetTroopId();
+        if (targetId == null) return;
+        
+        TroopInstance target = getTroop(troop.getGameId(), targetId);
+        if (target == null || !target.isAlive()) {
+            // Target is gone, reset to idle
+            troop.setTargetTroopId(null);
+            troop.setAIState(TroopAIState.IDLE);
+            return;
+        }
+        
+        float attackRange = troopService.getTroopAttackRange(troop.getTroopType());
+        float currentDistance = troop.distanceTo(target.getPosition());
+        
+        // If reached attack range, switch to attacking
+        if (currentDistance <= attackRange) {
+            troop.setAIState(TroopAIState.ATTACKING);
+            return;
+        }
+        
+        // Move toward target with appropriate speed
+        float moveSpeed = troopService.getTroopMovementSpeed(troop.getTroopType());
+        troop.moveTowards(target.getPosition(), moveSpeed, deltaTime);
+    }
+
+    /**
+     * Update movement for troops healing allies
+     */
+    private void updateHealingMovement(TroopInstance troop, float deltaTime) {
+        // Similar to seeking, but for healing allies
+        String targetId = troop.getTargetTroopId();
+        if (targetId == null) return;
+        
+        TroopInstance target = getTroop(troop.getGameId(), targetId);
+        if (target == null || !target.isAlive() || target.getHealthPercentage() >= 0.9f) {
+            // Target is gone or fully healed
+            troop.setTargetTroopId(null);
+            troop.setAIState(TroopAIState.IDLE);
+            return;
+        }
+        
+        float healRange = 4.0f; // Healing range
+        float currentDistance = troop.distanceTo(target.getPosition());
+        
+        // If in heal range, stop and heal
+        if (currentDistance <= healRange) {
+            // Stay in healing state but stop moving
+            return;
+        }
+        
+        // Move toward target that needs healing
+        float moveSpeed = troopService.getTroopMovementSpeed(troop.getTroopType());
+        troop.moveTowards(target.getPosition(), moveSpeed, deltaTime);
+    }
+
+    /**
+     * Update movement for troops moving to a position (not targeting)
+     */
+    private void updateDirectMovement(TroopInstance troop, float deltaTime) {
+        Vector2 targetPos = troop.getTargetPosition();
+        if (targetPos == null) {
+            troop.setAIState(TroopAIState.IDLE);
+            return;
+        }
+
+        float moveSpeed = troopService.getTroopMovementSpeed(troop.getTroopType());
+        float arrivalThreshold = 0.5f;
+        
+        // Check if we've arrived at the target position
+        if (troop.distanceTo(targetPos) <= arrivalThreshold) {
+            troop.setMoveTarget(null);
+            troop.setAIState(TroopAIState.IDLE);
+            return;
+        }
+        
+        // Continue moving toward target position
+        troop.moveTowards(targetPos, moveSpeed, deltaTime);
     }
     
     /**
