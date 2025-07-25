@@ -120,7 +120,7 @@ public class AStarPathfinder {
 
                 if (current.parent != null && lineOfSight(current.parent.row, current.parent.col, newRow, newCol, grid)) {
                     double directCost = Math.hypot(current.parent.row - newRow, current.parent.col - newCol);
-                    tentativeG = current.g + directCost;
+                    tentativeG = current.parent.g + directCost;
                     pathParent = current.parent;
                 } else {
                     double moveCost = (dir[0] != 0 && dir[1] != 0 ) ? Math.sqrt(2) : 1.0;
@@ -233,9 +233,6 @@ public class AStarPathfinder {
         while (x != x1 || y != y1) {
             if (!isValid(x, y, grid) || !grid[x][y]) {
                 return false; // Không có đường đi
-            }
-            if (x == x1 && y == y1) {
-                return true; // Đã đến đích
             }
             int err2 = err * 2;
             if (err2 > -dy) {

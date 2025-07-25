@@ -73,6 +73,7 @@ public class PositionBroadcastService {
             // Tạo message để broadcast
             long currentTime = System.currentTimeMillis();
             PositionSend positionSend = new PositionSend(playerDataList, currentTime);
+            log.debug("Broadcasting positions for game {}: {}", gameId, positionSend);
 
             // Lấy tất cả channel trong game
             Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
