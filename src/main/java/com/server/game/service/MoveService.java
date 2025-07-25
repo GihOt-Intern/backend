@@ -44,7 +44,9 @@ public class MoveService {
      * Đặt mục tiêu di chuyển mới cho người chơi
      */
     public void setMoveTarget(String gameId, short slot, Vector2 targetPosition) {
+        
         GameState gameState = gameCoordinator.getGameState(gameId);
+
         float slotSpeed = gameState.getSpeed(slot);
         
         PositionData currentPos = positionService.getPlayerPosition(gameId, slot);
@@ -66,7 +68,11 @@ public class MoveService {
             return;
         }
 
+
+        
+
         GameMapGrid gameMapGrid = gameState.getGameMapGrid();
+
         Vector2 startPosition = currentPos.getPosition();
         GridCell startCell = gameState.toGridCell(startPosition);
         GridCell targetCell = gameState.toGridCell(targetPosition);
@@ -77,11 +83,10 @@ public class MoveService {
         List<GridCell> path = AStarPathfinder.findPath(gameMapGrid.getGrid(), startCell, targetCell);
         PathComponent pathComponent = new PathComponent(path);
 
-        long currentTime = System.currentTimeMillis();
         MoveTarget target = new MoveTarget(
             startPosition,
             targetPosition,
-            currentTime,
+            System.currentTimeMillis(),
             slotSpeed,
             pathComponent
         );
@@ -108,51 +113,42 @@ public class MoveService {
             short slot = entry.getKey();
             MoveTarget target = entry.getValue();
 
-            float deltaTime = (currentTime - target.lastUpdateTime) / 1000.0f;
-
-            if (deltaTime > 0.5f) {
-                deltaTime = 0.5f; // Cap delta time to avoid large jumps
-            }
-
+            float elapsedTime = (currentTime - target.getStartTime()) / 1000.0f;
             float targetSpeed = target.getSpeed();
 
-            float distanceThisFrame = targetSpeed * deltaTime;
-
-            Vector2 position = target.getCurrentActualPosition();
+            Vector2 position = target.getCurrentPosition();
+            float totalDistanceCovered = targetSpeed * elapsedTime;
+            float remainingDistance = totalDistanceCovered;
 
             boolean reachedFinalDestination = false;
-            while (target.path.hasNext() && !reachedFinalDestination && distanceThisFrame > 0) {
+            while (target.path.hasNext() && !reachedFinalDestination) {
                 GridCell nextCell = target.peekNextCell();
                 Vector2 nextPosition = gameState.toPosition(nextCell);
 
                 float distanceToNext = position.distance(nextPosition);
 
-                if (distanceThisFrame >= distanceToNext) {
-                    // Move to next cell
+                if (remainingDistance >= distanceToNext) {
                     position = nextPosition;
-                    distanceThisFrame -= distanceToNext;
+                    remainingDistance -= distanceToNext;
 
-                    target.path.getNextCell();
+                    target.path.getNextCell(); // Di chuyển đến ô tiếp theo
 
                     if (!target.path.hasNext()) {
-                        reachedFinalDestination = true; // Reached final destination
+                        reachedFinalDestination = true;
                     }
                 } else {
-                    // Move towards next cell
                     Vector2 direction = nextPosition.subtract(position).normalize();
-                    position = position.add(direction.multiply(distanceThisFrame));
-                    distanceThisFrame = 0; // No more distance to cover
+                    position = position.add(direction.multiply(remainingDistance));
+                    
+                    break;
                 }
             }
 
-            target.setCurrentActualPosition(position);
-            target.setLastUpdateTime(currentTime);
-
             positionService.updatePendingPosition(
-                gameId, 
-                slot, 
-                position, 
-                targetSpeed, 
+                gameId,
+                slot,
+                position,
+                targetSpeed,
                 currentTime
             );
 
@@ -287,21 +283,11 @@ public class MoveService {
         private final Vector2 currentPosition;
         private final Vector2 targetPosition;
         private final long startTime;
-        private long lastUpdateTime;
-        private Vector2 currentActualPosition;
         private final float speed;
         @Delegate
         private final PathComponent path;
 
-            public MoveTarget(Vector2 currentPosition, Vector2 targetPosition, long startTime, float speed, PathComponent path) {
-                this.currentPosition = currentPosition;
-                this.targetPosition = targetPosition;
-                this.startTime = startTime;
-                this.lastUpdateTime = startTime; // Initialize to start time
-                this.currentActualPosition = currentPosition; // Initialize to start position
-                this.speed = speed;
-                this.path = path;
-            }   
+
 
 
         public static class PathComponent {
