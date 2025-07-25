@@ -49,8 +49,8 @@ public class PositionSend implements TLVEncodable {
             // Write timestamp
             dos.writeLong(timestamp);
 
-            ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
-            Util.printHex(buffer, true);
+            // ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
+            // Util.printHex(buffer, true);
             
             
             

@@ -1,6 +1,5 @@
 package com.server.game.service;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,10 +11,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.HeartbeatMessage;
 import com.server.game.service.gameState.HealthRegenerationService;
-import com.server.game.service.troop.TroopAI;
-import com.server.game.service.troop.TroopInstance;
 import com.server.game.service.troop.TroopManager;
-import com.server.game.util.TroopEnum;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
@@ -35,9 +31,6 @@ public class GameLogicScheduler {
 
     @Autowired
     private TroopManager troopManager;
-
-    @Autowired
-    private TroopAI troopAI;
     
     // Lưu trữ các game đang hoạt động cho game logic
     private final Set<String> activeGames = ConcurrentHashMap.newKeySet();
@@ -69,7 +62,7 @@ public class GameLogicScheduler {
      * Main game logic loop - runs every 50ms (20 FPS)
      * Handles movement updates and combat logic
      */
-    @Scheduled(fixedDelay = 16) // 16ms = 62.5 FPS for responsive gameplay
+    @Scheduled(fixedDelay = 33) // 33ms = 30 FPS for responsive gameplay
     public void gameLogicLoop() {
         for (String gameId : activeGames) {
             try {
