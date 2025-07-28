@@ -6,17 +6,19 @@ import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.SendMessageType;
 
 import io.netty.channel.Channel;
-import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 
-@NoArgsConstructor
-public class HeartbeatMessage implements TLVEncodable {
+@AllArgsConstructor
+public class GoldAmountSend implements TLVEncodable {
+
+    Integer goldAmount;
 
     @Override
     public SendMessageType getType() {
-        return SendMessageType.HEARTBEAT_SEND;
+        return SendMessageType.GOLD_AMOUNT_SEND;
     }
 
     @Override
@@ -25,12 +27,11 @@ public class HeartbeatMessage implements TLVEncodable {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(baos);
 
-            // Heartbeat message is empty, so we just return an empty byte array
-            dos.writeInt(0); // Length of the message is 0
+            dos.writeInt(goldAmount);
 
             return baos.toByteArray();
         } catch (Exception e) {
-            throw new RuntimeException("Cannot encode HeartbeatMessage", e);
+            throw new RuntimeException("Cannot encode GoldAmountSend", e);
         }
     }
 

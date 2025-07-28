@@ -3,6 +3,7 @@ package com.server.game.service.gameState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.server.game.model.GameState;
 import com.server.game.service.GameStateService;
 import com.server.game.util.ChampionEnum;
 
@@ -27,6 +28,9 @@ public class GameStateExampleService {
     
     @Autowired
     private GameStateBroadcastService gameStateBroadcastService;
+
+    @Autowired
+    private GameStateBuilder gameStateBuilder;
     
     /**
      * Example: Initialize a game with multiple players
@@ -35,19 +39,16 @@ public class GameStateExampleService {
         String gameId = "example_game_001";
         
         // Setup slot to champion mapping
-        Map<Short, ChampionEnum> slotToChampionMap = new HashMap<>();
-        slotToChampionMap.put((short) 0, ChampionEnum.MELEE_AXE);
-        slotToChampionMap.put((short) 1, ChampionEnum.MARKSMAN_CROSSBOW);
-        slotToChampionMap.put((short) 2, ChampionEnum.MAGE_SCEPTER);
-        
-        // Setup champion initial HP mapping
-        Map<ChampionEnum, Integer> championInitialHPMap = new HashMap<>();
-        championInitialHPMap.put(ChampionEnum.MELEE_AXE, 1200);
-        championInitialHPMap.put(ChampionEnum.MARKSMAN_CROSSBOW, 800);
-        championInitialHPMap.put(ChampionEnum.MAGE_SCEPTER, 600);
-        
+        Map<Short, ChampionEnum> slot2ChampionId = new HashMap<>();
+        slot2ChampionId.put((short) 0, ChampionEnum.MELEE_AXE);
+        slot2ChampionId.put((short) 1, ChampionEnum.MARKSMAN_CROSSBOW);
+        slot2ChampionId.put((short) 2, ChampionEnum.MAGE_SCEPTER);
+
+
+        GameState gameState = gameStateBuilder.build(gameId, slot2ChampionId);
+
         // Initialize the game
-        boolean success = gameStateManager.initializeGame(gameId, slotToChampionMap, championInitialHPMap);
+        boolean success = gameStateManager.initializeGame(gameState);
         
         if (success) {
             log.info("Successfully initialized example game: {}", gameId);
@@ -93,7 +94,7 @@ public class GameStateExampleService {
         
         // Check if game has ended
         if (gameStateManager.isGameEnded(gameId)) {
-            Short winner = gameStateManager.getGameWinner(gameId);
+            Short winner = gameStateManager.getWinnerSlot(gameId);
             log.info("Game has ended! Winner: Player {}", winner);
         }
     }
@@ -136,7 +137,7 @@ public class GameStateExampleService {
         log.info("=== Respawn System Example ===");
         
         // Check for dead players
-        List<Short> deadPlayers = gameStateManager.getDeadPlayers(gameId);
+        List<Short> deadPlayers = gameStateManager.getDeadSlotIds(gameId);
         if (!deadPlayers.isEmpty()) {
             Short playerToRespawn = deadPlayers.get(0);
             
@@ -170,19 +171,19 @@ public class GameStateExampleService {
         log.info("Game ID: {}", snapshot.gameId);
         log.info("Alive players: {}", snapshot.alivePlayers);
         log.info("Dead players: {}", snapshot.deadPlayers);
-        log.info("Total players: {}", snapshot.playerStates.size());
+        log.info("Total players: {}", snapshot.getTotalPlayers());
         
         // Display individual player stats
-        snapshot.playerStates.forEach((slot, playerState) -> {
-            log.info("Player {}: {}", slot, playerState.getStatusSummary());
+        snapshot.gameState.getSlotStates().forEach((slot, slotState) -> {
+            log.info("Player {}: {}", slot, slotState.getStatusSummary());
         });
         
-        // Check if any players are AFK (5 minute threshold)
-        snapshot.playerStates.forEach((slot, playerState) -> {
-            if (playerState.isAFK(300000)) { // 5 minutes
-                log.warn("Player {} appears to be AFK", slot);
-            }
-        });
+        // // Check if any players are AFK (5 minute threshold)
+        // snapshot.playerStates.forEach((slot, playerState) -> {
+        //     if (playerState.isAFK(300000)) { // 5 minutes
+        //         log.warn("Player {} appears to be AFK", slot);
+        //     }
+        // });
     }
     
     /**

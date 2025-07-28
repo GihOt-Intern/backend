@@ -1,8 +1,5 @@
 package com.server.game.map.component;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 
 public record Vector2(float x, float y) {
 
@@ -35,16 +32,9 @@ public record Vector2(float x, float y) {
         return this.subtract(other).length();
     }
 
-
-
-    public Point toPoint() {
-        GeometryFactory geometryFactory = new GeometryFactory();
-        Coordinate coord = new Coordinate(x, y);
-        return geometryFactory.createPoint(coord);
-    }
-
-    public static Vector2 fromPoint(Point point) {
-        return new Vector2((float) point.getX(), (float) point.getY());
+    public boolean isInRectangle(Vector2 rectCenter, float width, float length) {
+        return rectCenter.x() - width / 2 <= this.x && this.x <= rectCenter.x() + width / 2 &&
+               rectCenter.y() - length / 2 <= this.y && this.y <= rectCenter.y() + length / 2;
     }
 
 

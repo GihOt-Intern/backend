@@ -2,31 +2,64 @@ package com.server.game.model;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.server.game.map.component.GridCell;
 import com.server.game.map.component.Vector2;
-import com.server.game.resource.model.Champion;
+import com.server.game.map.object.Champion;
 import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.GameMapGrid;
 import com.server.game.resource.model.SlotInfo;
 
-
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
 public class GameState {
+    private String gameId;
     private GameMap gameMap;
     private GameMapGrid gameMapGrid;
-    private Map<Short, Champion> champions;
+    private Map<Short, SlotState> slotStates;
+
+    public GameState(String gameId, GameMap gameMap, GameMapGrid gameMapGrid, Map<Short, Champion> slot2Champion) {
+        this.gameId = gameId;
+        this.gameMap = gameMap;
+        this.gameMapGrid = gameMapGrid;
+        this.slotStates = slot2Champion.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, 
+                entry -> {
+                    Short slot = entry.getKey();
+                    Champion champion = entry.getValue();
+                    Vector2 initialPosition = gameMap.getSpawnPosition(slot);
+                    Integer initialGold = gameMap.getInitialGoldEachSlot();
+                    return new SlotState(slot, champion, initialPosition, initialGold);
+                })
+            );
+    }
+
+    public int getNumPlayers() {
+        return slotStates.size();
+    }
+
+    public void setSlotPosition(Short slot, Vector2 newPosition) {
+        SlotState slotState = slotStates.get(slot);
+        if (slotState != null) {
+            slotState.setCurrentPosition(newPosition);
+
+            slotState.checkInPlayGround(gameMap.getPlayGround());
+            return;
+        }
+        System.err.println(">>> [Log in GameState.setSlotPosition] Slot " + slot + " not found in game state for gameId: " + gameId);
+    }
 
     public Float getSpeed(Short slot) {
-        Champion champion = champions.get(slot);
-        if (champion != null) {
-            return champion.getMoveSpeed();
+        SlotState slotState = slotStates.get(slot);
+        if (slotState != null) {
+            Champion champion = slotState.getChampion();
+            if (champion != null) {
+                return champion.getMoveSpeed();
+            }
         }
-        return null; 
+        return null;
     }
 
     public Short getGameMapId() {
@@ -38,11 +71,16 @@ public class GameState {
     }
 
     public Champion getChampionBySlot(Short slot) {
-        return champions.get(slot);
+        SlotState slotState = slotStates.get(slot);
+        return slotState != null ? slotState.getChampion() : null;
     }
 
     public Vector2 getSpawnPosition(Short slot) {
         return gameMap.getSpawnPosition(slot);
+    }
+
+    public Integer getGoldGeneratedPerSecond() {
+        return gameMap.getGoldGeneratedPerSecond();
     }
 
     public Vector2 toPosition(GridCell gridCell) {
@@ -61,5 +99,58 @@ public class GameState {
         int col = (int) ((position.x() - origin.x()) / cellSize);
         int row = (int) ((origin.y() - position.y()) / cellSize); // flip Y axis
         return new GridCell(row, col);
+    }
+
+
+    public Integer peekGold(Short slot) {
+        SlotState slotState = slotStates.get(slot);
+        if (slotState != null) {
+            return slotState.getCurrentGold();
+        }
+        return null;
+    }
+
+    public void addGold(Short slot, Integer amount) {
+        this.setGold(slot, this.peekGold(slot) + amount);
+    }
+
+    public void spendGold(Short slot, Integer amount) {
+        Integer currentGold = this.peekGold(slot);
+        if (currentGold != null && currentGold >= amount) {
+            this.setGold(slot, currentGold - amount);
+        } else {
+            System.err.println(">>> [Log in GameState.spendGold] Not enough gold for slot " + slot + ". Current: " + currentGold + ", Required: " + amount);
+        }
+    }
+
+    public void setGold(Short slot, Integer newAmount) {
+        SlotState slotState = slotStates.get(slot);
+        if (slotState != null) {
+            slotState.setCurrentGold(newAmount);
+
+            slotState.handleGoldChange(gameId);
+            return;
+        }
+        System.err.println(">>> [Log in GameState.setGold] Slot " + slot + " not found in game state for gameId: " + gameId);
+    }
+
+    public Map<Short, Champion> getChampions() {
+        return slotStates.values().stream()
+            .filter(slotState -> slotState.getChampion() != null)
+            .collect(Collectors.toMap(SlotState::getSlot, SlotState::getChampion));
+    }
+
+    public SlotState getSlotState(short slot) {
+        return slotStates.get(slot);
+    }
+
+    public int getCurrentHP(short slot) {
+        SlotState slotState = slotStates.get(slot);
+        return slotState != null ? slotState.getCurrentHP() : -1;
+    }
+
+    public int getMaxHP(short slot) {
+        SlotState slotState = slotStates.get(slot);
+        return slotState != null ? slotState.getMaxHP() : -1;
     }
 }

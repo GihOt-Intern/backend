@@ -1,4 +1,4 @@
-package com.server.game.resource.service;
+package com.server.game.service.gameState;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,13 +10,16 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import com.server.game.resource.model.Champion;
 import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.GameMapGrid;
+import com.server.game.resource.service.ChampionService;
+import com.server.game.resource.service.GameMapGridService;
+import com.server.game.resource.service.GameMapService;
 import com.server.game.util.ChampionEnum;
 
 import io.netty.channel.Channel;
 
+import com.server.game.map.object.Champion;
 import com.server.game.model.GameState;
 import com.server.game.netty.ChannelManager;
 
@@ -27,14 +30,15 @@ import lombok.AccessLevel;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
-public class GameStateBuilderService {
+public class GameStateBuilder {
 
 
     GameMapService gameMapService;
     GameMapGridService gameMapGridService;
     ChampionService championService;
 
-    public GameState getGameState(Channel channel) {
+    // From the channel, get all components needed to build the game state
+    public GameState build(Channel channel) {
         Set<Channel> playersInRoom = ChannelManager.getGameChannelsByInnerChannel(channel);
         Short numPlayers = (short) playersInRoom.size();
 
@@ -43,6 +47,34 @@ public class GameStateBuilderService {
         String gameId = ChannelManager.getGameIdByChannel(channel);
         Map<Short, ChampionEnum> slot2ChampionId = ChannelManager.getSlot2ChampionId(gameId);
 
+        Map<Short, Champion> slot2Champion = this.getSlot2Champion(slot2ChampionId);
+
+        GameMap gameMap = gameMapService.getGameMapById(gameMapId);
+        GameMapGrid gameMapGrid = gameMapGridService.getGameMapGridById(gameMapId);
+
+        GameState gameState = new GameState(gameId, gameMap, gameMapGrid, slot2Champion);
+
+
+        return gameState;
+    }
+
+
+    public GameState build(String gameId, Map<Short, ChampionEnum> slot2ChampionId) {
+        
+        Short gameMapId = (short) slot2ChampionId.size(); // GameMap id is determined by the number of players
+        
+        Map<Short, Champion> slot2Champion = this.getSlot2Champion(slot2ChampionId);
+
+        GameMap gameMap = gameMapService.getGameMapById(gameMapId);
+        GameMapGrid gameMapGrid = gameMapGridService.getGameMapGridById(gameMapId);
+
+        GameState gameState = new GameState(gameId, gameMap, gameMapGrid, slot2Champion);
+
+        return gameState;
+    }
+
+
+    private Map<Short, Champion> getSlot2Champion(Map<Short, ChampionEnum> slot2ChampionId) {
         Map<Short, Champion> slot2Champion = new HashMap<>();
         for (Map.Entry<Short, ChampionEnum> entry : slot2ChampionId.entrySet()) {
             Short slot = entry.getKey();
@@ -54,14 +86,6 @@ public class GameStateBuilderService {
                 System.out.println(">>> [Log in MapHandler.handleInitialGameStateLoading] Champion with ID " + championId + " not found.");
             }
         }
-
-
-        GameMap gameMap = gameMapService.getGameMapById(gameMapId);
-        GameMapGrid gameMapGrid = gameMapGridService.getGameMapGridById(gameMapId);
-
-        GameState gameState = new GameState(gameMap, gameMapGrid, slot2Champion);
-
-        return gameState;
+        return slot2Champion;
     }
-
 }

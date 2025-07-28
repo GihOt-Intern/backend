@@ -14,8 +14,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.server.game.map.component.Vector2;
-import com.server.game.resource.deserializer.GoldMineDeserializer;
-
+import com.server.game.resource.deserializer.PlayGroundDeserializer;
 
 import lombok.AccessLevel;
 
@@ -25,7 +24,9 @@ import lombok.AccessLevel;
 public class GameMap {
     short id;
     String name;
-    GoldMine goldMine;
+    Integer initialGoldEachSlot;
+    Integer goldGeneratedPerSecond;
+    PlayGround playGround;
     List<SlotInfo> slotInfos;
 
     final Map<Short, SlotInfo> slot2SlotInfo = new HashMap<>();
@@ -34,13 +35,17 @@ public class GameMap {
     @JsonCreator
     public GameMap(
         @JsonProperty("id") short id,
-        @JsonProperty("mapName") String name,
-        @JsonProperty("gold_mine") GoldMine goldMine,
+        @JsonProperty("map_name") String name,
+        @JsonProperty("initial_gold_each_slot") int initialGoldEachSlot,
+        @JsonProperty("gold_generated_per_second") int goldGeneratedPerSecond,
+        @JsonProperty("play_ground") PlayGround playGround,
         @JsonProperty("slot_info") List<SlotInfo> slotInfos
     ) {
         this.id = id;
         this.name = name;
-        this.goldMine = goldMine;
+        this.initialGoldEachSlot = initialGoldEachSlot;
+        this.goldGeneratedPerSecond = goldGeneratedPerSecond;
+        this.playGround = playGround;
         this.slotInfos = slotInfos;
 
         if (slotInfos != null) {
@@ -55,12 +60,16 @@ public class GameMap {
     @AllArgsConstructor
     @NoArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    @JsonDeserialize(using = GoldMineDeserializer.class)
-    public static class GoldMine {
+    @JsonDeserialize(using = PlayGroundDeserializer.class)
+    public static class PlayGround {
         String id;
         Vector2 position;
         float width;
         float length;
+
+        public boolean isInGoldMine(Vector2 position) {
+            return position.isInRectangle(this.position, this.width, this.length);
+        }
     }
 
 

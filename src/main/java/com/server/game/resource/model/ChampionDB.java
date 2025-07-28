@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.experimental.Delegate;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
@@ -31,23 +30,22 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Champion {
+public class ChampionDB {
 
     Short id;
     String name;
     String role;
-    @Delegate
-    ChampionStats stats;
-    @Delegate
+    ChampionDBStats stats;
     ChampionAbility ability;
 
 
-
+    // *********** INNER CLASSES ***********
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class ChampionStats {
-        int hp;
+    public static class ChampionDBStats {
+        @JsonProperty("hp")
+        int initHP;
         int defense;
         int attack;
         @JsonProperty("move_speed")
@@ -69,12 +67,5 @@ public class Champion {
         @JsonProperty("cool_down")
         float cooldown;
     }
-
-    public Integer getInitialHP() {
-        if (stats != null) {
-            return stats.getHp();
-        }
-        System.out.println(">>> [Log in Champion] Initial HP not found for champion " + id);
-        return null;
-    }
+    // *********** END OF INNER CLASSES ***********
 }

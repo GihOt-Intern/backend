@@ -1,8 +1,8 @@
 package com.server.game.resource.reader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.server.game.resource.model.Champion;
 import com.server.game.resource.model.GameMap;
+import com.server.game.resource.model.ChampionDB;
 import com.server.game.resource.model.GameMapGrid;
 
 import lombok.AccessLevel;
@@ -56,7 +56,7 @@ public class JsonReader {
         }
     }   
 
-    public Champion readChampionFromJson(String championName) {
+    public ChampionDB readChampionFromJson(String championName) {
         try {
             InputStream is = getClass().getClassLoader().getResourceAsStream("game/champion/" + championName + ".json");
             if (is == null) {
@@ -64,7 +64,7 @@ public class JsonReader {
                 System.out.println(">>> File not found: resources/game/champion/" + championName + ".json");
                 return null;
             }
-            return objectMapper.readValue(is, Champion.class);
+            return objectMapper.readValue(is, ChampionDB.class);
 
         } catch (IOException e) {
             // e.printStackTrace();

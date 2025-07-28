@@ -5,10 +5,10 @@ import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.server.game.resource.model.Champion;
+import com.server.game.resource.model.ChampionDB;
 
 
-public interface ChampionRepository extends MongoRepository<Champion, Short> {
-    Optional<Champion> findByName(String name);
+public interface ChampionDBRepository extends MongoRepository<ChampionDB, Short> {
+    Optional<ChampionDB> findByName(String name);
     boolean existsByName(String name);
 }

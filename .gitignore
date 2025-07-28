@@ -38,8 +38,6 @@ build/
 
 ### Others ###
 .idea/
-node_modules/
-.favorites.json
 **/src/main/resources/env.properties
 **/src/main/resources/docker-env.properties
 **/src/main/resources/vps-env.properties

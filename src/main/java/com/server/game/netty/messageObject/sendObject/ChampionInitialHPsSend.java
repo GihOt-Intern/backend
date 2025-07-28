@@ -9,11 +9,11 @@ import java.util.Map;
 
 import io.netty.channel.Channel;
 
+import com.server.game.map.object.Champion;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.SendMessageType;
-import com.server.game.resource.model.Champion;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

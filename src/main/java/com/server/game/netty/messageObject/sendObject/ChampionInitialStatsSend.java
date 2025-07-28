@@ -6,11 +6,11 @@ import java.io.IOException;
 
 import io.netty.channel.Channel;
 
+import com.server.game.map.object.Champion;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.SendMessageType;
-import com.server.game.resource.model.Champion;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -29,9 +29,10 @@ public class ChampionInitialStatsSend implements TLVEncodable {
     Float attackRange;
     Float resourceClaimingSpeed;
     Float skillCooldown;
+    Integer initGold;
 
 
-    public ChampionInitialStatsSend(Champion champion) {
+    public ChampionInitialStatsSend(Champion champion, Integer initGold) {
         this.defense = champion.getDefense();
         this.attack = champion.getAttack();
         this.moveSpeed = champion.getMoveSpeed();
@@ -39,6 +40,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
         this.attackRange = champion.getAttackRange();
         this.resourceClaimingSpeed = champion.getResourceClaimingSpeed();
         this.skillCooldown = champion.getCooldown();
+        this.initGold = initGold;
     }
 
 
@@ -61,6 +63,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
             dos.writeFloat(attackRange);
             dos.writeFloat(resourceClaimingSpeed);
             dos.writeFloat(skillCooldown);
+            dos.writeInt(initGold);
 
 
             return baos.toByteArray();

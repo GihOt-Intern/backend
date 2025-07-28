@@ -7,10 +7,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 
 import com.server.game.map.component.Vector2;
+import com.server.game.map.object.Champion;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.pvp.AttackAnimationDisplaySend;
 import com.server.game.netty.messageObject.sendObject.pvp.HealthUpdateSend;
-import com.server.game.resource.model.Champion;
 import com.server.game.resource.service.ChampionService;
 import com.server.game.service.MoveService.PositionData;
 import com.server.game.service.gameState.GameStateBroadcastService;
@@ -393,6 +393,35 @@ public class PvPService {
         // For now, just return calculated damage
         
         return damage;
+    }
+    
+    // /**
+    //  * Process target counter-attack against champion
+    //  */
+    // private int processTargetCounterAttack(String gameId, String attackerId, short defenderSlot, long timestamp) {
+    //     // Get combat data for the defender
+    //     CombatData defenderData = getCombatData(gameId, defenderSlot);
+        
+    //     // Calculate damage received
+    //     int damage = calculateTargetDamage(attackerId);
+        
+    //     // Update defender's combat data
+    //     defenderData.addDamageReceived(damage);
+    //     defenderData.setLastActionTimestamp(timestamp);
+        
+    //     log.debug("Target {} dealt {} damage to champion in slot {}", attackerId, damage, defenderSlot);
+        
+    //     return damage;
+    // }
+    
+    /**
+     * Process target vs target combat
+     */
+    private void processTargetVsTarget(String gameId, String targetId, short slot, long timestamp) {
+        // Implement target vs target logic
+        log.debug("Processing target vs target combat for target {}", targetId);
+        
+        // TODO: Implement target AI combat system
     }
     
     /**
