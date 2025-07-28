@@ -75,13 +75,9 @@ public class PositionBroadcastService {
             PositionSend positionSend = new PositionSend(playerDataList, currentTime);
             log.debug("Broadcasting positions for game {}: {}", gameId, positionSend);
 
-            // Lấy tất cả channel trong game
-            Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
-            
-            if (channels != null && !channels.isEmpty()) {
-                // Broadcast cho tất cả player trong game, chỉ cần writeAndFlush cho channel đầu tiên
-                Channel firstChannel = channels.iterator().next();
-                firstChannel.writeAndFlush(positionSend);
+            Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+            if (channel != null) {
+                channel.writeAndFlush(positionSend); // sendTarget of positionSend message is AMatchTarget
             } else {
                 // Không có player nào trong game, không cần broadcast, xoá game khỏi activeGames
                 unregisterGame(gameId);
@@ -97,7 +93,6 @@ public class PositionBroadcastService {
             
             // Xóa pending positions sau khi đã broadcast
             positionService.clearPendingPositions(gameId);
-            long elapsedTime = System.currentTimeMillis() - currentTime;
         }
     }
     

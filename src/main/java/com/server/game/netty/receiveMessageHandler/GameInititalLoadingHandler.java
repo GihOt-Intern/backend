@@ -3,23 +3,20 @@ package com.server.game.netty.receiveMessageHandler;
 
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
+import com.server.game.map.object.Champion;
 import com.server.game.model.GameState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.ChampionInitialHPsSend;
 import com.server.game.netty.messageObject.sendObject.ChampionInitialStatsSend;
 import com.server.game.netty.messageObject.sendObject.InitialPositionsSend;
-import com.server.game.resource.model.Champion;
 import com.server.game.resource.model.SlotInfo;
-import com.server.game.resource.service.GameStateBuilderService;
 import com.server.game.service.GameCoordinator;
+import com.server.game.service.gameState.GameStateBuilder;
 import com.server.game.service.gameState.GameStateManager;
-import com.server.game.util.ChampionEnum;
-import com.server.game.resource.service.ChampionService;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -33,14 +30,13 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameInititalLoadingHandler {
 
-    GameStateBuilderService gameStateBuilderService;
+    GameStateBuilder gameStateBuilder;
     GameCoordinator gameCoordinator;
     GameStateManager gameStateManager;
-    ChampionService championService;
     
     // This method is called by LobbyHandler when all players are ready
     public void loadInitial(Channel channel) {
-        GameState gameState = gameStateBuilderService.getGameState(channel);
+        GameState gameState = gameStateBuilder.build(channel);
         ChannelFuture future = 
             this.sendInitialPositions(channel, gameState);
         future = this.sendChampionInitialHPs(channel, gameState);
@@ -48,7 +44,15 @@ public class GameInititalLoadingHandler {
 
         // Initialize game state before completing
         String gameId = ChannelManager.getGameIdByChannel(channel);
-        initializeGameState(gameId, gameState);
+
+    
+        boolean isInitSuccess = gameStateManager.initializeGame(gameState);
+
+        if (isInitSuccess) {
+            System.out.println(">>> [Log in GameLoadingHandler.initializeGameState] Successfully initialized game state for gameId: " + gameId);
+        } else {
+            System.err.println(">>> [Log in GameLoadingHandler.initializeGameState] Failed to initialize game state for gameId: " + gameId);
+        }
         
         future.addListener(f -> {
             if (f.isSuccess()) {
@@ -71,33 +75,35 @@ public class GameInititalLoadingHandler {
      * @param gameState
      * @return
      */
-    private void initializeGameState(String gameId, GameState gameState) {
-        Map<Short, ChampionEnum> slotToChampionMap = new HashMap<>();
+    // private void initializeGameState(String gameId, GameState gameState) {
+    //     Map<Short, ChampionEnum> slot2Champion = new HashMap<>();
         
-        // Populate slot to champion map from game state
-        for (Map.Entry<Short, Champion> entry : gameState.getChampions().entrySet()) {
-            Short slot = entry.getKey();
-            Champion champion = entry.getValue();
-            ChampionEnum championEnum = ChampionEnum.fromShort(champion.getId());
-            slotToChampionMap.put(slot, championEnum);
-            System.out.println(">>> Adding champion " + championEnum + " for slot " + slot);
-        }
+    //     // Populate slot to champion map from game state
+    //     for (Map.Entry<Short, Champion> entry : gameState.getChampions().entrySet()) {
+    //         Short slot = entry.getKey();
+    //         Champion champion = entry.getValue();
+    //         ChampionEnum championEnum = ChampionEnum.fromShort(champion.getId());
+    //         slot2Champion.put(slot, championEnum);
+    //         System.out.println(">>> Adding champion " + championEnum + " for slot " + slot);
+    //     }
 
-        Map<ChampionEnum, Integer> championInitialHPMap = new HashMap<>();
-        for (ChampionEnum championId : slotToChampionMap.values()) {
-            Integer initialHP = championService.getInitialHP(championId);
-            championInitialHPMap.put(championId, initialHP);
-            System.out.println(">>> Setting initial HP " + initialHP + " for champion " + championId);
-        }
+    //     Map<ChampionEnum, Integer> championInitialHPMap = new HashMap<>();
+    //     for (ChampionEnum championId : slot2Champion.values()) {
+    //         Integer initialHP = championService.getInitialHP(championId);
+    //         championInitialHPMap.put(championId, initialHP);
+    //         System.out.println(">>> Setting initial HP " + initialHP + " for champion " + championId);
+    //     }
 
-        boolean initSuccess = gameStateManager.initializeGame(gameId, slotToChampionMap, championInitialHPMap);
+    //     boolean initSuccess = gameStateManager.initializeGame(gameId, slot2Champion, championInitialHPMap);
 
-        if (initSuccess) {
-            System.out.println(">>> [Log in GameLoadingHandler.initializeGameState] Successfully initialized game state for gameId: " + gameId);
-        } else {
-            System.err.println(">>> [Log in GameLoadingHandler.initializeGameState] Failed to initialize game state for gameId: " + gameId);
-        }
-    }
+    //     if (initSuccess) {
+    //         System.out.println(">>> [Log in GameLoadingHandler.initializeGameState] Successfully initialized game state for gameId: " + gameId);
+    //     } else {
+    //         System.err.println(">>> [Log in GameLoadingHandler.initializeGameState] Failed to initialize game state for gameId: " + gameId);
+    //     }
+    // }
+
+
 
     private ChannelFuture sendInitialPositions(Channel channel, GameState gameState) {
         List<SlotInfo> slotInfos = gameState.getSlotInfos();
@@ -127,8 +133,9 @@ public class GameInititalLoadingHandler {
                 System.out.println(">>> [Log in MapHandler.handleInitialGameStateLoading] Champion with slot " + slot + " not found.");
                 continue;
             }
+            Integer initGold = gameState.peekGold(slot);
             ChampionInitialStatsSend championInitialStatsSend = 
-                new ChampionInitialStatsSend(champion);
+                new ChampionInitialStatsSend(champion, initGold);
             lastFuture = playerChannel.writeAndFlush(championInitialStatsSend);
         }
 
@@ -147,7 +154,7 @@ public class GameInititalLoadingHandler {
                     gameId, 
                     slot, 
                     gameState.getSpawnPosition(slot), 
-                    gameState.getSpeed(slot), 
+                    champion.getMoveSpeed(), 
                     System.currentTimeMillis()
                 );
             } else {

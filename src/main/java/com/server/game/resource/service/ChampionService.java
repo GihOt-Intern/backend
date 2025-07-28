@@ -1,9 +1,11 @@
 package com.server.game.resource.service;
 
+import com.server.game.map.object.Champion;
+import com.server.game.mapper.ChampionMapper;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.ChampionInitialHPsSend.ChampionInitialHPData;
-import com.server.game.resource.model.Champion;
-import com.server.game.resource.repository.mongo.ChampionRepository;
+import com.server.game.resource.model.ChampionDB;
+import com.server.game.resource.repository.mongo.ChampionDBRepository;
 import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
@@ -24,9 +26,20 @@ import org.springframework.stereotype.Service;
 public class ChampionService {
     
     GameMapService gameMapService;
-    ChampionRepository championRepository;
+    ChampionDBRepository championRepository;
+    ChampionMapper championMapper;
 
     public Champion getChampionById(ChampionEnum championEnum) {
+        ChampionDB championDB = getChampionDBById(championEnum);
+        if (championDB == null) {
+            return null;
+        }
+        return championMapper.toChampion(championDB);
+    }
+
+    
+
+    private ChampionDB getChampionDBById(ChampionEnum championEnum) {
         return championRepository.findById(championEnum.getChampionId()).orElseGet(() -> {
             System.out.println(">>> [Log in ChampionService] Champion with id " + championEnum.getChampionId() + " not found.");
             return null;

@@ -140,6 +140,15 @@ public class ChannelManager {
         return ChannelManager.getChannelsByGameId(gameId);
     }
 
+    public static Channel getAnyChannelByGameId(String gameId) {
+        Set<Channel> channels = gameChannels.get(gameId);
+        if (channels != null && !channels.isEmpty()) {
+            return channels.iterator().next(); // Return any channel from the set
+        }
+        System.out.println(">>> No channels found for gameId: " + gameId);
+        return null; // No channels found for this gameId
+    }
+
     public static Channel getChannelByUserId(String userId) {
         Channel channel = userChannels.get(userId);
         if (channel != null) { return channel; }
@@ -153,6 +162,20 @@ public class ChannelManager {
             return Collections.emptySet();
         }
         return gameChannels.get(gameId);
+    }
+
+    public static Channel getChannelByGameIdAndSlot(String gameId, short slot) {
+        Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
+        if (channels != null) {
+            for (Channel channel : channels) {
+                Short channelSlot = ChannelManager.getSlotByChannel(channel);
+                if (channelSlot != null && channelSlot.equals(slot)) {
+                    return channel; // Return the first matching channel
+                }
+            }
+        }
+        System.out.println(">>> No channel found for gameId: " + gameId + " and slot: " + slot);
+        return null; // No matching channel found
     }
     
     public static String getUserIdByChannel(Channel channel) {
