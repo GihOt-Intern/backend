@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.server.game.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.resource.service.ChampionService;
-import com.server.game.service.MoveService.PositionData;
 import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
@@ -78,10 +77,15 @@ public class AttackTargetingService {
             return false;
         }
         
-        // Get attacker's position
-        var attackerPosition = positionService.getPlayerPosition(gameId, attackerSlot);
+        // Get attacker's real-time position (whether moving or not)
+        Vector2 attackerPosition = moveService.getCurrentRealTimePosition(gameId, attackerSlot);
         if (attackerPosition == null) {
-            return false;
+            // Fallback to cached position if no real-time position available
+            var attackerPos = positionService.getPlayerPosition(gameId, attackerSlot);
+            if (attackerPos == null) {
+                return false;
+            }
+            attackerPosition = attackerPos.getPosition();
         }
         
         // Get attacker's champion stats for attack range
@@ -97,7 +101,7 @@ public class AttackTargetingService {
             return false;
         }
         
-        float distance = attackerPosition.getPosition().distanceTo(targetPosition);
+        float distance = attackerPosition.distanceTo(targetPosition);
         boolean inRange = distance <= attackRange;
         
         log.debug("Attack range check for slot {}: distance={}, range={}, inRange={}", 
@@ -107,14 +111,11 @@ public class AttackTargetingService {
     }
     
     // Optimized target following constants
-    private static final float ATTACK_RANGE_BUFFER = 0.8f; // Stay slightly closer than max range
-    private static final float MOVEMENT_UPDATE_THRESHOLD = 1.0f; // Grid units
-    private static final long POSITION_UPDATE_COOLDOWN = 100; // Milliseconds
+    private static final long POSITION_UPDATE_COOLDOWN = 200; // 200ms to reduce server load
     private final Map<String, Map<Short, Long>> lastPositionUpdate = new ConcurrentHashMap<>();
-    private final Map<String, Map<Short, Vector2>> lastKnownTargetPositions = new ConcurrentHashMap<>();
 
     /**
-     * Process continuous attacking while in range - Enhanced with smart movement
+     * Process continuous attacking while in range - Simplified with 200ms recalculation
      */
     public boolean processContinuousAttack(String gameId, short attackerSlot) {
         AttackTarget target = getAttackTarget(gameId, attackerSlot);
@@ -149,48 +150,39 @@ public class AttackTargetingService {
             return true;
         }
 
-        // Out of range - use smart following logic
-        return handleSmartTargetFollowing(gameId, attackerSlot, target);
+        // Out of range - use simple recalculation every 100ms
+        return handleTargetRecalculation(gameId, attackerSlot, target);
     }
 
     /**
-     * Smart target following that minimizes pathfinding recalculations
+     * Handle target position recalculation every 100ms
      */
-    private boolean handleSmartTargetFollowing(String gameId, short attackerSlot, AttackTarget target) {
+    private boolean handleTargetRecalculation(String gameId, short attackerSlot, AttackTarget target) {
         long currentTime = System.currentTimeMillis();
         
-        // Check cooldown to prevent excessive updates
+        // Check 300ms cooldown
         Map<Short, Long> gameLastUpdates = lastPositionUpdate.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>());
         Long lastUpdate = gameLastUpdates.get(attackerSlot);
         if (lastUpdate != null && (currentTime - lastUpdate) < POSITION_UPDATE_COOLDOWN) {
             return false; // Still in cooldown
         }
 
+        // Get current target position
         Vector2 currentTargetPos = getTargetPosition(gameId, target);
         if (currentTargetPos == null) {
             return false;
         }
 
-        // Check if target has moved significantly
-        Map<Short, Vector2> gameLastPositions = lastKnownTargetPositions.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>());
-        Vector2 lastKnownPos = gameLastPositions.get(attackerSlot);
-        
-        if (lastKnownPos != null) {
-            float distanceMoved = lastKnownPos.distance(currentTargetPos);
-            if (distanceMoved < MOVEMENT_UPDATE_THRESHOLD) {
-                return false; // Target hasn't moved enough to warrant an update
-            }
-        }
-
-        // Update tracking and initiate movement
+        // Update tracking and set new move target
         gameLastUpdates.put(attackerSlot, currentTime);
-        gameLastPositions.put(attackerSlot, currentTargetPos);
         
-        // Use appropriate movement strategy based on target type
-        moveToAttackTarget(gameId, attackerSlot, target);
+        // Use simple setMoveTarget to the current target position
+        moveService.setMoveTarget(gameId, attackerSlot, currentTargetPos);
         
-        log.debug("Smart following activated for slot {} targeting {}", attackerSlot, 
-                target.getType() == AttackTargetType.CHAMPION ? "champion " + target.getChampionSlot() : "target " + target.getTargetId());
+        log.debug("Recalculated target position for slot {} attacking {} at position {}", 
+                attackerSlot, 
+                target.getType() == AttackTargetType.CHAMPION ? "champion " + target.getChampionSlot() : "target " + target.getTargetId(),
+                currentTargetPos);
         
         return false; // Still moving towards target
     }
@@ -246,60 +238,22 @@ public class AttackTargetingService {
     }
     
     /**
-     * Move champion towards their attack target - Enhanced with predictive positioning
+     * Move champion towards their attack target - Simplified to use setMoveTarget
      */
     private void moveToAttackTarget(String gameId, short attackerSlot, AttackTarget target) {
-        if (target.getType() == AttackTargetType.CHAMPION) {
-            // Use optimized combat movement with prediction for champion targets
-            Vector2 predictedPosition = getPredictedTargetPosition(gameId, target);
-            if (predictedPosition != null) {
-                moveService.setCombatMoveTarget(gameId, attackerSlot, target.getChampionSlot());
-            }
-            log.debug("Moving slot {} towards champion target in slot {} (predicted movement)", 
-                    attackerSlot, target.getChampionSlot());
-        } else {
-            // Use standard movement for non-champion targets
-            Vector2 targetPosition = getTargetPosition(gameId, target);
-            if (targetPosition == null) {
-                log.warn("Could not find target position for attack target: {}", target);
-                return;
-            }
-            
-            moveService.setMoveTarget(gameId, attackerSlot, targetPosition);
-            log.debug("Moving slot {} towards target at position {}", attackerSlot, targetPosition);
-        }
-    }
-
-    /**
-     * Predict target position based on movement patterns (for better interception)
-     */
-    private Vector2 getPredictedTargetPosition(String gameId, AttackTarget target) {
-        if (target.getType() != AttackTargetType.CHAMPION) {
-            return getTargetPosition(gameId, target);
-        }
-
-        PositionData targetPosData = positionService.getPlayerPosition(gameId, target.getChampionSlot());
-        if (targetPosData == null) {
-            return null;
-        }
-
-        Vector2 currentPos = targetPosData.getPosition();
-        float speed = targetPosData.getSpeed();
-        
-        // Simple prediction: assume target continues in current direction
-        // In a real implementation, you'd store velocity/direction data
-        Map<Short, Vector2> gameLastPositions = lastKnownTargetPositions.get(gameId);
-        if (gameLastPositions != null) {
-            Vector2 lastPos = gameLastPositions.get(target.getChampionSlot());
-            if (lastPos != null) {
-                // Calculate movement direction
-                Vector2 direction = currentPos.subtract(lastPos).normalize();
-                float predictionTime = 0.5f; // Predict 0.5 seconds ahead
-                return currentPos.add(direction.multiply(speed * predictionTime));
-            }
+        Vector2 targetPosition = getTargetPosition(gameId, target);
+        if (targetPosition == null) {
+            log.warn("Could not find target position for attack target: {}", target);
+            return;
         }
         
-        return currentPos; // Fallback to current position
+        // Use simple setMoveTarget for all types of targets
+        moveService.setMoveTarget(gameId, attackerSlot, targetPosition);
+        
+        String targetInfo = target.getType() == AttackTargetType.CHAMPION 
+            ? "champion in slot " + target.getChampionSlot() 
+            : "target " + target.getTargetId();
+        log.debug("Moving slot {} towards {} at position {}", attackerSlot, targetInfo, targetPosition);
     }
     
     /**
@@ -308,6 +262,13 @@ public class AttackTargetingService {
     private Vector2 getTargetPosition(String gameId, AttackTarget target) {
         switch (target.getType()) {
             case CHAMPION:
+                // Use real-time position from move service first, then fall back to cached position
+                Vector2 realTimePos = moveService.getCurrentRealTimePosition(gameId, target.getChampionSlot());
+                if (realTimePos != null) {
+                    return realTimePos;
+                }
+                
+                // Fallback to cached position if no real-time position available
                 var championPos = positionService.getPlayerPosition(gameId, target.getChampionSlot());
                 return championPos != null ? championPos.getPosition() : null;
             case TARGET:
@@ -342,7 +303,6 @@ public class AttackTargetingService {
     public void clearGameTargets(String gameId) {
         attackTargets.remove(gameId);
         lastPositionUpdate.remove(gameId);
-        lastKnownTargetPositions.remove(gameId);
         log.info("Cleared attack targets and tracking data for game {}", gameId);
     }
 

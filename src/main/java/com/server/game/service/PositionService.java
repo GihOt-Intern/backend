@@ -112,6 +112,14 @@ public class PositionService {
     }
     
     /**
+     * Lấy pending position cho một player cụ thể (vị trí mới nhất)
+     */
+    public PositionData getPendingPlayerPosition(String gameId, short slot) {
+        Map<Short, PositionData> gamePendingPositions = pendingPositionCache.get(gameId);
+        return gamePendingPositions != null ? gamePendingPositions.get(slot) : null;
+    }
+    
+    /**
      * Lấy pending positions để broadcast
      */
     public Map<Short, PositionData> getPendingPositions(String gameId) {

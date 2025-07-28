@@ -11,8 +11,12 @@
     "attack_range": 0.75,
     "resource_claiming_speed": 5.0
   },
-  "ability": {
-    "name": "Knight's Skill name",
-    "cool_down": 8.0
+  "ability": {    
+    "name": "Shadow Dash",
+    "description": "Dash thẳng theo hướng chỉ định, gây sát thương xuyên lính và tướng đầu tiên",
+    "cool_down": 8.0,
+    "damage": 120,
+    "dash_distance": 10.0,
+    "type": "MOBILITY_DAMAGE"
   }
 }

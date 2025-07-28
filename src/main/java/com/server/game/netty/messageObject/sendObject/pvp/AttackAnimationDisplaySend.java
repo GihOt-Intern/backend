@@ -3,6 +3,7 @@ package com.server.game.netty.messageObject.sendObject.pvp;
 import java.nio.ByteBuffer;
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.SendMessageType;
@@ -39,13 +40,18 @@ public class AttackAnimationDisplaySend implements TLVEncodable {
         int targetIdLength = targetIdBytes.length;
         int animationTypeLength = animationTypeBytes.length;
         
-        ByteBuffer buf = Util.allocateByteBuffer(
-            Util.SHORT_SIZE + // attackerSlot
+        System.out.println(">>> [AttackAnimationDisplaySend] Lengths - attackerId: " + attackerIdLength + ", targetId: " + targetIdLength + ", animationType: " + animationTypeLength);
+        
+        int totalSize = Util.SHORT_SIZE + // attackerSlot
             Util.SHORT_SIZE + attackerIdLength + // attackerId length + attackerId
-            Util.SHORT_SIZE + targetIdLength +
+            Util.SHORT_SIZE + // targetSlot
+            Util.SHORT_SIZE + targetIdLength + // targetId length + targetId
             Util.SHORT_SIZE + animationTypeLength + // animationType length + animationType
-            8 // timestamp (long)
-        );
+            8; // timestamp (long)
+            
+        System.out.println(">>> [AttackAnimationDisplaySend] Total buffer size: " + totalSize);
+        
+        ByteBuffer buf = Util.allocateByteBuffer(totalSize);
         
         buf.putShort(attackerSlot);
         buf.putShort((short) attackerIdLength);
@@ -61,11 +67,12 @@ public class AttackAnimationDisplaySend implements TLVEncodable {
         buf.put(animationTypeBytes);
         buf.putLong(timestamp);
         
+        System.out.println(">>> [AttackAnimationDisplaySend] Encoding completed successfully");
         return buf.array();
     }
 
     @Override
     public SendTarget getSendTarget(Channel channel) {
-        return new UnicastTarget(channel);
+        return new AMatchBroadcastTarget(channel);
     }
 }

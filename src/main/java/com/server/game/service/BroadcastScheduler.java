@@ -48,7 +48,7 @@ public class BroadcastScheduler {
      * High-frequency broadcasting loop - runs every 50ms (20 FPS)
      * Handles position updates broadcasting to clients
      */
-    @Scheduled(fixedDelay = 50) // 50ms = 20 FPS
+    @Scheduled(fixedDelay = 33) // 33ms = 30 FPS
     public void broadcastLoop() {
         for (String gameId : activeGames) {
             try {

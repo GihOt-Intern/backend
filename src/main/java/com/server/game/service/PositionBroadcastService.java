@@ -111,7 +111,7 @@ public class PositionBroadcastService {
         
         
         // So sánh vị trí với ngưỡng thay đổi nhỏ
-        float threshold = 0.01f; // Ngưỡng thay đổi tối thiểu
+        float threshold = 0.005f; // Ngưỡng thay đổi tối thiểu
         
         
         Vector2 oldPos = oldPosition.getPosition();

@@ -12,7 +12,12 @@
     "resource_claiming_speed": 10.0
   },
   "ability": {
-    "name": "Brakor's Skill name",
-    "cool_down": 15.0
+    "name": "Whirlwind",
+    "description": "Xoay rìu vòng tròn, mỗi giây gây sát thương lên tất cả kẻ địch xung quanh.",
+    "damage": 60,
+    "radius": 5.0,
+    "duration": 5.0,
+    "cool_down": 15.0,
+    "type": "AOE_DAMAGE_OVER_TIME"
   }
 }

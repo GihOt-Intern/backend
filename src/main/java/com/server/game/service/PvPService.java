@@ -6,12 +6,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
+import com.server.game.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
-import com.server.game.netty.messageObject.sendObject.MessageSend;
 import com.server.game.netty.messageObject.sendObject.pvp.AttackAnimationDisplaySend;
 import com.server.game.netty.messageObject.sendObject.pvp.HealthUpdateSend;
 import com.server.game.resource.model.Champion;
 import com.server.game.resource.service.ChampionService;
+import com.server.game.service.MoveService.PositionData;
 import com.server.game.service.gameState.GameStateBroadcastService;
 import com.server.game.service.troop.TroopManager;
 import com.server.game.service.troop.TroopInstance;
@@ -30,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PvPService {
     GameStateBroadcastService gameStateBroadcastService;
+    PositionService positionService;
     TroopManager troopManager;
     ChampionService championService;
     
@@ -38,6 +40,8 @@ public class PvPService {
     
     // Store attack cooldowns for each champion in each game
     private final Map<String, Map<Short, Long>> attackCooldowns = new ConcurrentHashMap<>();
+    // Store skill cooldown for each champion in each game
+    private final Map<String, Map<Short, Long>> skillCooldowns = new ConcurrentHashMap<>();
     
     /**
      * Check if a champion can attack (not on cooldown)
@@ -145,13 +149,19 @@ public class PvPService {
         // Get attacker's champion info from slot mapping
         Map<Short, ChampionEnum> slot2ChampionId = ChannelManager.getSlot2ChampionId(gameId);
         ChampionEnum attackerChampion = slot2ChampionId != null ? slot2ChampionId.get(attackerSlot) : null;
+
+        log.debug("DEBUG: AttackerChampion = {}, slot2ChampionId = {}", attackerChampion, slot2ChampionId);
+
         if (attackerChampion == null) {
             log.warn("No champion found for slot {} in game {}", attackerSlot, gameId);
             return;
         }
         
         // Check attack cooldown
-        if (!canChampionAttack(gameId, attackerSlot, attackerChampion)) {
+        boolean canAttack = canChampionAttack(gameId, attackerSlot, attackerChampion);
+        log.debug("DEBUG: Can champion attack? {}", canAttack);
+
+        if (!canAttack) {
             log.debug("Champion {} in slot {} is on attack cooldown, ignoring attack request", 
                     attackerChampion, attackerSlot);
             return;
@@ -159,9 +169,15 @@ public class PvPService {
         
         // Set attack cooldown
         setAttackCooldown(gameId, attackerSlot, timestamp);
+        log.debug("DEBUG: Set attack cooldown, about to broadcast animation");
         
         // 1. First send attack animation of the attacker
-        broadcastAttackerAnimation(gameId, attackerSlot, targetSlot, null, attackerChampion, timestamp);
+        try {
+            broadcastAttackerAnimation(gameId, attackerSlot, null, targetSlot, null, attackerChampion, timestamp, "Attack");
+            log.debug("DEBUG: Successfully called broadcastAttackerAnimation");
+        } catch (Exception e) {
+            log.error("ERROR: Exception in broadcastAttackerAnimation", e);
+        }
         
         // 2. Process the attack and calculate damage
         int damage = processPvPAttack(gameId, attackerSlot, attackerChampion, timestamp);
@@ -196,13 +212,49 @@ public class PvPService {
         setAttackCooldown(gameId, attackerSlot, timestamp);
         
         // 1. First send attack animation of the attacker
-        broadcastAttackerAnimation(gameId, attackerSlot, (short) -1, targetId, attackerChampion, timestamp);
+        broadcastAttackerAnimation(gameId, attackerSlot, null, (short) -1, targetId, attackerChampion, timestamp, "Attack");
         
         // 2. Process PvE attack and get damage
         int damage = processPvEAttack(gameId, targetId, timestamp);
         
         // 3. Send health update for the target
         broadcastHealthUpdateForTarget(gameId, targetId, damage, timestamp);
+    }
+
+    /**
+     * Handle champion casting a skill
+     */
+    public void handleChampionSkillCast(String gameId, short casterSlot, Vector2 targetPosition, long timestamp) {
+        Map<Short, ChampionEnum> slot2ChampionId = ChannelManager.getSlot2ChampionId(gameId);
+        ChampionEnum casterChampion = slot2ChampionId != null ? slot2ChampionId.get(casterSlot) : null;
+
+        if (casterChampion == null) {
+            log.warn("No champion found for slot {} in game {}", casterSlot, gameId);
+            return;
+        }
+
+        // Check if skill is on cooldown
+        if (isSkillOnCooldown(gameId, casterSlot, casterChampion)) {
+            log.debug("Champion {} in slot {} is on skill cooldown, ignoring skill cast request", 
+                    casterChampion, casterSlot);
+            return;
+        }
+
+        setSkillCooldown(gameId, casterSlot, casterChampion, timestamp);
+
+        PositionData casterPosition = positionService.getPlayerPosition(gameId, casterSlot);   
+        if (casterPosition == null) {
+            log.warn("No position data found for champion in slot {} in game {}", casterSlot, gameId);
+            return;
+        }
+
+        switch (casterChampion) {
+            case MELEE_AXE -> handleAxeSkill(gameId, casterSlot, casterPosition.getPosition(), timestamp);
+            case ASSASSIN_SWORD -> handleAssassinSkill(gameId, casterSlot, casterPosition.getPosition(), targetPosition, timestamp);
+            case MARKSMAN_CROSSBOW -> handleArcherSkill(gameId, casterSlot, casterPosition.getPosition(), targetPosition, timestamp);
+            case MAGE_SCEPTER -> handleWizardSkill(gameId, casterSlot, casterPosition.getPosition(), targetPosition, timestamp);
+            default -> log.warn("Unknown champion type for skill: {}", casterChampion);
+        }
     }
     
     /**
@@ -211,41 +263,8 @@ public class PvPService {
     public void handleTargetAttackChampion(String gameId, String attackerId, short defenderSlot, long timestamp) {
         log.info("Target {} attacking champion in slot {} in game {} at timestamp {}", 
                 attackerId, defenderSlot, gameId, timestamp);
-        
-        // // 1. First send attack animation of the target attacker
-        // broadcastTargetAttackerAnimation(gameId, attackerId, timestamp);
-        
-        // // 2. Process target counter-attack and get damage
-        // int damage = processTargetCounterAttack(gameId, attackerId, defenderSlot, timestamp);
-        
-        // // 3. Send health update for the champion being attacked
-        // broadcastHealthUpdate(gameId, defenderSlot, damage, timestamp);
-    }
-    
-    /**
-     * Handle troop attacking a player (called by troop AI system)
-     */
-    public void handleTroopAttackPlayer(String gameId, String troopId, short targetPlayerSlot, long timestamp) {
-        log.info("Troop {} attacking player in slot {} in game {} at timestamp {}", 
-                troopId, targetPlayerSlot, gameId, timestamp);
-        
-        // Get the troop instance to calculate damage
-        TroopInstance attackingTroop = troopManager.getTroop(gameId, troopId);
-        if (attackingTroop == null) {
-            log.warn("Attacking troop not found: {} in game {}", troopId, gameId);
-            return;
-        }
-        
-        // // Calculate troop damage against player
-        // int damage = calculateTroopDamageToPlayer(attackingTroop);
-        
-        // // 1. Send attack animation
-        // broadcastTargetAttackerAnimation(gameId, troopId, timestamp);
-        
-        // // 2. Apply damage to player and broadcast health update
-        // broadcastHealthUpdate(gameId, targetPlayerSlot, damage, timestamp);
-        
-        // log.info("Troop {} dealt {} damage to player slot {}", troopId, damage, targetPlayerSlot);
+
+        // TODO: Implement target combat logic
     }
     
     /**
@@ -254,12 +273,90 @@ public class PvPService {
     public void handleTargetAttackTarget(String gameId, String targetId, short slot, long timestamp) {
         log.info("Target attacking target {} in game {} at timestamp {}", 
                 targetId, gameId, timestamp);
+
+        // TODO: Implement target vs target combat logic
+    }
+
+    /**
+     * Check if a skill is on cooldown
+    */
+    private boolean isSkillOnCooldown(String gameId, short casterSlot, ChampionEnum championType) {
+        Map<Short, Long> gameCooldowns = skillCooldowns.get(gameId);
+        if (gameCooldowns == null) {
+            return false; // No cooldowns recorded, skill can be cast
+        }
+
+        Long lastSkillUseTime = gameCooldowns.get(casterSlot);
+        if (lastSkillUseTime == null) {
+            return false;
+        }
+
+        float skillCooldownSeconds = getChampionSkillCooldown(championType);
+        long cooldownMillis = (long)(skillCooldownSeconds * 1000);
+
+        long currentTime = System.currentTimeMillis();
+        boolean isOnCooldown = (currentTime - lastSkillUseTime) < cooldownMillis;
+
+        if (isOnCooldown) {
+            long remainingCooldown = cooldownMillis - (currentTime - lastSkillUseTime);
+            log.debug("Champion {} in slot {} is on skill cooldown for {}ms", 
+                    championType, casterSlot, remainingCooldown);
+        }
+
+        return isOnCooldown;
+    }
+
+    /**
+     * Set skill cooldown for a champion
+     */
+    private void setSkillCooldown(String gameId, short casterSlot, ChampionEnum championType, long timestamp) {
+        skillCooldowns.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
+            .put(casterSlot, timestamp);
         
-        // Process target vs target combat
-        processTargetVsTarget(gameId, targetId, slot, timestamp);
+        float cooldownSecs = getChampionSkillCooldown(championType);
+        log.debug("Set skill cooldown for champion {} in slot {} to {} seconds",
+                championType, casterSlot, cooldownSecs);
+    }
+
+    /**
+     * Get champion's skill cooldown in seconds
+     */
+    private float getChampionSkillCooldown(ChampionEnum championType) {
+        Champion champion = championService.getChampionById(championType);
+        if (champion == null || champion.getAbility() == null) {
+            log.warn("Champion not found: {}, using default skill cooldown", championType);
+            return 5.0f; // Default 5 seconds cooldown
+        }
         
-        // Broadcast attack result
-        broadcastAttackResult(gameId, slot, "TARGET", "TARGET", timestamp);
+        return champion.getAbility().getCooldown();
+    }
+
+    /**
+     * Get remaining skill cooldown time for a champion in milliseconds
+     * @param gameId
+     * @param attackerSlot
+     * @param attackerChampion
+     * @param timestamp
+     * @return
+     */
+    public long getRemainingSkillCooldown(String gameId, short casterSlot, ChampionEnum championType) {
+        Map<Short, Long> gameCooldowns = skillCooldowns.get(gameId);
+        if (gameCooldowns == null) {
+            return 0; // No cooldowns recorded
+        }
+
+        Long lastSkillUseTime = gameCooldowns.get(casterSlot);
+        if (lastSkillUseTime == null) {
+            return 0; // Never used skill
+        }
+
+        float skillCooldownSeconds = getChampionSkillCooldown(championType);
+        long cooldownMillis = (long)(skillCooldownSeconds * 1000);
+        
+        long currentTime = System.currentTimeMillis();
+        long elapsed = currentTime - lastSkillUseTime;
+        
+        return Math.max(0, cooldownMillis - elapsed);
     }
     
     /**
@@ -290,41 +387,12 @@ public class PvPService {
         log.debug("Processing PvE attack against target {}", targetId);
         
         // Calculate damage based on target type
-        int damage = calculatePvEDamage(targetId);
+        int damage = calculatePvEDamage(gameId, targetId);
         
         // TODO: Implement target health system, damage calculation, loot drops, etc.
         // For now, just return calculated damage
         
         return damage;
-    }
-    
-    /**
-     * Process target counter-attack against champion
-     */
-    private int processTargetCounterAttack(String gameId, String attackerId, short defenderSlot, long timestamp) {
-        // Get combat data for the defender
-        CombatData defenderData = getCombatData(gameId, defenderSlot);
-        
-        // Calculate damage received
-        int damage = calculateTargetDamage(attackerId);
-        
-        // Update defender's combat data
-        defenderData.addDamageReceived(damage);
-        defenderData.setLastActionTimestamp(timestamp);
-        
-        log.debug("Target {} dealt {} damage to champion in slot {}", attackerId, damage, defenderSlot);
-        
-        return damage;
-    }
-    
-    /**
-     * Process target vs target combat
-     */
-    private void processTargetVsTarget(String gameId, String targetId, short slot, long timestamp) {
-        // Implement target vs target logic
-        log.debug("Processing target vs target combat for target {}", targetId);
-        
-        // TODO: Implement target AI combat system
     }
     
     /**
@@ -354,37 +422,20 @@ public class PvPService {
     }
     
     /**
-     * Calculate damage from a target/monster
-     */
-    private int calculateTargetDamage(String targetId) {
-        // Simplified target damage calculation
-        // In a real game, this would be based on target type, level, etc.
-        return 30 + (int) (Math.random() * 20); // 30-50 damage
-    }
-    
-    /**
      * Calculate damage dealt to PvE targets (troops)
      */
-    private int calculatePvEDamage(String targetId) {
-        // For troop targets, use a base damage with some randomness
-        // In a real implementation, this would consider the attacking champion's stats
-        
-        // Check if this is a troop instance ID (UUID format)
-        if (targetId.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
-            // Base champion attack damage against troops
-            int baseDamage = 75; // Base damage for champions attacking troops
-            int variation = (int) (baseDamage * 0.3); // ±30% variation
-            return baseDamage + (int) (Math.random() * variation * 2) - variation;
+    private int calculatePvEDamage(String gameId, String targetId) {
+        // TODO: Implement target type based damage calculation
+        // If target is a troop
+        if (targetId.startsWith("troop_")) {
+            TroopInstance troop = troopManager.getTroop(gameId, targetId);
+            if (troop != null) {
+                return calculateTroopDamageToPlayer(troop);
+            } else {
+                log.warn("Troop not found for target ID {}", targetId);
+            }
         }
-        
-        // Fallback for non-troop targets (legacy system)
-        if (targetId.startsWith("boss_")) {
-            return 150 + (int) (Math.random() * 50); // 150-200 damage to bosses
-        } else if (targetId.startsWith("elite_")) {
-            return 100 + (int) (Math.random() * 30); // 100-130 damage to elite enemies
-        } else {
-            return 80 + (int) (Math.random() * 20); // 80-100 damage to normal enemies
-        }
+        return 1;
     }
     
     /**
@@ -420,28 +471,6 @@ public class PvPService {
     }
     
     /**
-     * Broadcast attack result to all players in the game
-     */
-    private void broadcastAttackResult(String gameId, Short targetSlot, String attackerType, String targetType, long timestamp) {
-        String message = String.format("Combat: %s attacked %s at %d", attackerType, targetType, timestamp);
-        if (targetSlot != null) {
-            message += String.format(" (Target slot: %d)", targetSlot);
-        }
-        
-        MessageSend attackResult = new MessageSend(message);
-        
-        // Get all channels in the game and broadcast
-        Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
-        if (gameChannels != null) {
-            gameChannels.forEach(channel -> {
-                if (channel != null && channel.isActive()) {
-                    channel.writeAndFlush(attackResult);
-                }
-            });
-        }
-    }
-    
-    /**
      * Get combat statistics for a player
      */
     public CombatData getPlayerCombatData(String gameId, short slot) {
@@ -460,52 +489,39 @@ public class PvPService {
     /**
      * Broadcast attacker animation to all players in the game
      */
-    private void broadcastAttackerAnimation(String gameId, short attackerSlot, short targetSlot, String targetId, ChampionEnum attackerChampion, long timestamp) {
-        log.debug("Broadcasting attack animation for slot {} with champion {}", attackerSlot, attackerChampion);
+    private void broadcastAttackerAnimation(String gameId, short attackerSlot, String attackerId, short targetSlot, String targetId, ChampionEnum attackerChampion, long timestamp, String attackType) {
+        log.info("DEBUG: broadcastAttackerAnimation called - gameId: {}, attackerSlot: {}, targetSlot: {}, champion: {}", 
+                gameId, attackerSlot, targetSlot, attackerChampion);
         
-        String animationType = "Attack";
-        
-        // Create attack animation display message
-        AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(
-                attackerSlot, null, targetSlot, targetId, animationType, timestamp);
-        
-        // Broadcast to all players in the game
-        Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
-        if (gameChannels != null) {
-            gameChannels.forEach(channel -> {
-                if (channel != null && channel.isActive()) {
-                    channel.writeAndFlush(attackAnimation);
-                }
-            });
-        }
-    }
-    
-    /**
-     * Broadcast target attacker animation to all players in the game
-     */
-    private void broadcastTargetAttackerAnimation(String gameId, String attackerId, short targetSlot, String targetId, long timestamp) {
-        log.debug("Broadcasting target attack animation for attacker {}", attackerId);
-        
-        String animationType = getTargetAnimationType(attackerId);
-        
-        // Create attack animation display message
-        AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(
-                (short) -1, 
-                attackerId, 
-                targetSlot, 
-                targetId, 
-                animationType, 
-                timestamp
-            );
-        
-        // Broadcast to all players in the game
-        Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
-        if (gameChannels != null) {
-            gameChannels.forEach(channel -> {
-                if (channel != null && channel.isActive()) {
-                    channel.writeAndFlush(attackAnimation);
-                }
-            });
+        try {
+            String animationType = attackType;
+            log.info("DEBUG: Animation type: {}", animationType);
+            
+            // Create attack animation display message
+            AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(
+                    attackerSlot, attackerId, targetSlot, targetId, animationType, timestamp);
+            
+            log.info("DEBUG: Creating AttackAnimationDisplaySend with parameters - attackerSlot: {}, attackerId: {}, targetSlot: {}, targetId: {}, animationType: {}, timestamp: {}", 
+                    attackerSlot, attackerId, targetSlot, targetId, animationType, timestamp);
+            
+            log.info("DEBUG: Successfully created AttackAnimationDisplaySend");
+            
+            // Get any channel from the game to trigger the framework
+            Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
+            log.info("DEBUG: Found {} channels for gameId {}", 
+                    gameChannels != null ? gameChannels.size() : 0, gameId);
+
+            if (gameChannels != null && !gameChannels.isEmpty()) {
+                // Use any channel to trigger the framework - the AttackAnimationDisplaySend.getSendTarget() 
+                // returns AMatchBroadcastTarget which will handle broadcasting to all channels
+                Channel anyChannel = gameChannels.iterator().next();
+                anyChannel.writeAndFlush(attackAnimation);
+                log.info("DEBUG: Sent AttackAnimationDisplaySend to framework for broadcasting");
+            } else {
+                log.warn("DEBUG: No channels found for gameId {}", gameId);
+            }
+        } catch (Exception e) {
+            log.error("DEBUG: Exception in broadcastAttackerAnimation: {}", e.getMessage(), e);
         }
     }
     
@@ -562,35 +578,43 @@ public class PvPService {
                     targetId, gameId, currentHealth, maxHealth, damage);
         }
     }
-    /**
-     * Get attack animation type based on champion enum
+
+    /** 
+     * Handle Axe champion's skill
      */
-    private String getAttackAnimationType(ChampionEnum championEnum) {
-        switch (championEnum) {
-            case MARKSMAN_CROSSBOW:
-                return "crossbow_shot";
-            case MELEE_AXE:
-                return "axe_swing";
-            case ASSASSIN_SWORD:
-                return "sword_slash";
-            case MAGE_SCEPTER:
-                return "magic_missile";
-            default:
-                return "basic_attack";
-        }
+    private void handleAxeSkill(String gameId, short casterSlot, Vector2 casterPosition, long timestamp) {
+        log.info("Champion {} using Whirlwind skill at position {} in game {}",
+                ChampionEnum.MELEE_AXE, casterPosition, gameId);
+
+        broadcastAttackerAnimation(gameId, casterSlot, null, (short) -1, null, ChampionEnum.MELEE_AXE, timestamp, "Skill");
+    }
+
+    /** 
+     * Handle Assassin champion's skill
+     */
+    public void handleAssassinSkill(String gameId, short casterSlot, Vector2 startPosition, Vector2 targetPosition, long timestamp) {
+        log.info("Champion {} using Blink skill from {} to {} in game {}",
+                ChampionEnum.ASSASSIN_SWORD, startPosition, targetPosition, gameId);
+        // Broadcast attack animation
+        broadcastAttackerAnimation(gameId, casterSlot, null, (short) -1, null, ChampionEnum.ASSASSIN_SWORD, timestamp, "Skill");
     }
 
     /**
-     * Get target animation type based on target ID
+     * Handle Archer champion's skill
      */
-    private String getTargetAnimationType(String targetId) {
-        if (targetId.startsWith("boss_")) {
-            return "boss_attack";
-        } else if (targetId.startsWith("elite_")) {
-            return "elite_attack";
-        } else {
-            return "target_attack";
-        }
+    private void handleArcherSkill(String gameId, short casterSlot, Vector2 startPosition, Vector2 targetPosition, long timestamp) {
+        log.info("Champion {} using Piercing Arrow skill from {} to {}", casterSlot, startPosition, targetPosition);
+        // Broadcast attack animation
+        broadcastAttackerAnimation(gameId, casterSlot, null, (short) -1, null, ChampionEnum.MARKSMAN_CROSSBOW, timestamp, "Skill");
+    }
+
+    /**
+     * Handle Wizard champion's skill
+     */
+    private void handleWizardSkill(String gameId, short casterSlot, Vector2 startPosition, Vector2 targetPosition, long timestamp) {
+        log.info("Champion {} using Fireball skill from {} to {}", casterSlot, startPosition, targetPosition);
+        // Broadcast attack animation
+        broadcastAttackerAnimation(gameId, casterSlot, null, (short) -1, null, ChampionEnum.MAGE_SCEPTER, timestamp, "Skill");
     }
 
     /**
