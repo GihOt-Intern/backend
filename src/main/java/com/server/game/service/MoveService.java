@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.map.AStarPathfinder;
 import com.server.game.map.component.GridCell;
 import com.server.game.map.component.Vector2;
+import com.server.game.map.object.Champion;
 import com.server.game.model.GameState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.resource.model.GameMapGrid;
@@ -172,6 +173,8 @@ public class MoveService {
         }
     }
 
+
+
     private static final float PATH_RECALCULATION_THRESHOLD = 1.5f; // Distance in grid units
     private static final long PATH_RECALCULATION_COOLDOWN = 300; // Milliseconds
     private final Map<String, Map<Short, Long>> lastPathCalculationTime = new ConcurrentHashMap<>();
@@ -273,9 +276,11 @@ public class MoveService {
      * Get champion's attack range
      */
     private float getChampionAttackRange(ChampionEnum championEnum) {
-        var champion = championService.getChampionById(championEnum);
+        Champion champion = championService.getChampionById(championEnum);
         return champion != null ? champion.getAttackRange() : 1.0f; // Default range
     }
+
+
 
 
     @Data

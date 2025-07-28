@@ -8,11 +8,11 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import com.server.game.resource.model.Champion;
 import com.server.game.resource.model.GameMap;
+import com.server.game.resource.model.ChampionDB;
 import com.server.game.resource.model.GameMapGrid;
 import com.server.game.resource.reader.JsonReader;
-import com.server.game.resource.repository.mongo.ChampionRepository;
+import com.server.game.resource.repository.mongo.ChampionDBRepository;
 import com.server.game.resource.repository.mongo.GameMapRepository;
 import com.server.game.resource.service.GameMapGridService;
 
@@ -24,7 +24,7 @@ public class Writer {
 
     JsonReader jsonReader;
     GameMapRepository mapRepository;
-    ChampionRepository championRepository;
+    ChampionDBRepository championRepository;
 
     GameMapGridService gameMapGridService;
 
@@ -104,7 +104,7 @@ public class Writer {
     }
 
     private void writeChampion(String championName) {
-        Champion champion = jsonReader.readChampionFromJson(championName);
+        ChampionDB champion = jsonReader.readChampionFromJson(championName);
         if (champion == null) {
             System.out.println("Failed to read champion from JSON.");
             return;

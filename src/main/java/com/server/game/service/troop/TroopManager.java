@@ -1,6 +1,7 @@
 package com.server.game.service.troop;
 
 import com.server.game.map.component.Vector2;
+import com.server.game.model.SlotState;
 import com.server.game.resource.service.TroopService;
 import com.server.game.service.GameStateService;
 import com.server.game.service.troop.TroopInstance.TroopAIState;
@@ -37,16 +38,17 @@ public class TroopManager {
      */
     public TroopInstance createTroop(String gameId, short ownerSlot, TroopEnum troopType, Vector2 spawnPosition) {
         // Check if player can afford the troop
-        var playerState = gameStateService.getPlayerState(gameId, ownerSlot);
-        if (playerState == null) {
+        SlotState slotState = gameStateService.getGameStateById(gameId).getSlotState(ownerSlot);
+
+        if (slotState == null) {
             log.warn("Cannot create troop: Player state not found for slot {} in game {}", ownerSlot, gameId);
             return null;
         }
         
         int troopCost = troopService.getTroopCost(troopType);
-        if (playerState.getGold() < troopCost) {
+        if (slotState.getCurrentGold() < troopCost) {
             log.warn("Player {} cannot afford troop {} (cost: {}, gold: {})", 
-                    ownerSlot, troopType, troopCost, playerState.getGold());
+                    ownerSlot, troopType, troopCost, slotState.getCurrentGold());
             return null;
         }
         
@@ -61,7 +63,7 @@ public class TroopManager {
         TroopInstance troop = new TroopInstance(gameId, troopType, ownerSlot, spawnPosition, maxHP);
         
         // Deduct cost from player
-        playerState.spendGold(troopCost);
+        slotState.spendGold(troopCost);
         
         // Add to game troops
         gameTroops.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())

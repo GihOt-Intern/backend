@@ -1,10 +1,13 @@
 {
   "id": 2,
-  "mapName": "map_2",
+  "map_name": "map_2",
+
+  "initial_gold_each_slot": 300,
+  "gold_generated_per_second": 1,
 
 
-  "gold_mine": {
-    "id": "gold_mine",
+  "play_ground": {
+    "id": "play_ground_2",
     "position": { "x": 0 ,"y": 0 },
     "size": { "width": 42.35, "length": 42.35 }
   },

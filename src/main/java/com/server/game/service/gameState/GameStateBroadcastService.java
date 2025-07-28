@@ -1,11 +1,11 @@
 package com.server.game.service.gameState;
 
 import java.util.Map;
-import java.util.Set;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.server.game.model.GameState;
+import com.server.game.model.SlotState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.pvp.HealthUpdateSend;
 import com.server.game.service.GameStateService;
@@ -36,27 +36,17 @@ public class GameStateBroadcastService {
             return;
         }
         
-        // Get actual health values from game state
-        var playerState = gameStateService.getPlayerState(gameId, targetSlot);
-        if (playerState == null) {
-            log.warn("Player state not found for slot {} in game {}", targetSlot, gameId);
-            return;
-        }
+        GameState gameState = gameStateService.getGameStateById(gameId);
         
-        int currentHealth = playerState.getCurrentHP();
-        int maxHealth = playerState.getMaxHP();
+        int currentHealth = gameState.getCurrentHP(targetSlot);
+        int maxHealth = gameState.getMaxHP(targetSlot);
         
         HealthUpdateSend healthUpdate = new HealthUpdateSend(targetSlot, currentHealth, maxHealth, damage, timestamp);
         
         // Broadcast to all players in the game
-        Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
-        if (gameChannels != null) {
-            gameChannels.forEach(channel -> {
-                if (channel != null && channel.isActive()) {
-                    channel.writeAndFlush(healthUpdate);
-                }
-            });
-            
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null) {
+            channel.writeAndFlush(healthUpdate);
             log.info("Broadcasted health update for slot {} in game {} - HP: {}/{} (damage: {})", 
                     targetSlot, gameId, currentHealth, maxHealth, damage);
         }
@@ -75,28 +65,18 @@ public class GameStateBroadcastService {
             return;
         }
         
-        // Get actual health values from game state
-        var playerState = gameStateService.getPlayerState(gameId, targetSlot);
-        if (playerState == null) {
-            log.warn("Player state not found for slot {} in game {}", targetSlot, gameId);
-            return;
-        }
+        GameState gameState = gameStateService.getGameStateById(gameId);
         
-        int currentHealth = playerState.getCurrentHP();
-        int maxHealth = playerState.getMaxHP();
+        int currentHealth = gameState.getCurrentHP(targetSlot);
+        int maxHealth = gameState.getMaxHP(targetSlot);
         
         // Negative damage indicates healing
         HealthUpdateSend healthUpdate = new HealthUpdateSend(targetSlot, currentHealth, maxHealth, -healAmount, timestamp);
         
         // Broadcast to all players in the game
-        Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
-        if (gameChannels != null) {
-            gameChannels.forEach(channel -> {
-                if (channel != null && channel.isActive()) {
-                    channel.writeAndFlush(healthUpdate);
-                }
-            });
-            
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null) {
+            channel.writeAndFlush(healthUpdate);
             log.info("Broadcasted healing update for slot {} in game {} - HP: {}/{} (heal: {})", 
                     targetSlot, gameId, currentHealth, maxHealth, healAmount);
         }
@@ -115,27 +95,20 @@ public class GameStateBroadcastService {
      * Broadcast player respawn event
      */
     public void broadcastPlayerRespawn(String gameId, short slot, long invulnerabilityDuration) {
-        var playerState = gameStateService.getPlayerState(gameId, slot);
-        if (playerState == null) {
-            return;
-        }
+        GameState gameState = gameStateService.getGameStateById(gameId);
+
+        int currentHealth = gameState.getCurrentHP(slot);
+        int maxHealth = gameState.getMaxHP(slot);
         
-        int currentHealth = playerState.getCurrentHP();
-        int maxHealth = playerState.getMaxHP();
-        
+
         // Send health update showing full heal (respawn)
         HealthUpdateSend healthUpdate = new HealthUpdateSend(slot, currentHealth, maxHealth, 0, System.currentTimeMillis());
         
-        Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
-        if (gameChannels != null) {
-            gameChannels.forEach(channel -> {
-                if (channel != null && channel.isActive()) {
-                    channel.writeAndFlush(healthUpdate);
-                }
-            });
-            
-            log.info("Broadcasted respawn for slot {} in game {} with {}ms invulnerability", 
-                    slot, gameId, invulnerabilityDuration);
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null) {
+            channel.writeAndFlush(healthUpdate);
+            log.info("Broadcasted respawn for slot {} in game {} - HP: {}/{} (invulnerability: {}ms)", 
+                    slot, gameId, currentHealth, maxHealth, invulnerabilityDuration);
         }
     }
     
@@ -152,28 +125,29 @@ public class GameStateBroadcastService {
      * Get and broadcast current health status for all players
      */
     public void broadcastAllPlayerHealthStatus(String gameId) {
-        Map<Short, PlayerGameState> gameState = gameStateService.getGameState(gameId);
+        GameState gameState = gameStateService.getGameStateById(gameId);
         long timestamp = System.currentTimeMillis();
         
-        for (Map.Entry<Short, PlayerGameState> entry : gameState.entrySet()) {
+        Map<Short, SlotState> slotStates = gameState.getSlotStates();
+
+
+        for (Map.Entry<Short, SlotState> entry : slotStates.entrySet()) {
             Short slot = entry.getKey();
-            PlayerGameState playerState = entry.getValue();
-            
+            SlotState slotState = entry.getValue();
+
             HealthUpdateSend healthUpdate = new HealthUpdateSend(
                 slot, 
-                playerState.getCurrentHP(), 
-                playerState.getMaxHP(), 
+                slotState.getCurrentHP(), 
+                slotState.getMaxHP(), 
                 0, // No damage, just status update
                 timestamp
             );
             
-            Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
-            if (gameChannels != null) {
-                gameChannels.forEach(channel -> {
-                    if (channel != null && channel.isActive()) {
-                        channel.writeAndFlush(healthUpdate);
-                    }
-                });
+            Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+            if (channel != null) {
+                channel.writeAndFlush(healthUpdate);
+                log.info("Broadcasted health status for slot {} in game {} - HP: {}/{}", 
+                        slot, gameId, slotState.getCurrentHP(), slotState.getMaxHP());
             }
         }
         

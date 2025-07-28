@@ -4,33 +4,33 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.HeartbeatMessage;
-import com.server.game.service.gameState.HealthRegenerationService;
+import com.server.game.service.goldGeneration.GoldGenerationService;
+// import com.server.game.service.gameState.HealthRegenerationService;
 import com.server.game.service.troop.TroopManager;
 
 import io.netty.channel.Channel;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class GameLogicScheduler {
-    
-    @Autowired
-    private MoveService moveService;
-    
-    @Autowired
-    private AttackTargetingService attackTargetingService;
-    
-    @Autowired
-    private HealthRegenerationService healthRegenerationService;
 
-    @Autowired
-    private TroopManager troopManager;
+    MoveService moveService;
+    AttackTargetingService attackTargetingService;
+    TroopManager troopManager;
+    GoldGenerationService goldGenerationService;
+    
+
     
     // Lưu trữ các game đang hoạt động cho game logic
     private final Set<String> activeGames = ConcurrentHashMap.newKeySet();
@@ -59,10 +59,10 @@ public class GameLogicScheduler {
     }
     
     /**
-     * Main game logic loop - runs every 50ms (20 FPS)
+     * Main game logic loop - runs every 33ms (~30 FPS)
      * Handles movement updates and combat logic
      */
-    @Scheduled(fixedDelay = 33) // 33ms = 30 FPS for responsive gameplay
+    @Scheduled(fixedDelay = 33) // 33ms ~ 30 FPS for responsive gameplay
     public void gameLogicLoop() {
         for (String gameId : activeGames) {
             try {
@@ -72,6 +72,7 @@ public class GameLogicScheduler {
                 
                 // Process attack targeting and continuous combat
                 attackTargetingService.processAllAttackers(gameId);
+
                 
                 // TODO: Add other high-frequency game systems here
                 // - Spell/ability cooldowns
@@ -83,6 +84,27 @@ public class GameLogicScheduler {
             }
         }
     }
+
+
+    /**
+     * Handles gold auto-generation when slot is in playground,
+     * update every 1000ms (1 second)
+     */
+    @Scheduled(fixedDelay = 1000) // 1000ms = 1 FPS for gold generation
+    public void goldGenerationLoop() {
+        for (String gameId : activeGames) {
+            try {
+                goldGenerationService.generateGold(gameId);
+
+            } catch (Exception e) {
+                log.error("Error in game logic loop for game: {}", gameId, e);
+            }
+        }
+    }
+
+
+
+
     
     /**
      * Slower game logic loop - runs every 200ms (5 FPS)

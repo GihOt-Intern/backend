@@ -6,11 +6,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
+import com.server.game.map.object.Champion;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.MessageSend;
 import com.server.game.netty.messageObject.sendObject.pvp.AttackAnimationDisplaySend;
 import com.server.game.netty.messageObject.sendObject.pvp.HealthUpdateSend;
-import com.server.game.resource.model.Champion;
 import com.server.game.resource.service.ChampionService;
 import com.server.game.service.gameState.GameStateBroadcastService;
 import com.server.game.service.troop.TroopManager;
@@ -298,24 +298,24 @@ public class PvPService {
         return damage;
     }
     
-    /**
-     * Process target counter-attack against champion
-     */
-    private int processTargetCounterAttack(String gameId, String attackerId, short defenderSlot, long timestamp) {
-        // Get combat data for the defender
-        CombatData defenderData = getCombatData(gameId, defenderSlot);
+    // /**
+    //  * Process target counter-attack against champion
+    //  */
+    // private int processTargetCounterAttack(String gameId, String attackerId, short defenderSlot, long timestamp) {
+    //     // Get combat data for the defender
+    //     CombatData defenderData = getCombatData(gameId, defenderSlot);
         
-        // Calculate damage received
-        int damage = calculateTargetDamage(attackerId);
+    //     // Calculate damage received
+    //     int damage = calculateTargetDamage(attackerId);
         
-        // Update defender's combat data
-        defenderData.addDamageReceived(damage);
-        defenderData.setLastActionTimestamp(timestamp);
+    //     // Update defender's combat data
+    //     defenderData.addDamageReceived(damage);
+    //     defenderData.setLastActionTimestamp(timestamp);
         
-        log.debug("Target {} dealt {} damage to champion in slot {}", attackerId, damage, defenderSlot);
+    //     log.debug("Target {} dealt {} damage to champion in slot {}", attackerId, damage, defenderSlot);
         
-        return damage;
-    }
+    //     return damage;
+    // }
     
     /**
      * Process target vs target combat

@@ -1,9 +1,11 @@
 package com.server.game.netty.messageObject.sendObject.pvp;
 
-import java.nio.ByteBuffer;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
-import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.typeDefine.SendMessageType;
 import com.server.game.util.Util;
@@ -52,33 +54,37 @@ public class HealthUpdateSend implements TLVEncodable {
 
     @Override
     public byte[] encode() {
-        byte[] targetIdBytes = targetId != null ? Util.stringToBytes(targetId) : new byte[0];
-        int targetIdLength = targetIdBytes.length;
-        
-        ByteBuffer buf = Util.allocateByteBuffer(
-            Util.SHORT_SIZE + // targetSlot
-            Util.SHORT_SIZE + targetIdLength + // targetId length + targetId
-            Util.INT_SIZE + // currentHealth
-            Util.INT_SIZE + // maxHealth
-            Util.INT_SIZE + // damage
-            8 // timestamp (long)
-        );
-        
-        buf.putShort(targetSlot);
-        buf.putShort((short) targetIdLength);
-        if (targetIdLength > 0) {
-            buf.put(targetIdBytes);
+
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+
+            byte[] targetIdBytes = targetId != null ? Util.stringToBytes(targetId) : new byte[0];
+            int targetIdLength = targetIdBytes.length;
+
+            dos.writeShort(targetSlot);
+
+
+            dos.writeShort(targetIdLength);
+            if (targetIdLength > 0) {
+                dos.write(targetIdBytes);
+            }
+
+            dos.writeInt(currentHealth);
+            dos.writeInt(maxHealth);
+            dos.writeInt(damage);
+            dos.writeLong(timestamp);
+
+
+            return baos.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot encode HealthUpdateSend", e);
         }
-        buf.putInt(currentHealth);
-        buf.putInt(maxHealth);
-        buf.putInt(damage);
-        buf.putLong(timestamp);
-        
-        return buf.array();
     }
 
     @Override
     public SendTarget getSendTarget(Channel channel) {
-        return new UnicastTarget(channel);
+        return new AMatchBroadcastTarget(channel);
     }
 }
