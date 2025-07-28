@@ -10,9 +10,11 @@ import org.springframework.stereotype.Component;
 
 import com.server.game.resource.model.Champion;
 import com.server.game.resource.model.GameMap;
+import com.server.game.resource.model.GameMapGrid;
 import com.server.game.resource.reader.JsonReader;
 import com.server.game.resource.repository.mongo.ChampionRepository;
 import com.server.game.resource.repository.mongo.GameMapRepository;
+import com.server.game.resource.service.GameMapGridService;
 
 import lombok.AllArgsConstructor;
 
@@ -23,6 +25,9 @@ public class Writer {
     JsonReader jsonReader;
     GameMapRepository mapRepository;
     ChampionRepository championRepository;
+
+    GameMapGridService gameMapGridService;
+
 
     private final List<String> mapNames = new ArrayList<>(Arrays.asList(
         "map_2"
@@ -51,13 +56,37 @@ public class Writer {
 
 
     private void writeMap(String mapName) {
-        GameMap map = jsonReader.readMapFromJson(mapName);
+        GameMap map = jsonReader.readGameMapFromJson(mapName);
         if (map == null) {
             System.out.println("Failed to read map from JSON.");
             return;
         }
         mapRepository.save(map);
         System.out.println("Map saved successfully: " + map.getName());
+    }
+    
+    @EventListener(ApplicationReadyEvent.class)
+    public void writeMapGrids() {
+        for (String mapName : mapNames) {
+            if (gameMapGridService.existsByName(mapName)
+                && false
+             ) { // remove && false when not debugging
+                System.out.println("Game map already exists: " + mapName);
+                continue;
+            }
+            this.writeGameMapGrid(mapName);
+        }
+    }
+
+
+    private void writeGameMapGrid(String mapName) {
+        GameMapGrid mapGrid = jsonReader.readGameMapGridFromJson(mapName);
+        if (mapGrid == null) {
+            System.out.println("Failed to read map grid from JSON.");
+            return;
+        }
+        gameMapGridService.saveGameMapGrid(mapGrid);
+        System.out.println("Game map grid saved successfully: " + mapGrid.getId());
     }
 
 

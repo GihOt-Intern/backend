@@ -31,8 +31,15 @@ public class RegistryHandler {
     public void authenticate(AuthenticationReceive receiveObject, ChannelHandlerContext ctx) {
         String token = receiveObject.getToken();
         String gameId = receiveObject.getGameId();
-
         String userId = authenticationService.getJWTSubject(token);
+
+        Channel existingChannel = ChannelManager.getChannelByUserId(userId);
+        if (existingChannel != null && existingChannel != ctx.channel()) {
+            System.out.println(">>> User already has an active session, disconnecting the old channel.");
+            ChannelManager.unregister(existingChannel);
+            existingChannel.close();
+        }
+
         if (userId == null || !userService.isUserExist(userId)) {
             System.out.println(">>> Authentication failed for token: " + token);
             ctx.channel().writeAndFlush(new AuthenticationSend(AuthenticationSend.Status.FAILURE, "Invalid token, playerId does not exist or failed to register for room notifications"));

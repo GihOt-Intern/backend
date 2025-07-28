@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.server.game.map.component.Vector2;
@@ -60,7 +61,7 @@ public class SlotInfo {
         float length;
     }        
 
-    public Vector2 getInitialPosition() {
+    public Vector2 getSpawnPosition() {
         if (spawn != null) {
             return spawn.getPosition();
         }

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageObject.sendObject.PositionSend;
-import com.server.game.netty.receiveMessageHandler.PositionHandler.PositionData;
+import com.server.game.service.MoveService.PositionData;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
@@ -62,11 +62,9 @@ public class PositionBroadcastService {
             if (hasPositionChanged(oldPosition, newPosition)) {
                 playerDataList.add(new PositionSend.PlayerPositionData(
                     playerSlot,
-                    newPosition.getPosition()
+                    newPosition.getPosition(),
+                    newPosition.getSpeed()
                 ));
-                System.out.println(">>> Player slot " + playerSlot + 
-                    " position changed to (" + newPosition.getPosition().x() + ", " + newPosition.getPosition().y() + ")"
-                );
             }
         }
         
@@ -75,6 +73,7 @@ public class PositionBroadcastService {
             // Tạo message để broadcast
             long currentTime = System.currentTimeMillis();
             PositionSend positionSend = new PositionSend(playerDataList, currentTime);
+            log.debug("Broadcasting positions for game {}: {}", gameId, positionSend);
 
             // Lấy tất cả channel trong game
             Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
@@ -83,10 +82,6 @@ public class PositionBroadcastService {
                 // Broadcast cho tất cả player trong game, chỉ cần writeAndFlush cho channel đầu tiên
                 Channel firstChannel = channels.iterator().next();
                 firstChannel.writeAndFlush(positionSend);
-
-                System.out.println(">>> Broadcasted positions for gameId: " + gameId + 
-                    ", players updated: " + playerDataList.size()
-                );
             } else {
                 // Không có player nào trong game, không cần broadcast, xoá game khỏi activeGames
                 unregisterGame(gameId);
@@ -97,13 +92,12 @@ public class PositionBroadcastService {
                 short playerSlot = entry.getKey();
                 PositionData position = entry.getValue();
                 positionService.updatePosition(gameId, playerSlot, 
-                    position.getPosition(), position.getTimestamp());
+                    position.getPosition(), position.getSpeed(), position.getTimestamp());
             }
             
             // Xóa pending positions sau khi đã broadcast
             positionService.clearPendingPositions(gameId);
             long elapsedTime = System.currentTimeMillis() - currentTime;
-            log.info("Broadcast positions for game {} completed in {} ms", gameId, elapsedTime);
         }
     }
     

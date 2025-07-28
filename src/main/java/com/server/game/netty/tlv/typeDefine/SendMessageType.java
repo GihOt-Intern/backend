@@ -19,6 +19,10 @@ public enum SendMessageType {
     CHAMPION_INITIAL_HPS_SEND((short) 12),
     CHAMPION_INITIAL_STATS_SEND((short) 13),
     POSITION_UPDATE_SEND((short) 20),
+    ATTACK_ANIMATION_DISPLAY_SEND((short) 104),
+    HEALTH_UPDATE_SEND((short) 105),
+    TROOP_SPAWN_SEND((short) 201),
+    HEARTBEAT_SEND((short) 255), // Heartbeat message
     DISTANCE_SEND((short) 998),
     TEST_GAME_START_RESPONSE((short) 2026),
     ;

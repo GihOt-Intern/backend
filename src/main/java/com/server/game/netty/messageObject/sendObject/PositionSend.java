@@ -49,12 +49,8 @@ public class PositionSend implements TLVEncodable {
             // Write timestamp
             dos.writeLong(timestamp);
 
-
-
-            System.out.println("PositionSend byte:");
-            // Util.printHex(new ByteBuffer(baos.toByteArray()), true);
-            ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
-            Util.printHex(buffer, true);
+            // ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
+            // Util.printHex(buffer, true);
             
             
             
@@ -75,6 +71,7 @@ public class PositionSend implements TLVEncodable {
     public static class PlayerPositionData {
         short slot;
         Vector2 position;
+        float speed;
 
 
         public byte[] encode() {
@@ -85,8 +82,7 @@ public class PositionSend implements TLVEncodable {
                 dos.writeShort(slot);
                 dos.writeFloat(position.x());
                 dos.writeFloat(position.y());
-
-                System.out.println("Slot: " + slot + ", X: " + position.x() + ", Y: " + position.y());
+                dos.writeFloat(speed);
 
                 return baos.toByteArray();
             } catch (IOException e) {

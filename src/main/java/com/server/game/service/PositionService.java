@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 
 import com.server.game.map.component.Vector2;
-import com.server.game.netty.receiveMessageHandler.PositionHandler.PositionData;
+import com.server.game.service.MoveService.PositionData;
 import com.server.game.util.RedisUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +20,7 @@ public class PositionService {
     private static final int POSITION_TTL = 300; // 5 phút
     
     // Cache trong bộ nhớ để tăng tốc độ truy cập
+    // <gameId, <slot, PositionData>>
     private final Map<String, Map<Short, PositionData>> positionCache = new ConcurrentHashMap<>();
     
     // Cache tạm thời để lưu vị trí mới từ client (chưa broadcast)
@@ -28,8 +29,8 @@ public class PositionService {
     /**
      * Cập nhật vị trí của player vào pending cache (chưa broadcast)
      */
-    public void updatePendingPosition(String gameId, short slot, Vector2 position, long timestamp) {
-        PositionData positionData = new PositionData(position, timestamp);
+    public void updatePendingPosition(String gameId, short slot, Vector2 position, float speed, long timestamp) {
+        PositionData positionData = new PositionData(position, speed, timestamp);
 
         // Cập nhật pending cache
         pendingPositionCache.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
@@ -39,8 +40,8 @@ public class PositionService {
     /**
      * Cập nhật vị trí của player vào main cache (sau khi broadcast)
      */
-    public void updatePosition(String gameId, short slot, Vector2 position, long timestamp) {
-        PositionData positionData = new PositionData(position, timestamp);
+    public void updatePosition(String gameId, short slot, Vector2 position, float speed, long timestamp) {
+        PositionData positionData = new PositionData(position, speed, timestamp);
 
         // Cập nhật main cache
         positionCache.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
@@ -152,12 +153,9 @@ public class PositionService {
         if (lastPosition == null) {
             return true; // Lần đầu di chuyển
         }
-
-        Vector2 newPos = position;
-        Vector2 oldPos = lastPosition.getPosition();
-        float distance = newPos.distance(oldPos);
         
         // Giới hạn tốc độ di chuyển (ví dụ: 10 đơn vị/tick)
         return true;
     }
+
 } 

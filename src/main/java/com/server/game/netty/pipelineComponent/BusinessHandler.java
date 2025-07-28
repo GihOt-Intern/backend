@@ -26,7 +26,7 @@ public class BusinessHandler extends SimpleChannelInboundHandler<TLVDecodable> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TLVDecodable receiveObject) throws Exception {
 
-        System.out.println(">>> Server Received TLVDecodable object: " + receiveObject.getClass().getSimpleName());
+        //System.out.println(">>> Server Received TLVDecodable object: " + receiveObject.getClass().getSimpleName());
 
         // Just add known things to contextParams, dispatcher will traverse them and select needed ones
         // to invoke the method
@@ -45,7 +45,7 @@ public class BusinessHandler extends SimpleChannelInboundHandler<TLVDecodable> {
             // System.out.println(">>> This message no need to send back response to client, stop pipeline.");
             return;
         }
-        System.out.println(">>> Server Created TLVEncodable object of type: " + sendObject.getClass().getSimpleName());
+        //System.out.println(">>> Server Created TLVEncodable object of type: " + sendObject.getClass().getSimpleName());
         ctx.writeAndFlush(sendObject); // send msg to outbound pipeline
     }
 

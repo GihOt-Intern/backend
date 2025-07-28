@@ -1,116 +1,73 @@
 package com.server.game.service;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.server.game.map.component.Vector2;
+import com.server.game.model.GameState;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * @deprecated This class is deprecated and will be removed in future versions.
+ * Use {@link GameCoordinator} instead for unified scheduler management.
+ * 
+ * This class now delegates all operations to GameCoordinator to maintain
+ * backward compatibility during the migration period.
+ */
+@Deprecated
 @Service
 @Slf4j
 public class GameScheduler {
     
     @Autowired
-    private PositionBroadcastService positionBroadcastService;
-    
-    @Autowired
-    private MoveService moveService;
-
-    @Autowired
-    private PositionService positionService;
-    
-    // Lưu trữ các game đang hoạt động
-    private final Set<String> activeGames = ConcurrentHashMap.newKeySet();
+    private GameCoordinator gameCoordinator;
     
     /**
-     * Đăng ký game để thực hiện các task định kỳ
+     * @deprecated Use {@link GameCoordinator#registerGame(String, GameState)} instead
      */
-    public void registerGame(String gameId) {
-        activeGames.add(gameId);
-        log.info("Registered game for scheduling: {}", gameId);
+    @Deprecated
+    public void registerGame(String gameId, GameState gameState) {
+        log.warn("GameScheduler.registerGame() is deprecated. Use GameCoordinator instead.");
+        gameCoordinator.registerGame(gameId, gameState);
     }
     
     /**
-     * Hủy đăng ký game
+     * @deprecated Use {@link GameCoordinator#unregisterGame(String)} instead
      */
+    @Deprecated
     public void unregisterGame(String gameId) {
-        activeGames.remove(gameId);
-        // Notify services to clean up game data
-        positionBroadcastService.unregisterGame(gameId);
-        log.info("Unregistered game from scheduling: {}", gameId);
+        log.warn("GameScheduler.unregisterGame() is deprecated. Use GameCoordinator instead.");
+        gameCoordinator.unregisterGame(gameId);
     }
 
     /**
-     * Kiểm tra xem game có hoạt động hay không
+     * @deprecated Use {@link GameCoordinator#isGameActive(String)} instead
      */
+    @Deprecated
     public boolean isGameActive(String gameId) {
-        return activeGames.contains(gameId);
+        log.warn("GameScheduler.isGameActive() is deprecated. Use GameCoordinator instead.");
+        return gameCoordinator.isGameActive(gameId);
     }
 
     /**
-     * Cập nhật vị trí của người chơi
+     * @deprecated Use {@link GameCoordinator#getGameState(String)} instead
      */
-    public void updatePosition(String gameId, short slot, Vector2 position, long timestamp) {
-        if (!isGameActive(gameId)) {
-            log.warn("Attempted to update position for inactive game: {}", gameId);
-            return;
-        }
-        
-        // Update position in the PositionService
-        positionService.updatePosition(gameId, slot, position, timestamp);
-        log.info("Updated position for gameId: {}, slot: {}, position: {}", gameId, slot, position);
+    @Deprecated
+    public GameState getGameState(String gameId) {
+        log.warn("GameScheduler.getGameState() is deprecated. Use GameCoordinator instead.");
+        return gameCoordinator.getGameState(gameId);
     }
 
     /**
-     * Main game loop - runs every 50ms (20 FPS)
-     * Handles all game-related periodic tasks
+     * @deprecated Use {@link GameCoordinator#updatePosition(String, short, Vector2, float, long)} instead
      */
-    @Scheduled(fixedDelay = 50) // 50ms = 20 times per second = 20 fps
-    public void gameLoop() {
-        for (String gameId : activeGames) {  
-            try {
-                // Update movement positions
-                moveService.updatePositions(gameId);
-                
-                // Broadcast position updates
-                positionBroadcastService.broadcastGamePositions(gameId);
-                
-                // TODO: Add other game systems here
-                // - Combat/Attack system updates
-                // - Troop AI updates
-                // - Resource management
-                // - Spell/ability cooldowns
-                // - Game state validation
-                
-            } catch (Exception e) {
-                log.error("Error in game loop for game: {}", gameId, e);
-            }
-        }
+    @Deprecated
+    public void updatePosition(String gameId, short slot, Vector2 position, float speed, long timestamp) {
+        log.warn("GameScheduler.updatePosition() is deprecated. Use GameCoordinator instead.");
+        gameCoordinator.updatePosition(gameId, slot, position, speed, timestamp);
     }
-    
-    // TODO: Add other scheduled methods for different game systems
-    
-    /**
-     * Slower update cycle for less critical systems (e.g., 5 FPS)
-     */
-    @Scheduled(fixedDelay = 200) // 200ms = 5 times per second
-    public void slowGameLoop() {
-        for (String gameId : activeGames) {
-            try {
-                // TODO: Add slower update systems here
-                // - Troop spawning
-                // - Resource generation
-                // - AI decision making
-                // - Game statistics updates
-                
-            } catch (Exception e) {
-                log.error("Error in slow game loop for game: {}", gameId, e);
-            }
-        }
-    }
+
+    // NOTE: The @Scheduled methods have been removed as they are now handled by
+    // BroadcastScheduler and GameLogicScheduler through GameCoordinator
 }

@@ -283,24 +283,42 @@ public class RoomService {
             throw new IllegalArgumentException("Need at least 2 players to start the game");
             // throw new SocketException("Need at least 2 players to start the game", channel);
         }
+  
+        boolean allPlayersConnected = true;
+        for (User player : room.getPlayers()) {
+            Channel playerChannel = ChannelManager.getChannelByUserId(player.getId());
+            if (playerChannel == null || !playerChannel.isActive()) {
+                allPlayersConnected = false;
+                System.out.println("Player " + player.getUsername() + " is not connected.");
+            }
+        }
+
+        if (!allPlayersConnected) {
+            throw new IllegalArgumentException("Not all players are connected to the game");
+            // throw new SocketException("Not all players are connected to the game", channel);
+        }
 
         Set<Channel> channels = ChannelManager.getChannelsByGameId(roomId);
         if (channels.isEmpty()) {
             System.out.println("No active game channels found for room: " + roomId);
             return;
         }
-  
-        
         
         Map<Short, String> players = new HashMap<>();
         short slot = -1; 
         
         for (Channel ch : channels) {
-            String username = ChannelManager.getUsernameByChannel(ch);
-            ++slot;
-            // Set slot for this channel and update the mapping
-            ChannelManager.setSlot2Channel(slot, ch);
-            players.put(slot, username);
+            String userId = ChannelManager.getUserIdByChannel(ch);
+            if (userId != null) {
+                User channelUser = userService.getUserByIdInternal(userId);
+                String username = channelUser.getUsername();
+                ++slot;
+                // Set slot for this channel and update the mapping
+                ChannelManager.setSlot2Channel(slot, ch);
+                players.put(slot, username);
+            } else {
+                System.out.println("No user found for channel: " + ch.id().asShortText());
+            }
         }
         
         InfoPlayersInRoomSend infoPlayerInRoomSend = new InfoPlayersInRoomSend(players);

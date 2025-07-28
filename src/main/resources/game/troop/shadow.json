@@ -1,0 +1,33 @@
+{
+  "id": 1,
+  "name": "Shadow",
+  "type": "assassin",
+  "role": "Damage Dealer",
+  "stats": {
+    "hp": 250,
+    "defense": 30,
+    "attack": 120,
+    "move_speed": 8.0,
+    "attack_speed": 2.5,
+    "attack_range": 1.2,
+    "detection_range": 6.0,
+    "cost": 150
+  },
+  "ability": {
+    "name": "Stealth Strike",
+    "description": "Next attack deals 200% damage and grants invisibility for 2 seconds",
+    "cool_down": 15.0,
+    "effect": {
+      "type": "damage_boost_stealth",
+      "damage_multiplier": 2.0,
+      "stealth_duration": 2.0
+    }
+  },
+  "ai_behavior": {
+    "aggression": 0.9,
+    "pursuit_range": 10.0,
+    "retreat_health_threshold": 0.3,
+    "group_behavior": "flanking_assassin",
+    "target_priority": "low_health_first"
+  }
+}

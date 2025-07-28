@@ -4,6 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+nohup.out
 test.py
 
 ### STS ###
@@ -42,8 +43,10 @@ node_modules/
 **/src/main/resources/env.properties
 **/src/main/resources/docker-env.properties
 **/src/main/resources/vps-env.properties
+**/src/main/resources/publish-env.properties
 **/src/main/resources/META-INF/
 **/src/main/resources/static/
+**/src/main/java/com/server/game/netty/receiveMessageHandler/pos.md
 logs/
 .env
 

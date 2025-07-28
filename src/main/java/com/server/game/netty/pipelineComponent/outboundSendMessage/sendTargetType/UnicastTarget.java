@@ -17,7 +17,6 @@ public class UnicastTarget implements SendTarget {
 
     @Override
     public ChannelFuture send(ByteBuf message) {
-        System.out.println(">>> Sending Unicast to channel: " + channel.id());
 
         if (channel.isActive()) {
             return channel.writeAndFlush(message.retain());
