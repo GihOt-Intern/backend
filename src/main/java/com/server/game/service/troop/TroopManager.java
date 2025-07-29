@@ -3,6 +3,7 @@ package com.server.game.service.troop;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.service.TroopService;
+import com.server.game.service.attack.AttackTargetingService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.troop.TroopInstance.TroopAIState;
 import com.server.game.util.TroopEnum;
@@ -13,7 +14,14 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
+import com.server.game.netty.ChannelManager;
+import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
+import com.server.game.netty.sendObject.troop.TroopDeathSend;
+
+import io.netty.channel.Channel;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -23,9 +31,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TroopManager {
-    
     TroopService troopService;
     GameStateService gameStateService;
+    
+    @Lazy
+    @Autowired
+    AttackTargetingService attackTargetingService;
     
     // gameId -> Map<troopInstanceId, TroopInstance>
     private final Map<String, Map<String, TroopInstance>> gameTroops = new ConcurrentHashMap<>();
@@ -201,6 +212,7 @@ public class TroopManager {
                 .sorted(Comparator.comparing(TroopInstance::getHealthPercentage))
                 .collect(Collectors.toList());
     }
+
     
     /**
      * Apply damage to a troop and handle death
@@ -215,13 +227,48 @@ public class TroopManager {
         
         // If troop died, remove it
         if (!troop.isAlive()) {
+            // Clear all attack targets that were targeting this dead troop
+            attackTargetingService.clearTargetsAttackingTarget(gameId, troopInstanceId);
+            
+            // Notify game state service about troop death
+            broadcastTroopDeath(gameId, troopInstanceId, troop.getOwnerSlot());
+
             removeTroop(gameId, troopInstanceId);
             log.info("Troop {} died and was removed from game {}", troopInstanceId, gameId);
+        } else {
+            com.server.game.netty.sendObject.pvp.HealthUpdateSend healthUpdate = new HealthUpdateSend(
+                troopInstanceId,
+                troop.getCurrentHP(),
+                troop.getMaxHP(),
+                damage,
+                System.currentTimeMillis()
+            );
+
+            Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+            if (channel != null && channel.isActive()) {
+                channel.writeAndFlush(healthUpdate);
+            } else {
+                log.warn("No active channel found for game ID: {}", gameId);
+            }
         }
         
         return true;
     }
-    
+
+    /**
+     * Broadcast a troop death event
+     */
+    private void broadcastTroopDeath(String gameId, String troopInstanceId, short ownerSlot) {
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel == null || !channel.isActive()) {
+            log.warn("No active channel found for game ID: {}", gameId);
+            return;
+        }
+
+        TroopDeathSend deathMessage = new TroopDeathSend(troopInstanceId, ownerSlot);
+        channel.writeAndFlush(deathMessage);
+    }
+
     /**
      * Heal a troop
      */

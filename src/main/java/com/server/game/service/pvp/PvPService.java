@@ -10,7 +10,7 @@ import com.server.game.model.game.Champion;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.pvp.AttackAnimationDisplaySend;
-import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
+import com.server.game.service.attack.AttackHandler;
 import com.server.game.service.champion.ChampionService;
 import com.server.game.service.gameState.GameStateBroadcastService;
 import com.server.game.service.move.MoveService.PositionData;
@@ -26,15 +26,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class PvPService {
+public class PvPService implements AttackHandler {
     GameStateBroadcastService gameStateBroadcastService;
     PositionService positionService;
-    TroopManager troopManager;
     ChampionService championService;
+    
+    @Lazy
+    @Autowired
+    TroopManager troopManager;
     
     // Store combat data for each game
     private final Map<String, Map<Short, CombatData>> combatDataMap = new ConcurrentHashMap<>();
@@ -216,7 +222,7 @@ public class PvPService {
         broadcastAttackerAnimation(gameId, attackerSlot, null, (short) -1, targetId, attackerChampion, timestamp, "Attack");
         
         // 2. Process PvE attack and get damage
-        int damage = processPvEAttack(gameId, targetId, timestamp);
+        int damage = processPvEAttack(gameId, attackerChampion, timestamp);
         
         // 3. Send health update for the target
         broadcastHealthUpdateForTarget(gameId, targetId, damage, timestamp);
@@ -383,12 +389,12 @@ public class PvPService {
     /**
      * Process PvE attack (champion vs target)
      */
-    private int processPvEAttack(String gameId, String targetId, long timestamp) {
+    private int processPvEAttack(String gameId, ChampionEnum champion, long timestamp) {
         // Implement PvE logic here
-        log.debug("Processing PvE attack against target {}", targetId);
-        
+        log.debug("Processing PvE attack for champion {}", champion);
+
         // Calculate damage based on target type
-        int damage = calculatePvEDamage(gameId, targetId);
+        int damage = calculateChampionDamage(champion);
         
         // TODO: Implement target health system, damage calculation, loot drops, etc.
         // For now, just return calculated damage
@@ -414,16 +420,6 @@ public class PvPService {
         
     //     return damage;
     // }
-    
-    /**
-     * Process target vs target combat
-     */
-    private void processTargetVsTarget(String gameId, String targetId, short slot, long timestamp) {
-        // Implement target vs target logic
-        log.debug("Processing target vs target combat for target {}", targetId);
-        
-        // TODO: Implement target AI combat system
-    }
     
     /**
      * Calculate damage based on champion type and stats
@@ -550,8 +546,11 @@ public class PvPService {
     private void broadcastHealthUpdate(String gameId, short targetSlot, int damage, long timestamp) {
         log.debug("Broadcasting health update for slot {} with damage {}", targetSlot, damage);
         
-        // Use the enhanced broadcast service
+        // Use the enhanced broadcast service - this will apply damage and check for death
         gameStateBroadcastService.broadcastHealthUpdate(gameId, targetSlot, damage, timestamp);
+        
+        // Note: Attack target clearing is now handled by AttackTargetingService independently
+        // to avoid circular dependency
     }
     
     /**
@@ -560,41 +559,22 @@ public class PvPService {
     private void broadcastHealthUpdateForTarget(String gameId, String targetId, int damage, long timestamp) {
         log.debug("Broadcasting health update for target {} with damage {}", targetId, damage);
         
-        // Get the actual troop instance from TroopManager
-        TroopInstance targetTroop = troopManager.getTroop(gameId, targetId);
-        if (targetTroop == null) {
-            log.warn("Target troop not found: {} in game {}", targetId, gameId);
-            return;
-        }
-        
-        // Apply damage to the troop
-        targetTroop.takeDamage(damage);
-        
-        // Get actual health values after damage
-        int currentHealth = targetTroop.getCurrentHP();
-        int maxHealth = targetTroop.getMaxHP();
-        
-        log.info("Target {} took {} damage - HP: {}/{}", targetId, damage, currentHealth, maxHealth);
-        
-        // If troop died, remove it from the game
-        if (!targetTroop.isAlive()) {
-            troopManager.removeTroop(gameId, targetId);
-            log.info("Target troop {} has been killed and removed from game {}", targetId, gameId);
-        }
-        
-        HealthUpdateSend healthUpdate = new HealthUpdateSend(targetId, currentHealth, maxHealth, damage, timestamp);
-        
-        // Broadcast to all players in the game
-        Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
-        if (gameChannels != null) {
-            gameChannels.forEach(channel -> {
-                if (channel != null && channel.isActive()) {
-                    channel.writeAndFlush(healthUpdate);
-                }
-            });
+        if (targetId.startsWith("troop_")) {
+            // Check if troop was alive before applying damage
+            TroopInstance troopBefore = troopManager.getTroop(gameId, targetId);
+            boolean wasAlive = troopBefore != null && troopBefore.isAlive();
             
-            log.info("Broadcasted health update for target {} in game {} - HP: {}/{} (damage: {})", 
-                    targetId, gameId, currentHealth, maxHealth, damage);
+            boolean damageApplied = troopManager.applyDamageToTroop(gameId, targetId, damage);
+            if (!damageApplied) {
+                log.warn("Failed to apply damage {} to target {}", damage, targetId);
+                return;
+            }
+            
+            // If troop was alive before but is now dead (or removed), clear all attackers targeting it
+            if (wasAlive) {
+                // Note: Attack target clearing is now handled by AttackTargetingService independently
+                // to avoid circular dependency
+            }
         }
     }
 

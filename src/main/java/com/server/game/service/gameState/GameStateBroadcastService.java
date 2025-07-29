@@ -152,4 +152,17 @@ public class GameStateBroadcastService {
         
         log.debug("Broadcasted health status for all players in game {}", gameId);
     }
+
+    /**
+     * Check if a champion is dead (has 0 health)
+     */
+    public boolean isChampionDead(String gameId, short slot) {
+        GameState gameState = gameStateService.getGameStateById(gameId);
+        if (gameState == null) {
+            return false;
+        }
+        
+        SlotState slotState = gameState.getSlotState(slot);
+        return slotState != null && slotState.getCurrentHP() <= 0;
+    }
 }

@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +24,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PositionHandler {
     private final MoveService moveService;
-    private final AttackTargetingService attackTargetingService;
+
+    @Lazy
+    @Autowired
+    private AttackTargetingService attackTargetingService;
     
     // Rate limiting: minimum time between position updates (in milliseconds)
     private static final long MIN_UPDATE_INTERVAL = 50; // 50ms = max 20 updates per second
