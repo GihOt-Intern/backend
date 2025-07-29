@@ -10,10 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import com.server.game.map.component.Vector2;
 import com.server.game.model.gameState.Champion;
 import com.server.game.model.gameState.GameState;
 import com.server.game.model.gameState.SlotState;
+import com.server.game.model.map.component.Vector2;
 // import com.server.game.service.gameState.PlayerGameState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.respawn.ChampionDeathSend;

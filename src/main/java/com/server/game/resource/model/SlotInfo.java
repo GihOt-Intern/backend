@@ -10,7 +10,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.deserializer.BurgDeserializer;
 import com.server.game.resource.deserializer.TowerDeserializer;
 

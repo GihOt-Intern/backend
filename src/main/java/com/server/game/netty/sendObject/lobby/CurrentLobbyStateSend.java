@@ -1,4 +1,4 @@
-package com.server.game.netty.messageObject.sendObject;
+package com.server.game.netty.sendObject.lobby;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -10,7 +10,7 @@ import io.netty.channel.Channel;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
-import com.server.game.netty.tlv.typeDefine.SendMessageType;
+import com.server.game.netty.tlv.messageEnum.SendMessageType;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

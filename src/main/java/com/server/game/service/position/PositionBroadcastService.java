@@ -3,12 +3,11 @@ package com.server.game.service.position;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.PositionSend;
 import com.server.game.service.move.MoveService;

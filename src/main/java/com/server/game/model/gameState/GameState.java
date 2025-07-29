@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.server.game.map.component.GridCell;
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.GridCell;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.GameMapGrid;
 import com.server.game.resource.model.SlotInfo;

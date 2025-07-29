@@ -1,6 +1,6 @@
-package com.server.game.map.shape;
+package com.server.game.model.map.shape;
 
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 
 public class RectShape implements CollisionShape {
     private float width;

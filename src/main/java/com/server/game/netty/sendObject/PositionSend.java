@@ -7,7 +7,7 @@ import java.util.List;
 
 import io.netty.channel.Channel;
 
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;

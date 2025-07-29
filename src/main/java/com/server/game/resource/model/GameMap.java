@@ -13,7 +13,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.deserializer.PlayGroundDeserializer;
 
 import lombok.AccessLevel;

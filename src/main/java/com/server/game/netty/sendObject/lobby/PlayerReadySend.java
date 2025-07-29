@@ -1,4 +1,4 @@
-package com.server.game.netty.sendObject;
+package com.server.game.netty.sendObject.lobby;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

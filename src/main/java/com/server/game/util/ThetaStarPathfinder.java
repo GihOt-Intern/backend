@@ -1,9 +1,9 @@
 package com.server.game.util;
 
 
-import com.server.game.map.component.GridCell;
-
 import java.util.*;
+
+import com.server.game.model.map.component.GridCell;
 
 public class ThetaStarPathfinder {
 

@@ -1,6 +1,6 @@
 package com.server.game.model.gameState.component;
 
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMap.PlayGround;
 
 import lombok.AllArgsConstructor;

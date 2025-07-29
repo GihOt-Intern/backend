@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;

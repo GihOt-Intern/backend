@@ -1,4 +1,4 @@
-package com.server.game.netty.messageObject.receiveObject;
+package com.server.game.netty.receiveObject;
 
 import java.nio.ByteBuffer;
 
@@ -6,8 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.ReceiveType;
 import com.server.game.netty.tlv.interf4ce.TLVDecodable;
-import com.server.game.netty.tlv.typeDefine.ReceiveMessageType;
-import com.server.game.util.Util;
+import com.server.game.netty.tlv.messageEnum.ReceiveMessageType;
 
 import lombok.AccessLevel;
 import lombok.Data;

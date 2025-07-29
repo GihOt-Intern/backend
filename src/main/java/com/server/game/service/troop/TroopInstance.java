@@ -1,6 +1,6 @@
 package com.server.game.service.troop;
 
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.util.TroopEnum;
 
 import lombok.Getter;

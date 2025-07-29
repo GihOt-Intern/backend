@@ -5,9 +5,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.service.gameState.GameStateService;
-import com.server.game.service.move.MoveService;
 import com.server.game.service.move.MoveService.PositionData;
 import com.server.game.util.RedisUtil;
 

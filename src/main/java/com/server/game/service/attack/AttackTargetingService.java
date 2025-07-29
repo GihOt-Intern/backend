@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.service.champion.ChampionService;
 import com.server.game.service.move.MoveService;

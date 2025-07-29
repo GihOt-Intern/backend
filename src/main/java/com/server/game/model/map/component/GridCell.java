@@ -1,4 +1,4 @@
-package com.server.game.map.component;
+package com.server.game.model.map.component;
 
 
 public record GridCell(int r, int c) {

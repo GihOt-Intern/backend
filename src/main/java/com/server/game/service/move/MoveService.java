@@ -9,10 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import com.server.game.map.component.GridCell;
-import com.server.game.map.component.Vector2;
-import com.server.game.model.gameState.Champion;
 import com.server.game.model.gameState.GameState;
+import com.server.game.model.map.component.GridCell;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMapGrid;
 import com.server.game.service.gameState.GameCoordinator;
 import com.server.game.service.move.MoveService.MoveTarget.PathComponent;

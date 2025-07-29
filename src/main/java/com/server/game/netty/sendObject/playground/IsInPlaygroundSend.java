@@ -1,4 +1,4 @@
-package com.server.game.netty.sendObject;
+package com.server.game.netty.sendObject.playground;
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
@@ -10,11 +10,11 @@ import io.netty.channel.Channel;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 
-public class IsInPlayGroundSend implements TLVEncodable {
+public class IsInPlaygroundSend implements TLVEncodable {
 
     byte isInPlayGround;
 
-    public IsInPlayGroundSend(boolean isInPlayGround) {
+    public IsInPlaygroundSend(boolean isInPlayGround) {
         this.isInPlayGround = (byte) (isInPlayGround ? 1 : 0);
     }
 
@@ -33,7 +33,7 @@ public class IsInPlayGroundSend implements TLVEncodable {
 
             return baos.toByteArray();
         } catch (Exception e) {
-            throw new RuntimeException("Cannot encode IsInPlayGroundSend", e);
+            throw new RuntimeException("Cannot encode IsInPlaygroundSend", e);
         }
     }
 

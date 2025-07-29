@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.server.game.netty.ChannelManager;
 import com.server.game.annotation.customAnnotation.MessageMapping;
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.receiveObject.TestGameStartAnnounceReceive;
 import com.server.game.netty.sendObject.ErrorSend;
 import com.server.game.netty.sendObject.TestGameStartResponseSend;

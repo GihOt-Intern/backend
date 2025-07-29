@@ -8,16 +8,12 @@ import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.netty.ChannelManager;
-import com.server.game.netty.messageObject.receiveObject.ChooseChampionReceive;
-import com.server.game.netty.messageObject.receiveObject.LobbyLoadedReceive;
-import com.server.game.netty.messageObject.receiveObject.PlayerReadyReceive;
-import com.server.game.netty.messageObject.sendObject.ChooseChampionSend;
-import com.server.game.netty.messageObject.sendObject.CurrentLobbyStateSend;
-import com.server.game.netty.messageObject.sendObject.PlayerReadySend;
 import com.server.game.netty.receiveObject.ChooseChampionReceive;
+import com.server.game.netty.receiveObject.LobbyLoadedReceive;
 import com.server.game.netty.receiveObject.PlayerReadyReceive;
-import com.server.game.netty.sendObject.PlayerReadySend;
 import com.server.game.netty.sendObject.lobby.ChooseChampionSend;
+import com.server.game.netty.sendObject.lobby.CurrentLobbyStateSend;
+import com.server.game.netty.sendObject.lobby.PlayerReadySend;
 import com.server.game.util.ChampionEnum;
 
 import io.netty.channel.Channel;
