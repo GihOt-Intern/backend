@@ -31,7 +31,6 @@ public class GameLogicScheduler {
 
     MoveService moveService;
     @Lazy
-    @Autowired
     AttackTargetingService attackTargetingService;
     TroopManager troopManager;
     GoldGenerationService goldGenerationService;

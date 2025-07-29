@@ -28,16 +28,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TroopManager {
-    TroopService troopService;
-    GameStateService gameStateService;
-    
-    @Lazy
-    @Autowired
-    AttackTargetingService attackTargetingService;
-    
+    private TroopService troopService;
+    private GameStateService gameStateService;
+    private AttackTargetingService attackTargetingService;
+
     // gameId -> Map<troopInstanceId, TroopInstance>
     private final Map<String, Map<String, TroopInstance>> gameTroops = new ConcurrentHashMap<>();
     

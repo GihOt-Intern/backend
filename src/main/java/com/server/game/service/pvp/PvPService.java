@@ -39,7 +39,6 @@ public class PvPService implements AttackHandler {
     ChampionService championService;
     
     @Lazy
-    @Autowired
     TroopManager troopManager;
     
     // Store combat data for each game

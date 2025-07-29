@@ -1,8 +1,8 @@
-package com.server.game.model.game.component.skill;
+package com.server.game.model.game.component.skillComponent;
 
+import com.server.game.model.game.skill.*;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 import com.server.game.util.ChampionEnum;
-import com.server.game.model.game.component.skill.concrete.*;
 
 public class SkillFactory {
     public static SkillComponent createSkillFor(Short championId, ChampionAbility ability) {

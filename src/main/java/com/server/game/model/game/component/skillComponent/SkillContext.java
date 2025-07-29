@@ -1,4 +1,4 @@
-package com.server.game.model.game.component.skill;
+package com.server.game.model.game.component.skillComponent;
 
 import java.util.Map;
 

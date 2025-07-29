@@ -3,7 +3,7 @@ package com.server.game.model.game;
 
 import com.server.game.model.game.component.Entity;
 import com.server.game.model.game.component.HealthComponent;
-import com.server.game.model.game.component.skill.SkillComponent;
+import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.game.component.AttributeComponent;
 
 import lombok.AccessLevel;
@@ -31,7 +31,4 @@ public class Champion extends Entity {
     HealthComponent healthComponent;
     @Delegate
     SkillComponent skillComponent;
-
-    
-    
 }

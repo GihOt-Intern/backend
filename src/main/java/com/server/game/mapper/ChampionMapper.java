@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.component.AttributeComponent;
 import com.server.game.model.game.component.HealthComponent;
-import com.server.game.model.game.component.skill.SkillFactory;
+import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.resource.model.ChampionDB;
 
 @Mapper(componentModel = "spring")

@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class AttackTargetingService {
 
     PositionService positionService;
@@ -40,15 +41,6 @@ public class AttackTargetingService {
     // Store attack targets for each game and player
     private final Map<String, Map<Short, AttackTarget>> attackTargets = new ConcurrentHashMap<>();
 
-    @Autowired
-    public AttackTargetingService(PositionService positionService, MoveService moveService, ChampionService championService, GameStateService gameStateService, @Lazy AttackHandler attackHandler, @Lazy TroopManager troopManager) {
-        this.positionService = positionService;
-        this.moveService = moveService;
-        this.championService = championService;
-        this.gameStateService = gameStateService;
-        this.attackHandler = attackHandler;
-        this.troopManager = troopManager;
-    }
     
     /**
      * Set an attack target for a champion
