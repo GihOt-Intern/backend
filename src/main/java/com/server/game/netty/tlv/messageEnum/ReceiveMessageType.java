@@ -11,6 +11,7 @@ import lombok.Getter;
 public enum ReceiveMessageType {
     AUTHENTICATION_RECEIVE((short) 1),
     MESSAGE_RECEIVE((short) 3),
+    LOBBY_LOADED_RECEIVE((short) -1),
     CHOOSE_CHAMPION_RECEIVE((short) 6),
     PLAYER_READY_RECEIVE((short) 8),
     POSITION_UPDATE_RECEIVE((short) 19),

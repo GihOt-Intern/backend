@@ -12,6 +12,7 @@ public enum SendMessageType {
     ERROR_SEND((short) 0),
     AUTHENTICATION_SEND((short) 2),
     MESSAGE_SEND((short) 4),
+    CURRENT_LOBBY_STATE_SEND((short) -2),
     CHOOSE_CHAMPION_SEND((short) 7),
     INFO_PLAYERS_IN_ROOM_SEND((short) 5),
     PLAYER_READY_SEND((short) 9),

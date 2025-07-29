@@ -13,10 +13,6 @@
   },
   "ability": {
     "name": "Whirlwind",
-    "damage": 60,
-    "radius": 5.0,
-    "duration": 5.0,
-    "cool_down": 15.0,
-    "type": "AOE_DAMAGE_OVER_TIME"
+    "cool_down": 15.0
   }
 }

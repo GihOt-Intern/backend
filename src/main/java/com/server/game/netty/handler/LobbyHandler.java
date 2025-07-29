@@ -1,12 +1,19 @@
 package com.server.game.netty.handler;
 
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.netty.ChannelManager;
+import com.server.game.netty.messageObject.receiveObject.ChooseChampionReceive;
+import com.server.game.netty.messageObject.receiveObject.LobbyLoadedReceive;
+import com.server.game.netty.messageObject.receiveObject.PlayerReadyReceive;
+import com.server.game.netty.messageObject.sendObject.ChooseChampionSend;
+import com.server.game.netty.messageObject.sendObject.CurrentLobbyStateSend;
+import com.server.game.netty.messageObject.sendObject.PlayerReadySend;
 import com.server.game.netty.receiveObject.ChooseChampionReceive;
 import com.server.game.netty.receiveObject.PlayerReadyReceive;
 import com.server.game.netty.sendObject.PlayerReadySend;
@@ -23,6 +30,26 @@ public class LobbyHandler {
 
     private final GameInititalLoadingHandler gameLoadingHandler;
 
+
+    @MessageMapping(LobbyLoadedReceive.class)
+    public CurrentLobbyStateSend handleLobbyLoaded(LobbyLoadedReceive receiveObject, Channel channel) {
+        Set<Channel> playersInRoom = ChannelManager.getGameChannelsByInnerChannel(channel);
+        List<CurrentLobbyStateSend.PlayerLobbyStateData> lobbyPlayerStates = 
+            playersInRoom.stream().map(ch -> {
+                short slot = ChannelManager.getSlotByChannel(ch);
+                ChampionEnum championId = ChannelManager.getChampionIdByChannel(ch);
+                boolean isReady = ChannelManager.isUserReady(ch);
+                return new CurrentLobbyStateSend.PlayerLobbyStateData(
+                    slot,
+                    championId != null ? championId.getChampionId() : -1, // -1 if not chosen
+                    isReady
+                );
+            })
+            .toList();
+
+
+        return new CurrentLobbyStateSend(lobbyPlayerStates);
+    }
 
     @MessageMapping(ChooseChampionReceive.class)
     public ChooseChampionSend handleChooseChampion(ChooseChampionReceive receiveObject, Channel channel) {
