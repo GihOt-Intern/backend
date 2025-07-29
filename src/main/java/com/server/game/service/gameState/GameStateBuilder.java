@@ -12,15 +12,15 @@ import org.springframework.stereotype.Service;
 
 import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.GameMapGrid;
-import com.server.game.resource.service.ChampionService;
 import com.server.game.resource.service.GameMapGridService;
 import com.server.game.resource.service.GameMapService;
+import com.server.game.service.champion.ChampionService;
 import com.server.game.util.ChampionEnum;
 
 import io.netty.channel.Channel;
 
-import com.server.game.map.object.Champion;
-import com.server.game.model.GameState;
+import com.server.game.model.gameState.Champion;
+import com.server.game.model.gameState.GameState;
 import com.server.game.netty.ChannelManager;
 
 import lombok.AccessLevel;

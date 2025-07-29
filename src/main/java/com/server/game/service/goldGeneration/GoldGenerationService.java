@@ -1,17 +1,10 @@
 package com.server.game.service.goldGeneration;
 
-import java.util.Map;
-import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import com.server.game.model.GameState;
-import com.server.game.model.SlotState;
-import com.server.game.netty.ChannelManager;
-import com.server.game.netty.messageObject.sendObject.pvp.HealthUpdateSend;
-import com.server.game.service.GameStateService;
+import com.server.game.service.gameState.GameStateService;
 
-import io.netty.channel.Channel;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

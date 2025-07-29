@@ -2,8 +2,9 @@ package com.server.game.mapper;
 
 import com.server.game.dto.response.PlayerResponse;
 import com.server.game.dto.response.RoomResponse;
-import com.server.game.model.Room;
-import com.server.game.model.User;
+import com.server.game.model.room.Room;
+import com.server.game.model.user.User;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

@@ -4,7 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-nohup.out
 test.py
 
 ### STS ###
@@ -44,7 +43,9 @@ build/
 **/src/main/resources/publish-env.properties
 **/src/main/resources/META-INF/
 **/src/main/resources/static/
-**/src/main/java/com/server/game/netty/receiveMessageHandler/pos.md
+**/docs/pos.md
 logs/
 .env
+game_output.log
+nohup.out
 

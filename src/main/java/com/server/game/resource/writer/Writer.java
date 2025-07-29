@@ -12,8 +12,8 @@ import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.resource.model.GameMapGrid;
 import com.server.game.resource.reader.JsonReader;
-import com.server.game.resource.repository.mongo.ChampionDBRepository;
-import com.server.game.resource.repository.mongo.GameMapRepository;
+import com.server.game.resource.repository.ChampionDBRepository;
+import com.server.game.resource.repository.GameMapRepository;
 import com.server.game.resource.service.GameMapGridService;
 
 import lombok.AllArgsConstructor;
@@ -94,7 +94,7 @@ public class Writer {
     public void writeChampions() {
         for (String championName : championNames) {
             if (championRepository.existsByName(championName) 
-                // && false
+                && false
             ) { // remove && false when not debugging
                 System.out.println("Champion already exists: " + championName);
                 continue;

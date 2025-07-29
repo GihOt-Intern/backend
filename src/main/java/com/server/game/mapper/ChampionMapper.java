@@ -3,9 +3,9 @@ package com.server.game.mapper;
 
 import org.mapstruct.Mapper;
 
-import com.server.game.map.object.Champion;
-import com.server.game.map.object.Champion.AttributeComponent;
-import com.server.game.map.object.abstraction.HealthComponent;
+import com.server.game.model.gameState.Champion;
+import com.server.game.model.gameState.Champion.AttributeComponent;
+import com.server.game.model.gameState.component.HealthComponent;
 import com.server.game.resource.model.ChampionDB;
 
 @Mapper(componentModel = "spring")

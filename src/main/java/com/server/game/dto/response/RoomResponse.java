@@ -1,7 +1,5 @@
 package com.server.game.dto.response;
 
-import com.server.game.model.RoomStatus;
-import com.server.game.model.RoomVisibility;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Set;
+
+import com.server.game.model.room.RoomStatus;
+import com.server.game.model.room.RoomVisibility;
 
 @Data
 @NoArgsConstructor

@@ -22,17 +22,18 @@ public class Writer extends  ChannelOutboundHandlerAdapter {
         }
 
         OutboundSendMessage outboundMessage = (OutboundSendMessage) msg;
-        //System.out.println(">>> Server received a send OutboundSendMessage");
+        System.out.println(">>> [Writer] Server received OutboundSendMessage");
+        System.out.println(">>> [Writer] SendTarget type: " + outboundMessage.getSendTarget().getClass().getSimpleName());
 
         ChannelFuture future = outboundMessage.send();
 
         future.addListener(f -> {
             if (f.isSuccess()) {
-                //System.out.println(">>> Server successfully sent OutboundSendMessage to target(s)");
+                System.out.println(">>> [Writer] Successfully sent OutboundSendMessage to target(s)");
                 //System.out.println(">>> =======================================================");
                 promise.setSuccess();
             } else {
-                //System.out.println(">>> Server failed to send OutboundSendMessage: " + f.cause().getMessage());
+                System.out.println(">>> [Writer] Failed to send OutboundSendMessage: " + f.cause().getMessage());
                 promise.setFailure(f.cause());
             }
         });

@@ -12,7 +12,7 @@
     "resource_claiming_speed": 4.0
   },
   "ability": {
-    "name": "Wizard's Skill name", 
+    "name": "Arcane Orb",
     "cool_down": 10.0
   }
 }

@@ -12,7 +12,7 @@
     "resource_claiming_speed": 10.0
   },
   "ability": {
-    "name": "Brakor's Skill name",
+    "name": "Whirlwind",
     "cool_down": 15.0
   }
 }

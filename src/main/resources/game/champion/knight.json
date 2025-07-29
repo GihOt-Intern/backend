@@ -11,8 +11,8 @@
     "attack_range": 0.75,
     "resource_claiming_speed": 5.0
   },
-  "ability": {
-    "name": "Knight's Skill name",
+  "ability": {    
+    "name": "Shadow Dash",
     "cool_down": 8.0
   }
 }

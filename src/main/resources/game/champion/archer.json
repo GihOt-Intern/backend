@@ -12,7 +12,7 @@
     "resource_claiming_speed": 6.0
   },
   "ability": {
-    "name": "Archer's Skill name",
+    "name": "Piercing Arrow",
     "cool_down": 12.0
   }
 }

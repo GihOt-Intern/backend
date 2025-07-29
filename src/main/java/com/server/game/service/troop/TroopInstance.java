@@ -1,6 +1,6 @@
 package com.server.game.service.troop;
 
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.util.TroopEnum;
 
 import lombok.Getter;
@@ -49,7 +49,7 @@ public class TroopInstance {
     private long lastAbilityUse = 0;
     
     public TroopInstance(String gameId, TroopEnum troopType, short ownerSlot, Vector2 spawnPosition, int maxHP) {
-        this.troopInstanceId = UUID.randomUUID().toString();
+        this.troopInstanceId = "troop_" + UUID.randomUUID().toString();
         this.gameId = gameId;
         this.troopType = troopType;
         this.ownerSlot = ownerSlot;
