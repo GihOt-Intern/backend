@@ -29,7 +29,10 @@ public enum SendMessageType {
     CHAMPION_DEATH_SEND((short) 106),
     CHAMPION_RESPAWN_TIME_SEND((short) 107),
     CHAMPION_RESPAWN_SEND((short) 108),
+
     TROOP_SPAWN_SEND((short) 201),
+    TROOP_DEATH_SEND((short) 202), // Troop death message
+
     HEARTBEAT_SEND((short) 255), // Heartbeat message
     DISTANCE_SEND((short) 998),
 

@@ -19,6 +19,7 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.respawn.ChampionDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnTimeSend;
+import com.server.game.service.attack.AttackTargetingService;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
@@ -29,10 +30,17 @@ public class GameStateService {
     
     // gameId -> GameState
     private final Map<String, GameState> gameStates = new ConcurrentHashMap<>();
+    
+    // Track active respawn schedulers to prevent duplicates: gameId:slot -> scheduler
+    private final Map<String, ScheduledExecutorService> activeRespawnSchedulers = new ConcurrentHashMap<>();
 
     @Lazy
     @Autowired
     private GameCoordinator gameCoordinator;
+    
+    @Lazy
+    @Autowired
+    private AttackTargetingService attackTargetingService;
     
     /**
      * Initialize game state for a specific game
@@ -114,7 +122,6 @@ public class GameStateService {
     /**
      * Apply damage to a player
      */
-
     public boolean applyDamage(String gameId, short slot, int damage) {
         GameState gameState = this.getGameStateById(gameId);
         if (gameState == null) {
@@ -122,13 +129,19 @@ public class GameStateService {
             return false;
         }
 
-        boolean succes = this.applyDamage(gameState, slot, damage);
+        boolean success = this.applyDamage(gameState, slot, damage);
 
-        if (succes) {
-            checkAndHandleChampionDeath(gameId, slot);
+        if (success) {
+            // Check if champion died and handle death/respawn logic
+            boolean championDied = checkAndHandleChampionDeath(gameId, slot);
+            if (championDied) {
+                // Don't send health update if champion died - death message already sent
+                // Note: Attack target clearing will be handled by the PvPService when it detects death
+                return true; // Return early to prevent health update broadcast
+            }
         }
         
-        return succes;
+        return success;
     }
     private boolean applyDamage(GameState gameState, short slot, int damage) {
         Champion champion = gameState.getChampionBySlot(slot);
@@ -204,6 +217,9 @@ public class GameStateService {
         log.info("Champion in gameId: {}, slot: {} has died", gameId,
                 slot);
         
+        // Clear all attack targets that were targeting this dead champion
+        attackTargetingService.clearTargetsAttackingChampion(gameId, slot);
+        
         // Notify clients about the death
         sendChampionDeathMessage(gameId, slot);
         scheduleChampionRespawn(gameId, slot, (short) 3);
@@ -221,6 +237,15 @@ public class GameStateService {
     }
 
     private void scheduleChampionRespawn(String gameId, short slot, short respawnTime) {
+        // Create a unique key for this respawn
+        String respawnKey = gameId + ":" + slot;
+        
+        // Check if a respawn is already scheduled for this champion
+        if (activeRespawnSchedulers.containsKey(respawnKey)) {
+            log.warn("Respawn already scheduled for gameId: {}, slot: {}, ignoring duplicate", gameId, slot);
+            return;
+        }
+        
         ChampionRespawnTimeSend respawnMessage = new ChampionRespawnTimeSend(respawnTime);
         Channel playerChannel = ChannelManager.getChannelByGameIdAndSlot(gameId, slot);
         if (playerChannel != null) {
@@ -232,9 +257,16 @@ public class GameStateService {
         }
 
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        activeRespawnSchedulers.put(respawnKey, scheduler);
+        
         scheduler.schedule(() -> {
-            respawnChampion(gameId, slot);
-            scheduler.shutdown();
+            try {
+                respawnChampion(gameId, slot);
+            } finally {
+                // Clean up the scheduler from tracking map
+                activeRespawnSchedulers.remove(respawnKey);
+                scheduler.shutdown();
+            }
         }, respawnTime, TimeUnit.SECONDS);
     }
 
@@ -446,7 +478,4 @@ public class GameStateService {
         return stats.toString();
     }
 
-
-
-    
 }

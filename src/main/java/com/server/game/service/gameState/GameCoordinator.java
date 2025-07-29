@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.server.game.model.gameState.GameState;
@@ -24,15 +25,18 @@ public class GameCoordinator {
     @Autowired
     private BroadcastScheduler broadcastScheduler;
     
+    @Lazy
     @Autowired
     private GameLogicScheduler gameLogicScheduler;
     
     @Autowired
     private PositionService positionService;
     
+    @Lazy
     @Autowired
     private GameStateService gameStateService;
     
+    @Lazy
     @Autowired
     private PvPService pvpService;
     
