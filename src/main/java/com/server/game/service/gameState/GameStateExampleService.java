@@ -3,8 +3,7 @@ package com.server.game.service.gameState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.server.game.model.GameState;
-import com.server.game.service.GameStateService;
+import com.server.game.model.game.GameState;
 import com.server.game.util.ChampionEnum;
 
 import lombok.extern.slf4j.Slf4j;

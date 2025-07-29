@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.server.game.netty.tlv.typeDefine.ReceiveMessageType;
+import com.server.game.netty.tlv.messageEnum.ReceiveMessageType;
 
 import java.lang.annotation.ElementType;
 

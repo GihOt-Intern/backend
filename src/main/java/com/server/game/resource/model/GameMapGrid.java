@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.deserializer.GameMapGridDeserializer;
 
 

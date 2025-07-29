@@ -2,7 +2,8 @@ package com.server.game.service.goldGeneration;
 
 
 import org.springframework.stereotype.Service;
-import com.server.game.service.GameStateService;
+
+import com.server.game.service.gameState.GameStateService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

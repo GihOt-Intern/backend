@@ -1,8 +1,9 @@
 package com.server.game.repository.mongo;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import com.server.game.model.Room;
-import com.server.game.model.RoomStatus;
+
+import com.server.game.model.room.Room;
+import com.server.game.model.room.RoomStatus;
 
 import java.util.List;
 

@@ -8,9 +8,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.server.game.model.GameState;
-import com.server.game.model.SlotState;
-import com.server.game.service.GameStateService;
+import com.server.game.model.game.GameState;
+import com.server.game.model.game.SlotState;
 
 import lombok.extern.slf4j.Slf4j;
 

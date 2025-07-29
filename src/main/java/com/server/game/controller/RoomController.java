@@ -5,7 +5,8 @@ import com.server.game.dto.request.ChangeHostRequest;
 import com.server.game.dto.request.CreateRoomRequest;
 import com.server.game.dto.request.JoinRoomRequest;
 import com.server.game.dto.response.RoomResponse;
-import com.server.game.service.RoomService;
+import com.server.game.service.room.RoomService;
+
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

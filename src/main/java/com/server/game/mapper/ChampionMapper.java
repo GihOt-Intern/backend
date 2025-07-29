@@ -3,9 +3,10 @@ package com.server.game.mapper;
 
 import org.mapstruct.Mapper;
 
-import com.server.game.map.object.Champion;
-import com.server.game.map.object.Champion.AttributeComponent;
-import com.server.game.map.object.component.HealthComponent;
+import com.server.game.model.game.Champion;
+import com.server.game.model.game.component.AttributeComponent;
+import com.server.game.model.game.component.HealthComponent;
+import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.resource.model.ChampionDB;
 
 @Mapper(componentModel = "spring")
@@ -24,8 +25,11 @@ public interface ChampionMapper {
                 championDB.getStats().getAttackRange(),
                 championDB.getStats().getResourceClaimingSpeed()
             ),
-            championDB.getAbility(),
-            new HealthComponent(championDB.getStats().getInitHP())
+            new HealthComponent(championDB.getStats().getInitHP()),
+            SkillFactory.createSkillFor(
+                championDB.getId(), 
+                championDB.getAbility()
+            )
         );
     }
 }

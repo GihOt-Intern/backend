@@ -6,8 +6,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
-
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 
 import lombok.AccessLevel;
 

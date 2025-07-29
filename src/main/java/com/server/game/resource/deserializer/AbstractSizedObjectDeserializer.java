@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.server.game.map.component.Vector2;
+import com.server.game.model.map.component.Vector2;
 
 import java.io.IOException;
 import java.util.function.Function;

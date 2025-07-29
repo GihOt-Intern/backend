@@ -5,8 +5,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
 
 import com.server.game.config.SpringContextHolder;
-import com.server.game.service.RoomRedisService;
-import com.server.game.service.UserService;
+import com.server.game.service.room.RoomRedisService;
+import com.server.game.service.user.UserService;
 import com.server.game.util.ChampionEnum;
 
 import java.util.Collections;
@@ -118,8 +118,8 @@ public class ChannelManager {
                 
                 // Notify GameCleanupService that this game is now empty
                 try {
-                    com.server.game.service.GameCleanupService gameCleanupService = 
-                        SpringContextHolder.getBean(com.server.game.service.GameCleanupService.class);
+                    com.server.game.service.scheduler.GameCleanupScheduler gameCleanupService = 
+                        SpringContextHolder.getBean(com.server.game.service.scheduler.GameCleanupScheduler.class);
                     gameCleanupService.notifyGameEmpty(gameId);
                 } catch (Exception e) {
                     System.out.println(">>> [Warning] Could not notify GameCleanupService for empty game: " + gameId + " - " + e.getMessage());
