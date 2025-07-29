@@ -17,7 +17,7 @@ public class PositionComponent {
     }
 
 
-    public boolean checkInPlayGround(PlayGround playGround) {
+    public boolean isInPlayGround(PlayGround playGround) {
         return currentPosition.isInRectangle(playGround.getPosition(), playGround.getWidth(), playGround.getLength());
     }
 }

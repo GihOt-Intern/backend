@@ -18,6 +18,7 @@ public class PlayGroundHandler {
         if (channel != null) {
             IsInPlayGroundSend isInPlayGroundSend = new IsInPlayGroundSend(isInPlayGround);
             channel.writeAndFlush(isInPlayGroundSend);        
+            log.info("Sending isInPlayGround update message for gameId: {}, slot: {}, isInPlayGround: {}", gameId, slot, isInPlayGround);
         }
     }
 
@@ -26,6 +27,7 @@ public class PlayGroundHandler {
         if (channel != null) {
             GoldAmountSend goldAmountSend = new GoldAmountSend(currentGold);
             channel.writeAndFlush(goldAmountSend);
+            log.info("Sending gold change message for gameId: {}, slot: {}, currentGold: {}", gameId, slot, currentGold);
         }
     }
 } 

@@ -53,7 +53,6 @@ public class PositionService {
         String key = POSITION_KEY_PREFIX + gameId + ":" + slot;
         redisUtil.set(key, positionData, java.time.Duration.ofSeconds(POSITION_TTL));
 
-
         // Update position for SlotState in GameState
         gameStateService.updateSlotPosition(gameId, slot, position);
     }

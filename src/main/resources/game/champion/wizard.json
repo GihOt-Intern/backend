@@ -8,7 +8,7 @@
     "attack": 40,
     "move_speed": 6.5,
     "attack_speed": 0.6,
-    "attack_range": 1.0,
+    "attack_range": 5.0,
     "resource_claiming_speed": 4.0
   },
   "ability": {
