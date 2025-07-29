@@ -45,7 +45,7 @@ public class GameState {
         if (slotState != null) {
             slotState.setCurrentPosition(newPosition);
 
-            slotState.checkInPlayGround(gameMap.getPlayGround());
+            slotState.checkInPlayGround(this.gameId, gameMap.getPlayGround());
             return;
         }
         System.err.println(">>> [Log in GameState.setSlotPosition] Slot " + slot + " not found in game state for gameId: " + gameId);

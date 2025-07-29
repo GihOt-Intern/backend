@@ -45,7 +45,9 @@ public class SlotState {
 
 
     public void checkInPlayGround(String gameId, PlayGround playGround) {
-        if (this.positionComponent.checkInPlayGround(playGround) != this.inPlayGround) {
+        boolean nextInPlayGround = this.positionComponent.isInPlayGround(playGround);
+        System.out.println(">>> [Log in SlotState.checkInPlayGround] Slot " + slot + " nextInPlayGround: " + nextInPlayGround + ", current inPlayGround: " + this.inPlayGround);
+        if (nextInPlayGround != this.inPlayGround) {
             this.inPlayGround = !this.inPlayGround; // Toggle the state
             PlayGroundHandler playGroundHandler =
                 SpringContextHolder.getBean(PlayGroundHandler.class);
