@@ -94,7 +94,7 @@ public class Writer {
     public void writeChampions() {
         for (String championName : championNames) {
             if (championRepository.existsByName(championName) 
-                // && false
+                && false
             ) { // remove && false when not debugging
                 System.out.println("Champion already exists: " + championName);
                 continue;

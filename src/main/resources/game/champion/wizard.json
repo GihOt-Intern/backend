@@ -13,11 +13,6 @@
   },
   "ability": {
     "name": "Arcane Orb",
-    "cool_down": 10.0,
-    "damage": 80,
-    "max_range": 15.0,
-    "effect_radius": 1.5,
-    "slow_percent": 40,
-    "type": "PROJECTILE_AOE"
+    "cool_down": 10.0
   }
 }

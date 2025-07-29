@@ -13,9 +13,6 @@
   },
   "ability": {
     "name": "Piercing Arrow",
-    "cool_down": 12.0,
-    "damage": 100,
-    "max_range": 1000.0,
-    "type": "PROJECTILE_PIERCE"
+    "cool_down": 12.0
   }
 }

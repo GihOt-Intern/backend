@@ -13,9 +13,6 @@
   },
   "ability": {    
     "name": "Shadow Dash",
-    "cool_down": 8.0,
-    "damage": 120,
-    "dash_distance": 10.0,
-    "type": "MOBILITY_DAMAGE"
+    "cool_down": 8.0
   }
 }
