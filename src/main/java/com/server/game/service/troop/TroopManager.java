@@ -1,6 +1,6 @@
 package com.server.game.service.troop;
 
-import com.server.game.model.gameState.SlotState;
+import com.server.game.model.game.SlotState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.service.TroopService;
 import com.server.game.service.gameState.GameStateService;

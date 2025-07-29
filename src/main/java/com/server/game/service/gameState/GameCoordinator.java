@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.server.game.model.gameState.GameState;
+import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.position.PositionService;
 import com.server.game.service.pvp.PvPService;

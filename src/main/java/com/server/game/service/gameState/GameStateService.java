@@ -10,11 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import com.server.game.model.gameState.Champion;
-import com.server.game.model.gameState.GameState;
-import com.server.game.model.gameState.SlotState;
+import com.server.game.model.game.Champion;
+import com.server.game.model.game.GameState;
+import com.server.game.model.game.SlotState;
 import com.server.game.model.map.component.Vector2;
-// import com.server.game.service.gameState.PlayerGameState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.respawn.ChampionDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
@@ -444,6 +443,17 @@ public class GameStateService {
         }
         
         return stats.toString();
+    }
+
+    public void incrementTick(String gameId) {
+        GameState gameState = this.getGameStateById(gameId);
+        if (gameState == null) {
+            log.warn("Game state not found for gameId: {}", gameId);
+            return;
+        }
+
+        gameState.incrementTick();
+        log.debug("Incremented game tick for gameId: {}", gameId);
     }
 
 

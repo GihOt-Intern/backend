@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 
+
 @Component
 public class Util {
 
@@ -23,11 +24,7 @@ public class Util {
 
     private static final String STRING_ENCODING = "UTF-8";
 
-
-    // public static int STRING_BYTE_SIZE(int stringLength) {
-    //     // number of characters * 4 bytes (UTF-32-BE uses 4 bytes per character)
-    //     return stringLength * CHAR_UTF32_SIZE;
-    // }
+    private static Integer gameTickIntervalMs;
 
     public static void printHex(ByteBuffer buffer, boolean isFromBeginning) {
         ByteBuffer readOnly = buffer.asReadOnlyBuffer();
@@ -59,15 +56,6 @@ public class Util {
         }
     }
 
-    // public static String getTokenFromUri(String uri) throws DataNotFoundException{
-    //     QueryStringDecoder decoder = new QueryStringDecoder(uri);
-    //     String token = decoder.parameters().getOrDefault("token", null).get(0);
-    //     if (token == null) {
-    //         throw new DataNotFoundException("Token not found in URI");
-    //     }
-    //     return token;
-    // }
-
     @Value("${netty.server.port}")
     public void setNettyServerPort(int port) {
         Util.nettyServerPort = port;
@@ -78,6 +66,11 @@ public class Util {
         Util.nettyServerAddress = address;
     }
 
+    @Value("${game.tick-interval-ms}")
+    public void setGameTickIntervalMs(int interval) {
+        Util.gameTickIntervalMs = interval;
+    }
+
     public static int getNettyServerPort() {
         return nettyServerPort;
     }
@@ -85,6 +78,18 @@ public class Util {
     public static String getNettyServerAddress() {
         return nettyServerAddress;
     }
+
+    public static int getGameTickIntervalMs() {
+        return gameTickIntervalMs;
+    }
+
+    public static long seconds2GameTick(float seconds) {
+        return (long)(seconds * 1000 / gameTickIntervalMs);
+    }
+
+    // public static float tick2seconds(long ticks) {
+    //     return ticks * gameTickIntervalMs / 1000.0f;
+    // }
 
     public static ByteBuffer allocateByteBuffer(Integer size) {
         return ByteBuffer.allocate(size).order(ByteOrder.BIG_ENDIAN);

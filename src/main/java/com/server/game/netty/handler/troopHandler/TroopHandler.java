@@ -3,7 +3,7 @@ package com.server.game.netty.handler.troopHandler;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
-import com.server.game.model.gameState.GameState;
+import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.troop.TroopSpawnReceive;

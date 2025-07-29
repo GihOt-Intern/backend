@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
-import com.server.game.model.gameState.Champion;
+import com.server.game.model.game.Champion;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.pvp.AttackAnimationDisplaySend;
@@ -324,12 +324,12 @@ public class PvPService {
      */
     private float getChampionSkillCooldown(ChampionEnum championType) {
         Champion champion = championService.getChampionById(championType);
-        if (champion == null || champion.getAbility() == null) {
+        if (champion == null) {
             log.warn("Champion not found: {}, using default skill cooldown", championType);
             return 5.0f; // Default 5 seconds cooldown
         }
         
-        return champion.getAbility().getCooldown();
+        return champion.getCooldown();
     }
 
     /**

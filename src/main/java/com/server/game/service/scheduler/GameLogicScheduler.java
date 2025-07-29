@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.HeartbeatMessage;
 import com.server.game.service.attack.AttackTargetingService;
+import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.goldGeneration.GoldGenerationService;
 import com.server.game.service.move.MoveService;
-// import com.server.game.service.gameState.HealthRegenerationService;
 import com.server.game.service.troop.TroopManager;
 
 import io.netty.channel.Channel;
@@ -31,6 +31,7 @@ public class GameLogicScheduler {
     AttackTargetingService attackTargetingService;
     TroopManager troopManager;
     GoldGenerationService goldGenerationService;
+    GameStateService gameStateService;
     
 
     
@@ -64,10 +65,15 @@ public class GameLogicScheduler {
      * Main game logic loop - runs every 33ms (~30 FPS)
      * Handles movement updates and combat logic
      */
-    @Scheduled(fixedDelay = 33) // 33ms ~ 30 FPS for responsive gameplay
+    @Scheduled(fixedDelayString = "${game.tick-interval-ms}") // 33ms ~ 30 FPS for responsive gameplay
     public void gameLogicLoop() {
         for (String gameId : activeGames) {
             try {
+
+                // Update game tick
+                gameStateService.incrementTick(gameId);
+
+
                 // Update movement positions
                 moveService.updatePositions(gameId);
                 troopManager.updateTroopMovements(gameId, 0.05f);

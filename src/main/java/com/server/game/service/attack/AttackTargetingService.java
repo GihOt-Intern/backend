@@ -10,7 +10,6 @@ import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.service.champion.ChampionService;
 import com.server.game.service.move.MoveService;
-import com.server.game.service.move.MoveService.PositionData;
 import com.server.game.service.position.PositionService;
 import com.server.game.service.pvp.PvPService;
 import com.server.game.util.ChampionEnum;

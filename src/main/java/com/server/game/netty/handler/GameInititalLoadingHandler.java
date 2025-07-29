@@ -7,8 +7,8 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import com.server.game.model.gameState.Champion;
-import com.server.game.model.gameState.GameState;
+import com.server.game.model.game.Champion;
+import com.server.game.model.game.GameState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.initialGameState.ChampionInitialHPsSend;
 import com.server.game.netty.sendObject.initialGameState.ChampionInitialStatsSend;

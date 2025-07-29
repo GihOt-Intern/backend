@@ -1,8 +1,8 @@
-package com.server.game.model.gameState;
+package com.server.game.model.game;
 
 import com.server.game.config.SpringContextHolder;
-import com.server.game.model.gameState.component.GoldComponent;
-import com.server.game.model.gameState.component.PositionComponent;
+import com.server.game.model.game.component.GoldComponent;
+import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.handler.PlayGroundHandler;
 import com.server.game.resource.model.GameMap.PlayGround;

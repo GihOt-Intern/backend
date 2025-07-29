@@ -1,7 +1,7 @@
 package com.server.game.service.champion;
 
 import com.server.game.mapper.ChampionMapper;
-import com.server.game.model.gameState.Champion;
+import com.server.game.model.game.Champion;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.initialGameState.ChampionInitialHPsSend.ChampionInitialHPData;
 import com.server.game.resource.model.ChampionDB;
