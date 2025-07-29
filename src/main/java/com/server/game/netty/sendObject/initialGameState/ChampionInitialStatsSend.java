@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import io.netty.channel.Channel;
 
-import com.server.game.model.gameState.Champion;
+import com.server.game.model.game.Champion;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;

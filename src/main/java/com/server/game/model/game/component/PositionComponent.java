@@ -1,4 +1,4 @@
-package com.server.game.model.gameState.component;
+package com.server.game.model.game.component;
 
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMap.PlayGround;

@@ -19,8 +19,8 @@ import com.server.game.util.ChampionEnum;
 
 import io.netty.channel.Channel;
 
-import com.server.game.model.gameState.Champion;
-import com.server.game.model.gameState.GameState;
+import com.server.game.model.game.Champion;
+import com.server.game.model.game.GameState;
 import com.server.game.netty.ChannelManager;
 
 import lombok.AccessLevel;

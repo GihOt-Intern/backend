@@ -1,4 +1,4 @@
-package com.server.game.model.gameState.component;
+package com.server.game.model.game.component;
 
 import lombok.Getter;
 

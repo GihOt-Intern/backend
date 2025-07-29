@@ -3,7 +3,7 @@ package com.server.game.netty.handler.troopHandler;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
-import com.server.game.model.gameState.GameState;
+import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.troop.TroopSpawnReceive;
@@ -81,7 +81,7 @@ public class TroopHandler {
             return;
         }
 
-        broadcastTroopSpawn(gameId, request.getTroopId(), request.getOwnerSlot(), spawnPosition);
+        broadcastTroopSpawn(gameId, troopInstance.getTroopInstanceId(),request.getTroopId(), request.getOwnerSlot(), spawnPosition);
 
         log.info("Troop spawned successfully: {} at position {}", troopType, spawnPosition);
     }
@@ -92,7 +92,7 @@ public class TroopHandler {
         return gameState.getSpawnPosition(ownerSlot);
     }
 
-    private void broadcastTroopSpawn(String gameId, short troopType, short ownerSlot, Vector2 position) {
+    private void broadcastTroopSpawn(String gameId, String troopId, short troopType, short ownerSlot, Vector2 position) {
         Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
         if (gameChannels == null || gameChannels.isEmpty()) {
             log.warn("No active channels found for game ID: {}", gameId);
@@ -100,6 +100,7 @@ public class TroopHandler {
         }
 
         TroopSpawnSend troopSpawnSend = new TroopSpawnSend(
+            troopId,
             troopType,
             ownerSlot,
             position.x(),

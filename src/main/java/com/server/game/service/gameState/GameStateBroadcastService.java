@@ -4,8 +4,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.server.game.model.gameState.GameState;
-import com.server.game.model.gameState.SlotState;
+import com.server.game.model.game.GameState;
+import com.server.game.model.game.SlotState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
 
@@ -151,5 +151,18 @@ public class GameStateBroadcastService {
         }
         
         log.debug("Broadcasted health status for all players in game {}", gameId);
+    }
+
+    /**
+     * Check if a champion is dead (has 0 health)
+     */
+    public boolean isChampionDead(String gameId, short slot) {
+        GameState gameState = gameStateService.getGameStateById(gameId);
+        if (gameState == null) {
+            return false;
+        }
+        
+        SlotState slotState = gameState.getSlotState(slot);
+        return slotState != null && slotState.getCurrentHP() <= 0;
     }
 }
