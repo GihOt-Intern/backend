@@ -5,7 +5,7 @@ import org.mapstruct.Mapping;
 import com.server.game.dto.request.RegisterRequest;
 import com.server.game.dto.response.GetUserResponse;
 import com.server.game.dto.response.RegisterResponse;
-import com.server.game.model.User;
+import com.server.game.model.user.User;
 
 import org.mapstruct.Mapper;
 

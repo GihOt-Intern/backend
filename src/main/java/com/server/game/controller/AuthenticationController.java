@@ -13,9 +13,9 @@ import com.server.game.dto.response.IntrospectResponse;
 import com.server.game.dto.response.RefreshTokenResponse;
 import com.server.game.dto.response.RegisterResponse;
 import com.server.game.mapper.UserMapper;
-import com.server.game.model.User;
-import com.server.game.service.AuthenticationService;
-import com.server.game.service.UserService;
+import com.server.game.model.user.User;
+import com.server.game.service.authentication.AuthenticationService;
+import com.server.game.service.user.UserService;
 import com.server.game.apiResponse.ApiResponse;
 
 import lombok.AccessLevel;

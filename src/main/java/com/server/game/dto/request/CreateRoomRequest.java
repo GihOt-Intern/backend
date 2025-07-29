@@ -1,6 +1,5 @@
 package com.server.game.dto.request;
 
-import com.server.game.model.RoomVisibility;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -8,6 +7,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import jakarta.validation.constraints.Min;
 
+import com.server.game.model.room.RoomVisibility;
 
 import jakarta.validation.constraints.Max;
 

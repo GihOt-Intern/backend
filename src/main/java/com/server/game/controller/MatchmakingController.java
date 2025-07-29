@@ -3,7 +3,8 @@ package com.server.game.controller;
 import com.server.game.apiResponse.ApiResponse;
 import com.server.game.dto.response.JoinQueueResponse;
 import com.server.game.dto.response.MatchmakingStatusResponse;
-import com.server.game.service.MatchmakingService;
+import com.server.game.service.matchmaking.MatchmakingService;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;

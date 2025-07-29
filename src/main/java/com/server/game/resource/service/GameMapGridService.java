@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.server.game.resource.model.GameMapGrid;
 import com.server.game.resource.model.GameMapGridCompress;
-import com.server.game.resource.repository.mongo.GameMapGridCompressRepository;
+import com.server.game.resource.repository.GameMapGridCompressRepository;
 import com.server.game.util.Util;
 
 import lombok.AccessLevel;

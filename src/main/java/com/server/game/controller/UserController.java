@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.server.game.apiResponse.ApiResponse;
 import com.server.game.dto.response.GetUserResponse;
 import com.server.game.mapper.UserMapper;
-import com.server.game.model.User;
-import com.server.game.service.UserService;
+import com.server.game.model.user.User;
+import com.server.game.service.user.UserService;
 
 import org.springframework.http.HttpStatus;
 

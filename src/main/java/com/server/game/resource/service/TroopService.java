@@ -1,7 +1,7 @@
 package com.server.game.resource.service;
 
 import com.server.game.resource.model.Troop;
-import com.server.game.resource.repository.mongo.TroopRepository;
+import com.server.game.resource.repository.TroopRepository;
 import com.server.game.util.TroopEnum;
 
 import lombok.AccessLevel;

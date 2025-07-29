@@ -8,7 +8,7 @@ import com.server.game.apiResponse.ApiResponse;
 
 import com.server.game.exception.http.*;
 import com.server.game.exception.socket.*;
-import com.server.game.netty.messageObject.sendObject.ErrorSend;
+import com.server.game.netty.sendObject.ErrorSend;
 
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;

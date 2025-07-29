@@ -2,8 +2,8 @@ package com.server.game.netty.pipelineComponent;
 
 import java.util.List;
 
-import com.server.game.netty.messageObject.sendObject.MessageSend;
-import com.server.game.netty.tlv.typeDefine.ReceiveMessageType;
+import com.server.game.netty.sendObject.MessageSend;
+import com.server.game.netty.tlv.messageEnum.ReceiveMessageType;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

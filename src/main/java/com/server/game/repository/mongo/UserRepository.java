@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.server.game.model.User;
+import com.server.game.model.user.User;
 
 
 public interface UserRepository extends MongoRepository<User, String> {
