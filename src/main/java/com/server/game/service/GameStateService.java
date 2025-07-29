@@ -257,6 +257,7 @@ public class GameStateService {
         Vector2 initialPosition = gameState.getSpawnPosition(slot);
         Champion champion = gameState.getChampionBySlot(slot);
         int maxHealth = champion.getMaxHP();
+        float rotateAngle = gameState.getSpawnRotate(slot);
 
         // Reset the state
         slotState.setAlive();
@@ -267,7 +268,7 @@ public class GameStateService {
         log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
 
         //Send message
-        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slot, initialPosition, maxHealth);
+        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slot, initialPosition, rotateAngle, maxHealth);
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
         if (channel != null) {
             channel.writeAndFlush(respawnSend);

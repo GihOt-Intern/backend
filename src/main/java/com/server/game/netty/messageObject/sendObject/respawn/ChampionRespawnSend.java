@@ -22,6 +22,7 @@ import lombok.experimental.FieldDefaults;
 public class ChampionRespawnSend implements TLVEncodable {
     short championSlot;
     Vector2 respawnPosition; // Position where the champion will respawn
+    float rotate;
     int maxHealth;
     
     @Override
@@ -38,6 +39,7 @@ public class ChampionRespawnSend implements TLVEncodable {
             dos.writeShort(championSlot);
             dos.writeFloat(respawnPosition.x());
             dos.writeFloat(respawnPosition.y());
+            dos.writeFloat(rotate);
             dos.writeInt(maxHealth);
 
             return baos.toByteArray();

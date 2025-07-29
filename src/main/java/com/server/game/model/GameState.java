@@ -79,6 +79,18 @@ public class GameState {
         return gameMap.getSpawnPosition(slot);
     }
 
+    public float getSpawnRotate(Short slot) {
+        Float rotateValue = gameMap.getInitialRotate(slot);
+        if (rotateValue == null) {
+            Vector2 spawnPos = getSpawnPosition(slot);
+            if (spawnPos != null) {
+                return (float) Math.atan2(-spawnPos.y(), -spawnPos.x());
+            }
+            return 0.0f;
+        }
+        return rotateValue;
+    }
+
     public Integer getGoldGeneratedPerSecond() {
         return gameMap.getGoldGeneratedPerSecond();
     }
