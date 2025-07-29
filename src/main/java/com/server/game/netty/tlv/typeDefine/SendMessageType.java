@@ -25,6 +25,9 @@ public enum SendMessageType {
 
     ATTACK_ANIMATION_DISPLAY_SEND((short) 104),
     HEALTH_UPDATE_SEND((short) 105),
+    CHAMPION_DEATH_SEND((short) 106),
+    CHAMPION_RESPAWN_TIME_SEND((short) 107),
+    CHAMPION_RESPAWN_SEND((short) 108),
     TROOP_SPAWN_SEND((short) 201),
     HEARTBEAT_SEND((short) 255), // Heartbeat message
     DISTANCE_SEND((short) 998),

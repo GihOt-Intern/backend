@@ -13,7 +13,6 @@
   },
   "ability": {
     "name": "Piercing Arrow",
-    "description": "Bắn mũi tên kéo dài khắp bản đồ, xuyên lính và kết thúc khi chạm tướng",
     "cool_down": 12.0,
     "damage": 100,
     "max_range": 1000.0,

@@ -2,7 +2,12 @@ package com.server.game.service;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.server.game.map.component.Vector2;
@@ -10,7 +15,12 @@ import com.server.game.map.object.Champion;
 import com.server.game.model.GameState;
 import com.server.game.model.SlotState;
 // import com.server.game.service.gameState.PlayerGameState;
+import com.server.game.netty.ChannelManager;
+import com.server.game.netty.messageObject.sendObject.respawn.ChampionDeathSend;
+import com.server.game.netty.messageObject.sendObject.respawn.ChampionRespawnSend;
+import com.server.game.netty.messageObject.sendObject.respawn.ChampionRespawnTimeSend;
 
+import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -19,6 +29,10 @@ public class GameStateService {
     
     // gameId -> GameState
     private final Map<String, GameState> gameStates = new ConcurrentHashMap<>();
+
+    @Lazy
+    @Autowired
+    private GameCoordinator gameCoordinator;
     
     /**
      * Initialize game state for a specific game
@@ -107,8 +121,14 @@ public class GameStateService {
             log.warn("Game state not found for gameId: {}", gameId);
             return false;
         }
+
+        boolean succes = this.applyDamage(gameState, slot, damage);
+
+        if (succes) {
+            checkAndHandleChampionDeath(gameId, slot);
+        }
         
-        return this.applyDamage(gameState, slot, damage);
+        return succes;
     }
     private boolean applyDamage(GameState gameState, short slot, int damage) {
         Champion champion = gameState.getChampionBySlot(slot);
@@ -159,20 +179,99 @@ public class GameStateService {
                 gameState.getGameId(), slot, healAmount, oldHP, newHP);
         return true;
     }
-    
     /**
-     * Check if a player is alive
+     * Check if a champion has died after taking damage and handle death/respawn logic
+     * @return true if champion died, false otherwise
      */
-    public boolean isPlayerAlive(String gameId, short slot) {
+    public boolean checkAndHandleChampionDeath(String gameId, short slot) {
         GameState gameState = this.getGameStateById(gameId);
-        Champion champion = gameState.getChampionBySlot(slot);
-        
-        if (champion == null) {
-            log.warn("Champion not found for gameId: {}, slot: {}", gameState.getGameId(), slot);
+        if (gameState == null) {
+            log.warn("Game state not found for gameId: {}", gameId);
             return false;
         }
+
+        Champion champion = gameState.getChampionBySlot(slot);
+        if (champion == null || champion.getCurrentHP() > 0) {
+            return false;
+        }
+
+        SlotState slotState = gameState.getSlotState(slot);
+        if (slotState == null) {
+            return false;
+        }
+
+        slotState.setDead();
+        log.info("Champion in gameId: {}, slot: {} has died", gameId,
+                slot);
         
-        return champion.isAlive();
+        // Notify clients about the death
+        sendChampionDeathMessage(gameId, slot);
+        scheduleChampionRespawn(gameId, slot, (short) 3);
+
+        return true;
+    }
+
+    private void sendChampionDeathMessage(String gameId, short slot) {
+        ChampionDeathSend deathMessage = new ChampionDeathSend(slot);
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null) {
+            channel.writeAndFlush(deathMessage);
+            log.info("Sent champion death message for gameId: {}, slot: {}", gameId, slot);
+        }
+    }
+
+    private void scheduleChampionRespawn(String gameId, short slot, short respawnTime) {
+        ChampionRespawnTimeSend respawnMessage = new ChampionRespawnTimeSend(respawnTime);
+        Channel playerChannel = ChannelManager.getChannelByGameIdAndSlot(gameId, slot);
+        if (playerChannel != null) {
+            playerChannel.writeAndFlush(respawnMessage);
+            log.info("Scheduled respawn for gameId: {}, slot: {} in {} seconds", 
+                    gameId, slot, respawnTime);
+        } else {
+            log.warn("No channel found for gameId: {}, slot: {}", gameId, slot);
+        }
+
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.schedule(() -> {
+            respawnChampion(gameId, slot);
+            scheduler.shutdown();
+        }, respawnTime, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Respawn a champion after death
+     */
+    private void respawnChampion(String gameId, short slot) {
+        GameState gameState = this.getGameStateById(gameId);
+        if (gameState == null) {
+            log.warn("Cannot respawn champion, game state is null for gameId {}", gameId);
+            return;
+        }
+
+        SlotState slotState = gameState.getSlotState(slot);
+        if (slotState == null) {
+            log.warn("Cannot respawn champion, slot state is null for gameId {}", gameId);
+            return;
+        }
+
+        Vector2 initialPosition = gameState.getSpawnPosition(slot);
+        Champion champion = gameState.getChampionBySlot(slot);
+        int maxHealth = champion.getMaxHP();
+
+        // Reset the state
+        slotState.setAlive();
+        slotState.setCurrentHP(maxHealth);
+
+        gameCoordinator.updatePosition(gameId, slot, initialPosition, slot, maxHealth);
+
+        log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
+
+        //Send message
+        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slot, initialPosition, maxHealth);
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null) {
+            channel.writeAndFlush(respawnSend);
+        }
     }
     
     /**

@@ -519,26 +519,15 @@ public class PvPService {
      * Broadcast attacker animation to all players in the game
      */
     private void broadcastAttackerAnimation(String gameId, short attackerSlot, String attackerId, short targetSlot, String targetId, ChampionEnum attackerChampion, long timestamp, String attackType) {
-        log.info("DEBUG: broadcastAttackerAnimation called - gameId: {}, attackerSlot: {}, targetSlot: {}, champion: {}", 
-                gameId, attackerSlot, targetSlot, attackerChampion);
-        
         try {
             String animationType = attackType;
-            log.info("DEBUG: Animation type: {}", animationType);
             
             // Create attack animation display message
             AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(
                     attackerSlot, attackerId, targetSlot, targetId, animationType, timestamp);
             
-            log.info("DEBUG: Creating AttackAnimationDisplaySend with parameters - attackerSlot: {}, attackerId: {}, targetSlot: {}, targetId: {}, animationType: {}, timestamp: {}", 
-                    attackerSlot, attackerId, targetSlot, targetId, animationType, timestamp);
-            
-            log.info("DEBUG: Successfully created AttackAnimationDisplaySend");
-            
             // Get any channel from the game to trigger the framework
             Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
-            log.info("DEBUG: Found {} channels for gameId {}", 
-                    gameChannels != null ? gameChannels.size() : 0, gameId);
 
             if (gameChannels != null && !gameChannels.isEmpty()) {
                 // Use any channel to trigger the framework - the AttackAnimationDisplaySend.getSendTarget() 

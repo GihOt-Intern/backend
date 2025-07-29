@@ -13,7 +13,6 @@
   },
   "ability": {
     "name": "Arcane Orb",
-    "description": "Bắn một quả cầu lửa lớn, gây sát thương và hiệu ứng đốt cháy trong vùng rộng lớn",
     "cool_down": 10.0,
     "damage": 80,
     "max_range": 15.0,

@@ -13,7 +13,6 @@
   },
   "ability": {
     "name": "Whirlwind",
-    "description": "Xoay rìu vòng tròn, mỗi giây gây sát thương lên tất cả kẻ địch xung quanh.",
     "damage": 60,
     "radius": 5.0,
     "duration": 5.0,
