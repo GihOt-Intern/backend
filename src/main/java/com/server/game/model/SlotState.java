@@ -3,8 +3,8 @@ package com.server.game.model;
 import com.server.game.config.SpringContextHolder;
 import com.server.game.map.component.Vector2;
 import com.server.game.map.object.Champion;
-import com.server.game.map.object.abstraction.GoldComponent;
-import com.server.game.map.object.abstraction.PositionComponent;
+import com.server.game.map.object.component.GoldComponent;
+import com.server.game.map.object.component.PositionComponent;
 import com.server.game.netty.receiveMessageHandler.PlayGroundHandler;
 import com.server.game.resource.model.GameMap.PlayGround;
 

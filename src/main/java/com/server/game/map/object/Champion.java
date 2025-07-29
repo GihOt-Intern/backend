@@ -1,7 +1,7 @@
 package com.server.game.map.object;
 
 
-import com.server.game.map.object.abstraction.HealthComponent;
+import com.server.game.map.object.component.HealthComponent;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 
 import lombok.AccessLevel;
