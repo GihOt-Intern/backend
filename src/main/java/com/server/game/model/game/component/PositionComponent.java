@@ -10,14 +10,40 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PositionComponent {
     private Vector2 currentPosition;
+    private boolean isMoving;
+    private boolean inPlayGround;
 
+    public PositionComponent(Vector2 spawnPosition){
+        this.currentPosition = spawnPosition;
+        this.inPlayGround = false;
+        this.isMoving = false;
+    }
+
+    public void toggleInPlayGroundFlag(){
+        this.inPlayGround = !this.inPlayGround;
+    }
+
+    public boolean isMoving() {
+        return isMoving;
+    }
+
+    public void setMoving(boolean isMoving) {
+        this.isMoving = isMoving;
+    }
+
+    public void setStop() { this.isMoving = false; }
+
+    public void setMove() { this.isMoving = true; }
 
     public void setCurrentPosition(Vector2 newPosition) {
         this.currentPosition = newPosition;
     }
 
-
-    public boolean isInPlayGround(PlayGround playGround) {
+    public boolean checkInPlayGround(PlayGround playGround) {
         return currentPosition.isInRectangle(playGround.getPosition(), playGround.getWidth(), playGround.getLength());
+    }
+
+    public float distanceTo(Vector2 otherPosition) {
+        return currentPosition.distance(otherPosition);
     }
 }

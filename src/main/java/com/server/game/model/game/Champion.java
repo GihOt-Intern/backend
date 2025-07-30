@@ -4,7 +4,6 @@ package com.server.game.model.game;
 import com.server.game.model.game.component.GoldComponent;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
-import com.server.game.model.game.component.attackComponent.AttackContext;
 import com.server.game.model.game.component.attackComponent.ChampionAttackStrategy;
 import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
@@ -12,6 +11,8 @@ import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.netty.handler.SocketSender;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.util.ChampionEnum;
+import com.server.game.model.game.component.attackComponent.AttackContext;
+
 
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -41,6 +42,11 @@ public final class Champion extends Entity {
     AttackComponent attackComponent;
 
     public Champion(ChampionDB championDB) {
+        this(championDB, null, null);
+    }
+
+    public Champion(ChampionDB championDB, Short ownerSlot, GameState gameState) {
+        super(ownerSlot, gameState);
         this.championEnum = ChampionEnum.fromShort(championDB.getId());
         this.name = championDB.getName();
         this.role = championDB.getRole();
@@ -78,6 +84,8 @@ public final class Champion extends Entity {
         this.addComponent(AttackComponent.class, attackComponent);
     }
 
+    @Override
+    public String getIdAString() { return this.getOwnerSlot().toString(); }
 
 
     @Override // from Attackable implemented by Entity

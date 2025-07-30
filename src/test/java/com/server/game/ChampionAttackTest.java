@@ -1,7 +1,7 @@
 package com.server.game;
 
-import com.server.game.model.game.Champion;
 import com.server.game.model.game.component.attackComponent.AttackContext;
+import com.server.game.model.game.Champion;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.champion.ChampionService;
 import com.server.game.util.ChampionEnum;

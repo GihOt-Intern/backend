@@ -1,5 +1,8 @@
 package com.server.game.model.game;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.GoldComponent;
 import com.server.game.model.game.component.PositionComponent;
@@ -27,32 +30,33 @@ public class SlotState {
     @Delegate
     private GoldComponent goldComponent;
 
-    private boolean inPlayGround;
-    private boolean isAlive;
-
-    private int troopCount;
+    private Set<TroopInstance2> troops;
 
     public SlotState(Short slot, Champion champion, Vector2 initialPosition, Integer initialGold) {
         this.slot = slot;
         this.champion = champion;
         this.positionComponent = new PositionComponent(initialPosition);
         this.goldComponent = new GoldComponent(initialGold);
-        this.inPlayGround = false;
-        this.isAlive = true;
-
-        this.troopCount = 0; // TODO: add troop component to this class
+        this.troops = new HashSet<>();
     }
 
 
     public void checkInPlayGround(String gameId, PlayGround playGround) {
-        boolean nextInPlayGround = this.positionComponent.isInPlayGround(playGround);
-        System.out.println(">>> [Log in SlotState.checkInPlayGround] Slot " + slot + " nextInPlayGround: " + nextInPlayGround + ", current inPlayGround: " + this.inPlayGround);
-        if (nextInPlayGround != this.inPlayGround) {
-            this.inPlayGround = !this.inPlayGround; // Toggle the state
+        boolean nextInPlayGround = this.positionComponent.checkInPlayGround(playGround);
+        
+        System.out.println(">>> [Log in SlotState.checkInPlayGround] Slot " + slot + " nextInPlayGround: " + 
+            nextInPlayGround + ", current inPlayGround: " + this.isInPlayGround());
+        
+            if (nextInPlayGround != this.isInPlayGround()) {
+            this.toggleInPlayGroundFlag(); // Toggle the state
             PlayGroundHandler playGroundHandler =
                 SpringContextHolder.getBean(PlayGroundHandler.class);
-            playGroundHandler.sendInPlayGroundUpdateMessage(gameId, this.slot, this.inPlayGround);
+            playGroundHandler.sendInPlayGroundUpdateMessage(gameId, this.slot, this.isInPlayGround());
         }
+    }
+
+    public boolean isChampionAlive(){
+        return this.champion.isAlive();
     }
 
 
@@ -76,12 +80,12 @@ public class SlotState {
         this.champion.setCurrentHP(hp);
     }
 
-    public void setAlive() {
-        this.isAlive = true;
+    public void setChampionDead() {
+        this.setCurrentHP(0);
     }
 
-    public void setDead() {
-        this.isAlive = false;
+    public void setChampionRevive() {
+        this.setCurrentHP(this.getMaxHP());
     }
 
     public void handleGoldChange(String gameId) {
@@ -90,12 +94,19 @@ public class SlotState {
         playGroundHandler.sendGoldChangeMessage(gameId, this.slot, this.getCurrentGold());
     }
 
+
+    public void addTroopInstance(TroopInstance2 troopInstance){
+        this.troops.add(troopInstance);
+    }
+
+    public int getTroopCount(){ return this.troops.size(); }
+
     /**
      * Get player status summary
      */
     public String getStatusSummary() {
         return String.format("Slot %d (%s): HP %d/%d, Gold: %d, Troops: %d, Alive: %s",
                 slot, champion.getChampionEnum(), getCurrentHP(), getMaxHP(), getCurrentGold(), getTroopCount(),
-                isAlive());
+                champion.isAlive());
     }
 }

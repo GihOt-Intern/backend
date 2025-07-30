@@ -1,44 +1,43 @@
 package com.server.game.resource.service;
 
-import com.server.game.model.game.Troop;
+import com.server.game.model.game.TroopCreateContext;
+import com.server.game.model.game.TroopInstance2;
 import com.server.game.resource.model.TroopDB;
 import com.server.game.resource.repository.TroopDBRepository;
 import com.server.game.util.TroopEnum;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
 public class TroopService {
     
     TroopDBRepository troopDBRepository;
+    
+    // Store troop instance to create troopInstance2 instances
+    private final Map<TroopEnum, TroopDB> troopDBCache = new HashMap<>();
 
-    public Troop getTroopById(TroopEnum troopEnum) {
-        TroopDB troopDB = this.getTroopDBById(troopEnum);
-        return new Troop(troopDB);
+    public TroopService(TroopDBRepository troopDBRepository) {
+        this.troopDBRepository = troopDBRepository;
+
+        // Preload all troopDBs into the cache
+        List<TroopDB> allTroopDBs = troopDBRepository.findAll();
+        for (TroopDB troopDB : allTroopDBs) {
+            troopDBCache.put(TroopEnum.fromShort(troopDB.getId()), troopDB);
+        }
     }
 
-    private TroopDB getTroopDBById(TroopEnum troopEnum) {
-        return troopDBRepository.findById(troopEnum.getTroopId())
-            .orElseThrow(() -> new IllegalArgumentException("Troop with id " + troopEnum.getTroopId() + " not found"));
+    public TroopDB getTroopDBById(TroopEnum troopEnum) {
+        return troopDBCache.get(troopEnum);
     }
 
-    public Troop getTroopByName(String name) {
-        TroopDB troopDB = this.getTroopDBByName(name);
-        return new Troop(troopDB);
-    }
-
-    private TroopDB getTroopDBByName(String name) {
-        return troopDBRepository.findByName(name)
-            .orElseThrow(() -> new IllegalArgumentException("Troop with name " + name + " not found"));
-    }
 
     public List<TroopDB> getTroopsByType(String type) {
         return troopDBRepository.findByType(type);
@@ -114,5 +113,8 @@ public class TroopService {
         return baseDamage + (int) (Math.random() * variation * 2) - variation;
     }
 
-    
+
+    public TroopInstance2 createInstanceOf(TroopCreateContext ctx) {
+        return new TroopInstance2(ctx);
+    }
 }

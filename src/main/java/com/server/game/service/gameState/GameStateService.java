@@ -213,7 +213,7 @@ public class GameStateService {
             return false;
         }
 
-        slotState.setDead();
+        slotState.setChampionDead();
         log.info("Champion in gameId: {}, slot: {} has died", gameId,
                 slot);
         
@@ -292,7 +292,7 @@ public class GameStateService {
         float rotateAngle = gameState.getSpawnRotate(slot);
 
         // Reset the state
-        slotState.setAlive();
+        slotState.setChampionRevive();
         slotState.setCurrentHP(maxHealth);
 
         gameCoordinator.updatePosition(gameId, slot, initialPosition, slot, maxHealth);
@@ -425,14 +425,10 @@ public class GameStateService {
 
         
         int oldHP = slotState.getCurrentHP();
-        slotState.setCurrentHP(slotState.getMaxHP());
-        slotState.setDead();
 
+        slotState.setChampionRevive();
 
-        slotState.setCurrentHP(slotState.getMaxHP());
-        slotState.setDead();
-
-        log.info("Reset health for gameId: {}, slot: {} from {} to {}", 
+        log.info("Reset health for gameId: {}, slot: {} from {} to {} (max)", 
                 gameId, slot, oldHP, slotState.getCurrentHP());
         return true;
     }
@@ -472,7 +468,7 @@ public class GameStateService {
             stats.append(String.format("  Slot %d (%s): HP %d/%d, Gold: %d, Troops: %d, Alive: %s%n",
                     entry.getKey(), slotState.getChampion().getChampionEnum(),
                     slotState.getCurrentHP(), slotState.getMaxHP(),
-                    slotState.getCurrentGold(), slotState.getTroopCount(), slotState.isAlive()));
+                    slotState.getCurrentGold(), slotState.getTroopCount(), slotState.isChampionAlive()));
         }
         
         return stats.toString();

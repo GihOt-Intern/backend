@@ -13,7 +13,10 @@ public class TroopAttackStrategy implements AttackStrategy {
 
     @Override
     public void performAttack(AttackContext ctx) {
-        // TODO
+
+        // TODO: please migrate handling troop attack any Entity to this method
+
+
         // // 1. First send attack animation of the attacker
         // System.out.println(">>> [Log in ChampionAttackStrategy] Sending attack animation for attacker");
         // SocketSender.sendAttackAnimation(ctx, AnimationEnum.ATTACK_ANIMATION);

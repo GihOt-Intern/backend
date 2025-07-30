@@ -121,7 +121,7 @@ public class GameStateManager {
         GameState gameState = gameStateService.getGameStateById(gameId);
         Map<Short, SlotState> slotStates = gameState.getSlotStates();
         return slotStates.entrySet().stream()
-                .filter(entry -> entry.getValue().isAlive())
+                .filter(entry -> entry.getValue().isChampionAlive())
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
@@ -133,7 +133,7 @@ public class GameStateManager {
         GameState gameState = gameStateService.getGameStateById(gameId);
         Map<Short, SlotState> slotStates = gameState.getSlotStates();
         return slotStates.entrySet().stream()
-                .filter(entry -> !entry.getValue().isAlive())
+                .filter(entry -> !entry.getValue().isChampionAlive())
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
@@ -147,7 +147,7 @@ public class GameStateManager {
         return slotStates.entrySet().stream()
                 .filter(entry -> {
                     SlotState slotState = entry.getValue();
-                    return slotState.isAlive() && slotState.getHealthPercentage() < healthThreshold;
+                    return slotState.isChampionAlive() && slotState.getHealthPercentage() < healthThreshold;
                 })
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());

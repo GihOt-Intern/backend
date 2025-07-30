@@ -283,7 +283,7 @@ public class AttackTargetingService {
                 var gameState = gameStateService.getGameStateById(gameId);
                 if (gameState != null) {
                     var slotState = gameState.getSlotState(target.getChampionSlot());
-                    if (slotState == null || !slotState.isAlive()) {
+                    if (slotState == null || !slotState.isChampionAlive()) {
                         log.debug("Target champion {} is dead or not found, clearing attack target", target.getChampionSlot());
                         return null; // Target is dead
                     }
