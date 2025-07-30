@@ -8,6 +8,7 @@ import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.messageEnum.SendMessageType;
+import com.server.game.util.Util;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
@@ -36,7 +37,8 @@ public class TroopSpawnSend implements TLVEncodable {
         DataOutputStream dos = new DataOutputStream(baos);
 
         try {
-            byte[] troopIdBytes = troopId != null ? troopId.getBytes("UTF-8") : new byte[0];
+            System.out.println("Encoding TroopSpawnSend + {troopId=" + troopId + ", troopType=" + troopType + ", ownerSlot=" + ownerSlot + ", x=" + x + ", y=" + y + ", timestamp=" + timestamp + "}");
+            byte[] troopIdBytes = Util.stringToBytes(troopId);
             int troopIdLength = troopIdBytes.length;
             dos.writeInt(troopIdLength);
             if (troopIdLength > 0) {
