@@ -20,7 +20,7 @@ import com.server.game.service.move.MoveService.PositionData;
 import com.server.game.service.position.PositionService;
 import com.server.game.service.troop.TroopManager;
 import com.server.game.service.troop.TroopInstance;
-import com.server.game.util.AnimationEnum;
+import com.server.game.util.ChampionAnimationEnum;
 import com.server.game.util.ChampionEnum;
 
 import io.netty.channel.Channel;
@@ -519,7 +519,7 @@ public class PvPService implements AttackHandler {
      * Broadcast attacker animation to all players in the game
      */
     /**
-     * @deprecated See {@link SocketSender#sendAttackAnimation(AttackContext, AnimationEnum)} instead
+     * @deprecated See {@link SocketSender#sendAttackAnimation(AttackContext, ChampionAnimationEnum)} instead
      */
     @Deprecated
     private void broadcastAttackerAnimation(String gameId, short attackerSlot, String attackerId, short targetSlot, String targetId, ChampionEnum attackerChampion, long timestamp, String attackType) {

@@ -7,7 +7,7 @@ import com.server.game.model.game.component.attackComponent.AttackContext;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.pvp.AttackAnimationDisplaySend;
 import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
-import com.server.game.util.AnimationEnum;
+import com.server.game.util.ChampionAnimationEnum;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SocketSender {
 
-    public static void sendAttackAnimation(AttackContext ctx, AnimationEnum animationEnum) {
+    public static void sendAttackAnimation(AttackContext ctx, ChampionAnimationEnum animationEnum) {
         try {
             // Create attack animation display message
             AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(

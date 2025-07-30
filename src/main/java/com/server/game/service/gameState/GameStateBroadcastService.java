@@ -9,7 +9,7 @@ import com.server.game.model.game.component.attackComponent.AttackContext;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.handler.SocketSender;
 import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
-import com.server.game.util.AnimationEnum;
+import com.server.game.util.ChampionAnimationEnum;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
@@ -32,7 +32,7 @@ public class GameStateBroadcastService {
      * Broadcast health update to all players in a game
      */
      /**
-     * @deprecated See {@link SocketSender#sendHealthUpdate(AttackContext, AnimationEnum)} instead
+     * @deprecated See {@link SocketSender#sendHealthUpdate(AttackContext, ChampionAnimationEnum)} instead
      */
     @Deprecated
     public void broadcastHealthUpdate(String gameId, short targetSlot, int damage, long timestamp) {

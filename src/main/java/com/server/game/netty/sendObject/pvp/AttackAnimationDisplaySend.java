@@ -8,7 +8,7 @@ import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.messageEnum.SendMessageType;
-import com.server.game.util.AnimationEnum;
+import com.server.game.util.ChampionAnimationEnum;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
@@ -26,7 +26,7 @@ public class AttackAnimationDisplaySend implements TLVEncodable {
     short targetSlot; // Champion slot that's being attacked (-1 if it's a target/NPC)
     String targetId; // Target/NPC ID that's being attacked (null if it's a champion)
 
-    AnimationEnum animationEnum; // ATTACK_ANIMATION (=0) or SKILL_ANIMATION (=1)
+    ChampionAnimationEnum animationEnum; // ATTACK_ANIMATION (=0) or SKILL_ANIMATION (=1)
     
     float attackSpeed; // Attack speed of the attacker
 
