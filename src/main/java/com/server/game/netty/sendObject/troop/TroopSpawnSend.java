@@ -39,8 +39,8 @@ public class TroopSpawnSend implements TLVEncodable {
         try {
             System.out.println("Encoding TroopSpawnSend + {troopId=" + troopId + ", troopType=" + troopType + ", ownerSlot=" + ownerSlot + ", x=" + x + ", y=" + y + ", timestamp=" + timestamp + "}");
             byte[] troopIdBytes = Util.stringToBytes(troopId);
-            int troopIdLength = troopIdBytes.length;
-            dos.writeInt(troopIdLength);
+            short troopIdLength = (short) troopIdBytes.length;
+            dos.writeShort(troopIdLength);
             if (troopIdLength > 0) {
                 dos.write(troopIdBytes);
             }
@@ -49,6 +49,7 @@ public class TroopSpawnSend implements TLVEncodable {
             dos.writeFloat(x);
             dos.writeFloat(y);
             dos.writeLong(timestamp);
+            System.out.println("Encoded message content: " + baos.toString() + "\n");
         } catch (IOException e) {
             e.printStackTrace();
         }

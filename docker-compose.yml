@@ -1,13 +1,13 @@
 services:
-  app:
-    build: .
-    image: leminhthe04/game-server:0.2.0
-    ports:
-      - "8080:8080" # Spring HTTP server
-      - "8386:8386" # WebSocket server
-    depends_on:
-      - mongo
-      - redis
+  # app:
+  #   build: .
+  #   image: leminhthe04/game-server:0.2.0
+    # ports:
+    #   - "8080:8080" # Spring HTTP server
+    #   - "8386:8386" # WebSocket server
+    # depends_on:
+    #   - mongo
+    #   - redis
 
   mongo:
     image: mongo:6.0
