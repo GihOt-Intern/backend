@@ -470,7 +470,7 @@ public class GameStateService {
         for (Map.Entry<Short, SlotState> entry : gameState.getSlotStates().entrySet()) {
             SlotState slotState = entry.getValue();
             stats.append(String.format("  Slot %d (%s): HP %d/%d, Gold: %d, Troops: %d, Alive: %s%n",
-                    entry.getKey(), slotState.getChampion().getId(),
+                    entry.getKey(), slotState.getChampion().getChampionEnum(),
                     slotState.getCurrentHP(), slotState.getMaxHP(),
                     slotState.getCurrentGold(), slotState.getTroopCount(), slotState.isAlive()));
         }

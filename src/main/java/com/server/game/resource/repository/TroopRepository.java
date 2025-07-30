@@ -1,6 +1,6 @@
 package com.server.game.resource.repository;
 
-import com.server.game.resource.model.Troop;
+import com.server.game.resource.model.TroopDB;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TroopRepository extends MongoRepository<Troop, Short> {
+public interface TroopRepository extends MongoRepository<TroopDB, Short> {
     
-    List<Troop> findByType(String type);
+    List<TroopDB> findByType(String type);
     
-    List<Troop> findByRole(String role);
+    List<TroopDB> findByRole(String role);
     
-    Optional<Troop> findByName(String name);
+    Optional<TroopDB> findByName(String name);
 }

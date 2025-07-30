@@ -1,7 +1,7 @@
 package com.server.game.service.gameState;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.util.HashMap;
@@ -27,9 +27,9 @@ import lombok.AccessLevel;
 
 
 @Data
-@AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameStateBuilder {
 
 

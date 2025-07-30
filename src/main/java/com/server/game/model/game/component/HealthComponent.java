@@ -21,7 +21,9 @@ public class HealthComponent {
         return (float) currentHP / maxHP * 100;
     }
 
-    
+    public void decreaseHP(int amount) {
+        this.setCurrentHP(this.getCurrentHP() - amount);
+    }
 
     public void setCurrentHP(int newHP) {
         this.currentHP = Math.max(0, Math.min(newHP, this.maxHP));

@@ -14,19 +14,22 @@ import com.server.game.service.pvp.PvPService;
 import com.server.game.service.scheduler.BroadcastScheduler;
 import com.server.game.service.scheduler.GameLogicScheduler;
 
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameCoordinator {
     
-    private BroadcastScheduler broadcastScheduler;
-    private GameLogicScheduler gameLogicScheduler;
-    private PositionService positionService;
-    private GameStateService gameStateService;
-    private PvPService pvpService;
+    BroadcastScheduler broadcastScheduler;
+    GameLogicScheduler gameLogicScheduler;
+    PositionService positionService;
+    GameStateService gameStateService;
+    PvPService pvpService;
     
     // Store GameState (model) for game map/champion data access
     private final Map<String, GameState> gameStates = new ConcurrentHashMap<>();

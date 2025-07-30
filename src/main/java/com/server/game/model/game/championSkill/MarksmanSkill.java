@@ -1,4 +1,4 @@
-package com.server.game.model.game.skill;
+package com.server.game.model.game.championSkill;
 
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.component.skillComponent.SkillComponent;

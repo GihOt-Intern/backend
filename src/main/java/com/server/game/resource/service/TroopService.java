@@ -1,6 +1,6 @@
 package com.server.game.resource.service;
 
-import com.server.game.resource.model.Troop;
+import com.server.game.resource.model.TroopDB;
 import com.server.game.resource.repository.TroopRepository;
 import com.server.game.util.TroopEnum;
 
@@ -19,34 +19,34 @@ public class TroopService {
     
     TroopRepository troopRepository;
 
-    public Troop getTroopById(TroopEnum troopEnum) {
+    public TroopDB getTroopById(TroopEnum troopEnum) {
         return troopRepository.findById(troopEnum.getTroopId()).orElseGet(() -> {
             System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum.getTroopId() + " not found.");
             return null;
         });
     }
 
-    public Troop getTroopByName(String name) {
+    public TroopDB getTroopByName(String name) {
         return troopRepository.findByName(name).orElseGet(() -> {
             System.out.println(">>> [Log in TroopService] Troop with name " + name + " not found.");
             return null;
         });
     }
 
-    public List<Troop> getTroopsByType(String type) {
+    public List<TroopDB> getTroopsByType(String type) {
         return troopRepository.findByType(type);
     }
 
-    public List<Troop> getTroopsByRole(String role) {
+    public List<TroopDB> getTroopsByRole(String role) {
         return troopRepository.findByRole(role);
     }
 
-    public List<Troop> getAllTroops() {
+    public List<TroopDB> getAllTroops() {
         return troopRepository.findAll();
     }
 
     public Integer getTroopInitialHP(TroopEnum troopEnum) {
-        Troop troop = getTroopById(troopEnum);
+        TroopDB troop = getTroopById(troopEnum);
         if (troop == null) {
             System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum + " not found.");
             return null;
@@ -55,7 +55,7 @@ public class TroopService {
     }
 
     public Float getTroopMovementSpeed(TroopEnum troopEnum) {
-        Troop troop = getTroopById(troopEnum);
+        TroopDB troop = getTroopById(troopEnum);
         if (troop == null) {
             System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum + " not found");
             return null;
@@ -64,7 +64,7 @@ public class TroopService {
     }
 
     public Float getTroopAttackRange(TroopEnum troopEnum) {
-        Troop troop = getTroopById(troopEnum);
+        TroopDB troop = getTroopById(troopEnum);
         if (troop == null) {
             System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum + " not found.");
             return 1.0f; // Default range
@@ -73,7 +73,7 @@ public class TroopService {
     }
 
     public Float getTroopDetectionRange(TroopEnum troopEnum) {
-        Troop troop = getTroopById(troopEnum);
+        TroopDB troop = getTroopById(troopEnum);
         if (troop == null) {
             System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum + " not found.");
             return 3.0f; // Default range
@@ -82,7 +82,7 @@ public class TroopService {
     }
 
     public int getTroopCost(TroopEnum troopEnum) {
-        Troop troop = getTroopById(troopEnum);
+        TroopDB troop = getTroopById(troopEnum);
         if (troop == null) {
             System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum + " not found.");
             return 100; // Default cost
@@ -96,7 +96,7 @@ public class TroopService {
     }
 
     public int calculateTroopDamage(TroopEnum troopEnum) {
-        Troop troop = getTroopById(troopEnum);
+        TroopDB troop = getTroopById(troopEnum);
         if (troop == null) {
             return 50; // Default damage
         }

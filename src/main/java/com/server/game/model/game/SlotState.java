@@ -95,7 +95,7 @@ public class SlotState {
      */
     public String getStatusSummary() {
         return String.format("Slot %d (%s): HP %d/%d, Gold: %d, Troops: %d, Alive: %s",
-                slot, champion.getId(), getCurrentHP(), getMaxHP(), getCurrentGold(), getTroopCount(),
+                slot, champion.getChampionEnum(), getCurrentHP(), getMaxHP(), getCurrentGold(), getTroopCount(),
                 isAlive());
     }
 }

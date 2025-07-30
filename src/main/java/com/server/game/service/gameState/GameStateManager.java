@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
 
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -20,10 +22,11 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameStateManager {
 
-    private GameStateService gameStateService;
+    GameStateService gameStateService;
 
     // Cache for game-wide statistics
     private final Map<String, GameStatistics> gameStatisticsCache = new ConcurrentHashMap<>();

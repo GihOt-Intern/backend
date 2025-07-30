@@ -25,8 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AttackTargetingService {
 
     PositionService positionService;

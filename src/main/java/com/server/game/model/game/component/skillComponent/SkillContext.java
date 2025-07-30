@@ -2,7 +2,7 @@ package com.server.game.model.game.component.skillComponent;
 
 import java.util.Map;
 
-import com.server.game.model.game.component.Entity;
+import com.server.game.model.game.Entity;
 import com.server.game.model.map.component.Vector2;
 
 import lombok.AllArgsConstructor;

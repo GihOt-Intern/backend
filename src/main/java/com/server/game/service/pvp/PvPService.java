@@ -7,17 +7,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.Champion;
+import com.server.game.model.game.component.attackComponent.AttackContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
+import com.server.game.netty.handler.SocketSender;
 import com.server.game.netty.sendObject.pvp.AttackAnimationDisplaySend;
 import com.server.game.service.attack.AttackHandler;
 import com.server.game.service.champion.ChampionService;
+import com.server.game.service.gameState.GameCoordinator;
 import com.server.game.service.gameState.GameStateBroadcastService;
 import com.server.game.service.move.MoveService.PositionData;
 import com.server.game.service.position.PositionService;
 import com.server.game.service.troop.TroopManager;
 import com.server.game.service.troop.TroopInstance;
-
+import com.server.game.util.AnimationEnum;
 import com.server.game.util.ChampionEnum;
 
 import io.netty.channel.Channel;
@@ -26,18 +29,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.context.annotation.Lazy;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PvPService implements AttackHandler {
+
     GameStateBroadcastService gameStateBroadcastService;
     PositionService positionService;
     ChampionService championService;
-    
-    @Lazy
     TroopManager troopManager;
     
     // Store combat data for each game
@@ -510,16 +511,24 @@ public class PvPService implements AttackHandler {
         log.info("Cleared combat data for game {}", gameId);
     }
     
+
+
+
+
     /**
      * Broadcast attacker animation to all players in the game
      */
+    /**
+     * @deprecated See {@link SocketSender#sendAttackAnimation(AttackContext, AnimationEnum)} instead
+     */
+    @Deprecated
     private void broadcastAttackerAnimation(String gameId, short attackerSlot, String attackerId, short targetSlot, String targetId, ChampionEnum attackerChampion, long timestamp, String attackType) {
         try {
             String animationType = attackType;
             
             // Create attack animation display message
-            AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(
-                    attackerSlot, attackerId, targetSlot, targetId, animationType, timestamp);
+            // AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(
+            //         attackerSlot, attackerId, targetSlot, targetId, animationType, timestamp);
             
             // Get any channel from the game to trigger the framework
             Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
@@ -528,7 +537,7 @@ public class PvPService implements AttackHandler {
                 // Use any channel to trigger the framework - the AttackAnimationDisplaySend.getSendTarget() 
                 // returns AMatchBroadcastTarget which will handle broadcasting to all channels
                 Channel anyChannel = gameChannels.iterator().next();
-                anyChannel.writeAndFlush(attackAnimation);
+                // anyChannel.writeAndFlush(attackAnimation);
                 log.info("DEBUG: Sent AttackAnimationDisplaySend to framework for broadcasting");
             } else {
                 log.warn("DEBUG: No channels found for gameId {}", gameId);

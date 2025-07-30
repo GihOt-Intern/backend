@@ -13,16 +13,19 @@ import com.server.game.service.move.MoveService;
 import com.server.game.service.move.MoveService.PositionData;
 
 import io.netty.channel.Channel;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PositionBroadcastService {
     
-    private PositionService positionService;
-    private MoveService moveService;
+    PositionService positionService;
+    MoveService moveService;
     
     /**
      * Hủy đăng ký game - được gọi từ GameScheduler

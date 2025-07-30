@@ -5,11 +5,16 @@ import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
+import com.server.game.model.game.component.attackComponent.AttackContext;
 import com.server.game.netty.ChannelManager;
+import com.server.game.netty.handler.SocketSender;
 import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
+import com.server.game.util.AnimationEnum;
 
 import io.netty.channel.Channel;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -17,15 +22,19 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameStateBroadcastService {
     
-    // @Autowired
-    private GameStateService gameStateService;
+    GameStateService gameStateService;
     
     /**
      * Broadcast health update to all players in a game
      */
+     /**
+     * @deprecated See {@link SocketSender#sendHealthUpdate(AttackContext, AnimationEnum)} instead
+     */
+    @Deprecated
     public void broadcastHealthUpdate(String gameId, short targetSlot, int damage, long timestamp) {
         log.debug("Broadcasting health update for slot {} with damage {}", targetSlot, damage);
         
