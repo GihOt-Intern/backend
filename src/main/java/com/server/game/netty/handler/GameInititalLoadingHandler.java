@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.server.game.model.game.Champion;
@@ -32,7 +31,6 @@ import lombok.experimental.FieldDefaults;
 public class GameInititalLoadingHandler {
 
     GameStateBuilder gameStateBuilder;
-    @Lazy
     GameCoordinator gameCoordinator;
     GameStateManager gameStateManager;
     

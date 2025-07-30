@@ -6,7 +6,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -33,14 +32,16 @@ public class GameStateService {
     // Track active respawn schedulers to prevent duplicates: gameId:slot -> scheduler
     private final Map<String, ScheduledExecutorService> activeRespawnSchedulers = new ConcurrentHashMap<>();
 
-    @Lazy
-    @Autowired
     private GameCoordinator gameCoordinator;
-    
-    @Lazy
-    @Autowired
     private AttackTargetingService attackTargetingService;
-    
+
+    public GameStateService(
+        @Lazy GameCoordinator gameCoordinator, 
+        @Lazy AttackTargetingService attackTargetingService) {
+        this.gameCoordinator = gameCoordinator;
+        this.attackTargetingService = attackTargetingService;
+    }
+
     /**
      * Initialize game state for a specific game
      */

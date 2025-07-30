@@ -1,7 +1,6 @@
 package com.server.game.service.gameState;
 
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.GameState;
@@ -10,6 +9,7 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
 
 import io.netty.channel.Channel;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -17,9 +17,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Service
+@AllArgsConstructor
 public class GameStateBroadcastService {
     
-    @Autowired
+    // @Autowired
     private GameStateService gameStateService;
     
     /**

@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -20,11 +20,11 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Component
+@AllArgsConstructor
 public class GameStateManager {
-    
-    @Autowired
+
     private GameStateService gameStateService;
-    
+
     // Cache for game-wide statistics
     private final Map<String, GameStatistics> gameStatisticsCache = new ConcurrentHashMap<>();
     

@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.GameState;
@@ -16,28 +14,18 @@ import com.server.game.service.pvp.PvPService;
 import com.server.game.service.scheduler.BroadcastScheduler;
 import com.server.game.service.scheduler.GameLogicScheduler;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class GameCoordinator {
     
-    @Autowired
     private BroadcastScheduler broadcastScheduler;
-    
-    @Lazy
-    @Autowired
     private GameLogicScheduler gameLogicScheduler;
-    
-    @Autowired
     private PositionService positionService;
-    
-    @Lazy
-    @Autowired
     private GameStateService gameStateService;
-    
-    @Lazy
-    @Autowired
     private PvPService pvpService;
     
     // Store GameState (model) for game map/champion data access

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.server.game.model.map.component.Vector2;
@@ -14,16 +13,15 @@ import com.server.game.service.move.MoveService;
 import com.server.game.service.move.MoveService.PositionData;
 
 import io.netty.channel.Channel;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class PositionBroadcastService {
     
-    @Autowired
     private PositionService positionService;
-
-    @Autowired
     private MoveService moveService;
     
     /**

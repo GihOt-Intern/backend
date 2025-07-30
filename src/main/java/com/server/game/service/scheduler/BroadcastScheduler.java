@@ -3,19 +3,19 @@ package com.server.game.service.scheduler;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.server.game.service.position.PositionBroadcastService;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class BroadcastScheduler {
     
-    @Autowired
     private PositionBroadcastService positionBroadcastService;
     
     // Lưu trữ các game đang hoạt động cho broadcasting

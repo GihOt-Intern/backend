@@ -8,14 +8,9 @@ import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.troop.TroopInstance.TroopAIState;
 import com.server.game.util.TroopEnum;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
