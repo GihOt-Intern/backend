@@ -29,16 +29,16 @@ public class TLVMessageEncoder extends ChannelOutboundHandlerAdapter {
         }
 
         TLVEncodable sendObject = (TLVEncodable) msg; // cast msg to TLVEncodable
-        System.out.println(">>> [TLVMessageEncoder] Server received TLVEncodable object: " + sendObject.getClass().getSimpleName());
-        System.out.println(">>> [TLVMessageEncoder] Message type: " + sendObject.getType());
+        // System.out.println(">>> [TLVMessageEncoder] Server received TLVEncodable object: " + sendObject.getClass().getSimpleName());
+        // System.out.println(">>> [TLVMessageEncoder] Message type: " + sendObject.getType());
         
         try {
             //System.out.println(">>> Server Encoding TLVEncodable object to ByteBuf");
             byte[] encoded = TLVEncoder.object2Bytes(sendObject);
 
             ByteBuf encodedBuf = Unpooled.wrappedBuffer(encoded); // wrap the byte array into a ByteBuf
-            System.out.println(">>> Server Encoded TLVEncodable object (" + sendObject.getClass().getSimpleName() + ") to ByteBuf");
-            System.out.println(">>> Send byte: ");
+            // System.out.println(">>> Server Encoded TLVEncodable object (" + sendObject.getClass().getSimpleName() + ") to ByteBuf");
+            // System.out.println(">>> Send byte: ");
             ByteBuffer byteBuffer = encodedBuf.nioBuffer();
             Util.printHex(byteBuffer, true);
             // Get send target from the TLVEncodable object

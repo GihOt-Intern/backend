@@ -11,9 +11,11 @@ import org.springframework.stereotype.Component;
 import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.resource.model.GameMapGrid;
+import com.server.game.resource.model.Troop;
 import com.server.game.resource.reader.JsonReader;
 import com.server.game.resource.repository.ChampionDBRepository;
 import com.server.game.resource.repository.GameMapRepository;
+import com.server.game.resource.repository.TroopRepository;
 import com.server.game.resource.service.GameMapGridService;
 
 import lombok.AllArgsConstructor;
@@ -25,6 +27,7 @@ public class Writer {
     JsonReader jsonReader;
     GameMapRepository mapRepository;
     ChampionDBRepository championRepository;
+    TroopRepository troopRepository;
 
     GameMapGridService gameMapGridService;
 
@@ -38,6 +41,13 @@ public class Writer {
         "Knight",
         "Archer",
         "Wizard"
+    ));
+
+    private final List<String> troopNames = new ArrayList<>(Arrays.asList(
+        "axis",
+        "shadow",
+        "crossbawl",
+        "healer"
     ));
     
 
@@ -111,5 +121,28 @@ public class Writer {
         }
         championRepository.save(champion);
         System.out.println("Champion saved successfully: " + champion.getName());
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void writeTroops() {
+        for (String troopName : troopNames) {
+            if (troopRepository.existsById((short)troopNames.indexOf(troopName))
+                && false
+            ) { // remove && false when not debugging
+                System.out.println("Troop already exists: " + troopName);
+                continue;
+            }
+            this.writeTroop(troopName);
+        }
+    }
+
+    private void writeTroop(String troopName) {
+        Troop troop = jsonReader.readTroopFromJson(troopName);
+        if (troop == null) {
+            System.out.println("Failed to read troop from JSON.");
+            return;
+        }
+        troopRepository.save(troop);
+        System.out.println("Troop saved successfully: " + troop.getName());
     }
 }

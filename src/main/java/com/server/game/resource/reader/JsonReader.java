@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.resource.model.GameMapGrid;
+import com.server.game.resource.model.Troop;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +70,21 @@ public class JsonReader {
         } catch (IOException e) {
             // e.printStackTrace();
             System.out.println(">>> Error reading champion JSON: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    public Troop readTroopFromJson(String troopName) {
+        try {
+            InputStream is = getClass().getClassLoader().getResourceAsStream("game/troop/" + troopName + ".json");
+            if (is == null) {
+                System.out.println(">>> File not found: resources/game/troop/" + troopName + ".json");
+                return null;
+            }
+            return objectMapper.readValue(is, Troop.class);
+            
+        } catch (IOException e) {
+            System.out.println(">>> Error reading troop JSON: " + e.getMessage());
             return null;
         }
     }

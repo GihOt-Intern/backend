@@ -99,6 +99,7 @@ public class TroopHandler {
             return;
         }
 
+        log.debug("Troop ID: {}, Game Channels: {}", troopId, gameChannels);
         TroopSpawnSend troopSpawnSend = new TroopSpawnSend(
             troopId,
             troopType,
