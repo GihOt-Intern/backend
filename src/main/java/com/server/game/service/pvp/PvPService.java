@@ -26,6 +26,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 
 
 @Slf4j
@@ -37,6 +38,7 @@ public class PvPService implements AttackHandler {
     GameStateBroadcastService gameStateBroadcastService;
     PositionService positionService;
     ChampionService championService;
+    @Lazy
     TroopManager troopManager;
     
     // Store combat data for each game

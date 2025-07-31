@@ -8,11 +8,13 @@ import com.server.game.util.TroopEnum;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TroopService {
     

@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+
 import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.TroopInstance2;
@@ -28,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TargetPositionBroadcastService {
     
+    @Lazy
+    @Autowired
     final TroopManager troopManager;
     
     // gameId -> Map<troopInstanceId, Vector2>

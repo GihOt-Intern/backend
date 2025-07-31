@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 public class TroopManager {
     private final TroopService troopService;
     private final GameStateService gameStateService;
-    private final AttackTargetingService attackTargetingService;
     
     // gameId -> Map<troopInstanceId, TroopInstance2>
     private final Map<String, Map<String, TroopInstance2>> gameTroops = new ConcurrentHashMap<>();
@@ -42,12 +41,10 @@ public class TroopManager {
     // Constructor with dependencies
     public TroopManager(
             TroopService troopService, 
-            GameStateService gameStateService,
-            AttackTargetingService attackTargetingService,
-            com.server.game.service.position.TargetPositionBroadcastService targetPositionBroadcastService) {
+            GameStateService gameStateService
+    ) {
         this.troopService = troopService;
         this.gameStateService = gameStateService;
-        this.attackTargetingService = attackTargetingService;
     }
     
     /**
@@ -259,7 +256,7 @@ public class TroopManager {
             troop.setAIState(TroopInstance2.TroopAIState.DEAD);
             
             // Clear all attack targets that were targeting this dead troop
-            attackTargetingService.clearTargetsAttackingTarget(gameId, troopInstanceId);
+            // attackTargetingService.clearTargetsAttackingTarget(gameId, troopInstanceId);
             
             // Notify game state service about troop death
             broadcastTroopDeath(gameId, troopInstanceId, troop.getOwnerSlot());

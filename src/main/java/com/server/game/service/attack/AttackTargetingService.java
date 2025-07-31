@@ -22,6 +22,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 
 @Slf4j
 @Service
@@ -33,7 +34,9 @@ public class AttackTargetingService {
     MoveService moveService;
     ChampionService championService;
     GameStateService gameStateService;
+    @Lazy
     AttackHandler attackHandler;
+    @Lazy
     TroopManager troopManager;
     
     // Store attack targets for each game and player

@@ -23,6 +23,7 @@ import io.netty.channel.ChannelFuture;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.context.annotation.Lazy;
 
 
 @Component
@@ -31,6 +32,7 @@ import lombok.experimental.FieldDefaults;
 public class GameInititalLoadingHandler {
 
     GameStateBuilder gameStateBuilder;
+    @Lazy
     GameCoordinator gameCoordinator;
     GameStateManager gameStateManager;
     

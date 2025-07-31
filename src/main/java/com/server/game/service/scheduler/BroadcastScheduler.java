@@ -3,6 +3,7 @@ package com.server.game.service.scheduler;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BroadcastScheduler {
     
     private PositionBroadcastService positionBroadcastService;
+    @Lazy
     private TargetPositionBroadcastService targetPositionBroadcastService;
     
     // Lưu trữ các game đang hoạt động cho broadcasting
