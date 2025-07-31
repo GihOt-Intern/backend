@@ -5,40 +5,31 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import com.server.game.model.gameState.GameState;
+import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.position.PositionService;
 import com.server.game.service.pvp.PvPService;
 import com.server.game.service.scheduler.BroadcastScheduler;
 import com.server.game.service.scheduler.GameLogicScheduler;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameCoordinator {
     
-    @Autowired
-    private BroadcastScheduler broadcastScheduler;
-    
-    @Lazy
-    @Autowired
-    private GameLogicScheduler gameLogicScheduler;
-    
-    @Autowired
-    private PositionService positionService;
-    
-    @Lazy
-    @Autowired
-    private GameStateService gameStateService;
-    
-    @Lazy
-    @Autowired
-    private PvPService pvpService;
+    BroadcastScheduler broadcastScheduler;
+    GameLogicScheduler gameLogicScheduler;
+    PositionService positionService;
+    GameStateService gameStateService;
+    PvPService pvpService;
     
     // Store GameState (model) for game map/champion data access
     private final Map<String, GameState> gameStates = new ConcurrentHashMap<>();

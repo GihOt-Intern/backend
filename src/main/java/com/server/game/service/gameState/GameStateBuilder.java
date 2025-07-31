@@ -1,7 +1,7 @@
 package com.server.game.service.gameState;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.util.HashMap;
@@ -19,17 +19,17 @@ import com.server.game.util.ChampionEnum;
 
 import io.netty.channel.Channel;
 
-import com.server.game.model.gameState.Champion;
-import com.server.game.model.gameState.GameState;
+import com.server.game.model.game.Champion;
+import com.server.game.model.game.GameState;
 import com.server.game.netty.ChannelManager;
 
 import lombok.AccessLevel;
 
 
 @Data
-@AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameStateBuilder {
 
 

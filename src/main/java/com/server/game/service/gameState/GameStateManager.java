@@ -5,12 +5,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.server.game.model.gameState.GameState;
-import com.server.game.model.gameState.SlotState;
+import com.server.game.model.game.GameState;
+import com.server.game.model.game.SlotState;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -20,11 +22,12 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameStateManager {
-    
-    @Autowired
-    private GameStateService gameStateService;
-    
+
+    GameStateService gameStateService;
+
     // Cache for game-wide statistics
     private final Map<String, GameStatistics> gameStatisticsCache = new ConcurrentHashMap<>();
     
@@ -118,7 +121,7 @@ public class GameStateManager {
         GameState gameState = gameStateService.getGameStateById(gameId);
         Map<Short, SlotState> slotStates = gameState.getSlotStates();
         return slotStates.entrySet().stream()
-                .filter(entry -> entry.getValue().isAlive())
+                .filter(entry -> entry.getValue().isChampionAlive())
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
@@ -130,7 +133,7 @@ public class GameStateManager {
         GameState gameState = gameStateService.getGameStateById(gameId);
         Map<Short, SlotState> slotStates = gameState.getSlotStates();
         return slotStates.entrySet().stream()
-                .filter(entry -> !entry.getValue().isAlive())
+                .filter(entry -> !entry.getValue().isChampionAlive())
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
@@ -144,7 +147,7 @@ public class GameStateManager {
         return slotStates.entrySet().stream()
                 .filter(entry -> {
                     SlotState slotState = entry.getValue();
-                    return slotState.isAlive() && slotState.getHealthPercentage() < healthThreshold;
+                    return slotState.isChampionAlive() && slotState.getHealthPercentage() < healthThreshold;
                 })
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());

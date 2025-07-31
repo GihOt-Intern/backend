@@ -18,10 +18,10 @@ public enum ChampionEnum {
     private final short championId;
 
     public static ChampionEnum fromShort(short id) {
-        for (ChampionEnum champion : values()) {
-            if (champion.getChampionId() == id) {
-                System.out.println("ChampionEnum: " + champion.name() + ", ID: " + champion.getChampionId());
-                return champion;
+        for (ChampionEnum championEnum : values()) {
+            if (championEnum.getChampionId() == id) {
+                // System.out.println("ChampionEnum: " + championEnum.name() + ", ID: " + championEnum.getChampionId());
+                return championEnum;
             }
         }
         throw new IllegalArgumentException("Unknown ChampionId: " + id);

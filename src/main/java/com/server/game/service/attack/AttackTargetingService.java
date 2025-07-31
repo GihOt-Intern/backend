@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.server.game.model.map.component.Vector2;
@@ -21,11 +19,13 @@ import com.server.game.util.ChampionEnum;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AttackTargetingService {
 
@@ -39,15 +39,6 @@ public class AttackTargetingService {
     // Store attack targets for each game and player
     private final Map<String, Map<Short, AttackTarget>> attackTargets = new ConcurrentHashMap<>();
 
-    @Autowired
-    public AttackTargetingService(PositionService positionService, MoveService moveService, ChampionService championService, GameStateService gameStateService, @Lazy AttackHandler attackHandler, @Lazy TroopManager troopManager) {
-        this.positionService = positionService;
-        this.moveService = moveService;
-        this.championService = championService;
-        this.gameStateService = gameStateService;
-        this.attackHandler = attackHandler;
-        this.troopManager = troopManager;
-    }
     
     /**
      * Set an attack target for a champion
@@ -292,7 +283,7 @@ public class AttackTargetingService {
                 var gameState = gameStateService.getGameStateById(gameId);
                 if (gameState != null) {
                     var slotState = gameState.getSlotState(target.getChampionSlot());
-                    if (slotState == null || !slotState.isAlive()) {
+                    if (slotState == null || !slotState.isChampionAlive()) {
                         log.debug("Target champion {} is dead or not found, clearing attack target", target.getChampionSlot());
                         return null; // Target is dead
                     }
@@ -316,7 +307,7 @@ public class AttackTargetingService {
                 }
                 
                 // Return troop position
-                return troop.getPosition();
+                return troop.getCurrentPosition();
             default:
                 return null;
         }

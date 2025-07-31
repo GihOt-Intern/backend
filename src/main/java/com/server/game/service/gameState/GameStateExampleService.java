@@ -1,11 +1,13 @@
 package com.server.game.service.gameState;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.server.game.model.gameState.GameState;
+import com.server.game.model.game.GameState;
 import com.server.game.util.ChampionEnum;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -17,20 +19,15 @@ import java.util.Map;
  */
 @Slf4j
 @Component
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameStateExampleService {
-    
-    @Autowired
-    private GameStateService gameStateService;
-    
-    @Autowired
-    private GameStateManager gameStateManager;
-    
-    @Autowired
-    private GameStateBroadcastService gameStateBroadcastService;
 
-    @Autowired
-    private GameStateBuilder gameStateBuilder;
-    
+    GameStateService gameStateService;
+    GameStateManager gameStateManager;
+    GameStateBroadcastService gameStateBroadcastService;
+    GameStateBuilder gameStateBuilder;
+
     /**
      * Example: Initialize a game with multiple players
      */

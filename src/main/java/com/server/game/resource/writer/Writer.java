@@ -11,11 +11,11 @@ import org.springframework.stereotype.Component;
 import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.resource.model.GameMapGrid;
-import com.server.game.resource.model.Troop;
+import com.server.game.resource.model.TroopDB;
 import com.server.game.resource.reader.JsonReader;
 import com.server.game.resource.repository.ChampionDBRepository;
 import com.server.game.resource.repository.GameMapRepository;
-import com.server.game.resource.repository.TroopRepository;
+import com.server.game.resource.repository.TroopDBRepository;
 import com.server.game.resource.service.GameMapGridService;
 
 import lombok.AllArgsConstructor;
@@ -26,8 +26,8 @@ public class Writer {
 
     JsonReader jsonReader;
     GameMapRepository mapRepository;
-    ChampionDBRepository championRepository;
-    TroopRepository troopRepository;
+    ChampionDBRepository championDBRepository;
+    TroopDBRepository troopDBRepository;
 
     GameMapGridService gameMapGridService;
 
@@ -42,12 +42,12 @@ public class Writer {
         "Archer",
         "Wizard"
     ));
-
+    
     private final List<String> troopNames = new ArrayList<>(Arrays.asList(
-        "axis",
-        "shadow",
-        "crossbawl",
-        "healer"
+        "Axis",
+        "Crossbawl",
+        "Healer",
+        "Shadow"
     ));
     
 
@@ -103,7 +103,7 @@ public class Writer {
     @EventListener(ApplicationReadyEvent.class)
     public void writeChampions() {
         for (String championName : championNames) {
-            if (championRepository.existsByName(championName) 
+            if (championDBRepository.existsByName(championName) 
                 && false
             ) { // remove && false when not debugging
                 System.out.println("Champion already exists: " + championName);
@@ -119,30 +119,31 @@ public class Writer {
             System.out.println("Failed to read champion from JSON.");
             return;
         }
-        championRepository.save(champion);
+        championDBRepository.save(champion);
         System.out.println("Champion saved successfully: " + champion.getName());
     }
+
 
     @EventListener(ApplicationReadyEvent.class)
     public void writeTroops() {
         for (String troopName : troopNames) {
-            if (troopRepository.existsById((short)troopNames.indexOf(troopName))
+            if (troopDBRepository.existsByName(troopName) 
                 && false
             ) { // remove && false when not debugging
                 System.out.println("Troop already exists: " + troopName);
                 continue;
             }
-            this.writeTroop(troopName);
+            this.writeTroop(troopName.toLowerCase());
         }
     }
 
     private void writeTroop(String troopName) {
-        Troop troop = jsonReader.readTroopFromJson(troopName);
+        TroopDB troop = jsonReader.readTroopFromJson(troopName);
         if (troop == null) {
             System.out.println("Failed to read troop from JSON.");
             return;
         }
-        troopRepository.save(troop);
+        troopDBRepository.save(troop);
         System.out.println("Troop saved successfully: " + troop.getName());
     }
 }

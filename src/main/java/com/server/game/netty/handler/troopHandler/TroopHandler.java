@@ -3,14 +3,14 @@ package com.server.game.netty.handler.troopHandler;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
-import com.server.game.model.gameState.GameState;
+import com.server.game.model.game.GameState;
+import com.server.game.model.game.TroopInstance2;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.troop.TroopSpawnReceive;
 import com.server.game.netty.sendObject.troop.TroopSpawnSend;
 import com.server.game.service.troop.TroopManager;
 import com.server.game.service.gameState.GameCoordinator;
-import com.server.game.service.troop.TroopInstance;
 import com.server.game.util.TroopEnum;
 
 import io.netty.channel.Channel;
@@ -70,7 +70,7 @@ public class TroopHandler {
             return;
         }
 
-        TroopInstance troopInstance = troopManager.createTroop(
+        TroopInstance2 troopInstance = troopManager.createTroop(
             gameId,
             request.getOwnerSlot(),
             troopType,
@@ -81,7 +81,7 @@ public class TroopHandler {
             return;
         }
 
-        broadcastTroopSpawn(gameId, troopInstance.getTroopInstanceId(),request.getTroopId(), request.getOwnerSlot(), spawnPosition);
+        broadcastTroopSpawn(gameId, troopInstance.getStringId(), request.getTroopId(), request.getOwnerSlot(), spawnPosition);
 
         log.info("Troop spawned successfully: {} at position {}", troopType, spawnPosition);
     }

@@ -6,15 +6,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import com.server.game.model.gameState.Champion;
-import com.server.game.model.gameState.GameState;
-import com.server.game.model.gameState.SlotState;
+import com.server.game.model.game.Champion;
+import com.server.game.model.game.GameState;
+import com.server.game.model.game.SlotState;
 import com.server.game.model.map.component.Vector2;
-// import com.server.game.service.gameState.PlayerGameState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.respawn.ChampionDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
@@ -34,14 +32,16 @@ public class GameStateService {
     // Track active respawn schedulers to prevent duplicates: gameId:slot -> scheduler
     private final Map<String, ScheduledExecutorService> activeRespawnSchedulers = new ConcurrentHashMap<>();
 
-    @Lazy
-    @Autowired
     private GameCoordinator gameCoordinator;
-    
-    @Lazy
-    @Autowired
     private AttackTargetingService attackTargetingService;
-    
+
+    public GameStateService(
+        @Lazy GameCoordinator gameCoordinator, 
+        @Lazy AttackTargetingService attackTargetingService) {
+        this.gameCoordinator = gameCoordinator;
+        this.attackTargetingService = attackTargetingService;
+    }
+
     /**
      * Initialize game state for a specific game
      */
@@ -213,7 +213,7 @@ public class GameStateService {
             return false;
         }
 
-        slotState.setDead();
+        slotState.setChampionDead();
         log.info("Champion in gameId: {}, slot: {} has died", gameId,
                 slot);
         
@@ -292,7 +292,7 @@ public class GameStateService {
         float rotateAngle = gameState.getSpawnRotate(slot);
 
         // Reset the state
-        slotState.setAlive();
+        slotState.setChampionRevive();
         slotState.setCurrentHP(maxHealth);
 
         gameCoordinator.updatePosition(gameId, slot, initialPosition, slot, maxHealth);
@@ -425,14 +425,10 @@ public class GameStateService {
 
         
         int oldHP = slotState.getCurrentHP();
-        slotState.setCurrentHP(slotState.getMaxHP());
-        slotState.setDead();
 
+        slotState.setChampionRevive();
 
-        slotState.setCurrentHP(slotState.getMaxHP());
-        slotState.setDead();
-
-        log.info("Reset health for gameId: {}, slot: {} from {} to {}", 
+        log.info("Reset health for gameId: {}, slot: {} from {} to {} (max)", 
                 gameId, slot, oldHP, slotState.getCurrentHP());
         return true;
     }
@@ -470,12 +466,26 @@ public class GameStateService {
         for (Map.Entry<Short, SlotState> entry : gameState.getSlotStates().entrySet()) {
             SlotState slotState = entry.getValue();
             stats.append(String.format("  Slot %d (%s): HP %d/%d, Gold: %d, Troops: %d, Alive: %s%n",
-                    entry.getKey(), slotState.getChampion().getId(),
+                    entry.getKey(), slotState.getChampion().getChampionEnum(),
                     slotState.getCurrentHP(), slotState.getMaxHP(),
-                    slotState.getCurrentGold(), slotState.getTroopCount(), slotState.isAlive()));
+                    slotState.getCurrentGold(), slotState.getTroopCount(), slotState.isChampionAlive()));
         }
         
         return stats.toString();
     }
 
+    public void incrementTick(String gameId) {
+        GameState gameState = this.getGameStateById(gameId);
+        if (gameState == null) {
+            log.warn("Game state not found for gameId: {}", gameId);
+            return;
+        }
+
+        gameState.incrementTick();
+        log.debug("Incremented game tick for gameId: {}", gameId);
+    }
+
+
+
+    
 }

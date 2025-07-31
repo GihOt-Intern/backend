@@ -10,13 +10,16 @@ import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.move.MoveService.PositionData;
 import com.server.game.util.RedisUtil;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PositionService {
 
-    private final GameStateService gameStateService;
+    GameStateService gameStateService;
     
     private final RedisUtil redisUtil;
     private static final String POSITION_KEY_PREFIX = "position:";
@@ -53,7 +56,6 @@ public class PositionService {
         // Cập nhật Redis (cho multi-server)
         String key = POSITION_KEY_PREFIX + gameId + ":" + slot;
         redisUtil.set(key, positionData, java.time.Duration.ofSeconds(POSITION_TTL));
-
 
         // Update position for SlotState in GameState
         gameStateService.updateSlotPosition(gameId, slot, position);

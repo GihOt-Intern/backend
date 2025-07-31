@@ -1,4 +1,4 @@
-package com.server.game.model.gameState;
+package com.server.game.model.game;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +18,7 @@ public class GameState {
     private GameMap gameMap;
     private GameMapGrid gameMapGrid;
     private Map<Short, SlotState> slotStates;
+    private long currentTick = 0;
 
     public GameState(String gameId, GameMap gameMap, GameMapGrid gameMapGrid, Map<Short, Champion> slot2Champion) {
         this.gameId = gameId;
@@ -44,7 +45,7 @@ public class GameState {
         if (slotState != null) {
             slotState.setCurrentPosition(newPosition);
 
-            slotState.checkInPlayGround(gameMap.getPlayGround());
+            slotState.checkInPlayGround(this.gameId, gameMap.getPlayGround());
             return;
         }
         System.err.println(">>> [Log in GameState.setSlotPosition] Slot " + slot + " not found in game state for gameId: " + gameId);
@@ -163,5 +164,9 @@ public class GameState {
     public int getMaxHP(short slot) {
         SlotState slotState = slotStates.get(slot);
         return slotState != null ? slotState.getMaxHP() : -1;
+    }
+
+    public void incrementTick() {
+        this.currentTick++;
     }
 }

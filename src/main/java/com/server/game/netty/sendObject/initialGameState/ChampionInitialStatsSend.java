@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import io.netty.channel.Channel;
 
-import com.server.game.model.gameState.Champion;
+import com.server.game.model.game.Champion;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
@@ -34,7 +34,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
 
     public ChampionInitialStatsSend(Champion champion, Integer initGold) {
         this.defense = champion.getDefense();
-        this.attack = champion.getAttack();
+        this.attack = champion.getDamage();
         this.moveSpeed = champion.getMoveSpeed();
         this.attackSpeed = champion.getAttackSpeed();
         this.attackRange = champion.getAttackRange();
