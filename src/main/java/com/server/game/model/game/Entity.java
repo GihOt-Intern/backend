@@ -14,6 +14,7 @@ import com.server.game.service.gameState.GameStateService;
 
 import lombok.experimental.Delegate;
 import lombok.Getter;
+import lombok.Setter;
 
 // abstract class to represent an entity in the game
 // (Champion, Troop, Tower, Burg)
@@ -21,8 +22,9 @@ import lombok.Getter;
 public abstract class Entity implements Attackable {
 
     protected String stringId;
+    @Setter
     protected Short ownerSlot;
-    @Delegate
+    @Delegate @Setter
     protected GameState gameState;
 
     @Delegate

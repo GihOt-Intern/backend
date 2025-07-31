@@ -37,6 +37,12 @@ public class GameState {
                 entry -> {
                     Short slot = entry.getKey();
                     Champion champion = entry.getValue();
+
+                    champion.setGameState(this);
+                    champion.setOwnerSlot(slot);
+
+                    stringId2Entity.put(champion.getStringId(), champion);
+
                     Vector2 initialPosition = gameMap.getSpawnPosition(slot);
                     Integer initialGold = gameMap.getInitialGoldEachSlot();
                     return new SlotState(slot, champion, initialPosition, initialGold);
