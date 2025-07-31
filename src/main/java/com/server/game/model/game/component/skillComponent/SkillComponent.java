@@ -10,9 +10,11 @@ import com.server.game.resource.model.ChampionDB.ChampionAbility;
 import com.server.game.util.Util;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Component
+@EqualsAndHashCode(exclude = "skillOwner")
 public abstract class SkillComponent {
     protected Champion skillOwner;
     protected String name;

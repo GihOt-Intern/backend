@@ -72,7 +72,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
             dos.writeFloat(skillCooldown);
             dos.writeInt(initGold);
 
-            dos.writeInt(allInitHPs.size());
+            dos.writeShort((short) allInitHPs.size());
             for (Map.Entry<Short, Integer> entry : allInitHPs.entrySet()) {
                 dos.writeShort(entry.getKey());
                 dos.writeInt(entry.getValue());
