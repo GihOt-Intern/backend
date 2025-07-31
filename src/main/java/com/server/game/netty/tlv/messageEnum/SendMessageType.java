@@ -20,6 +20,7 @@ public enum SendMessageType {
     CHAMPION_INITIAL_HPS_SEND((short) 12),
     CHAMPION_INITIAL_STATS_SEND((short) 13),
     POSITION_UPDATE_SEND((short) 20),
+    TARGET_POSITION_UPDATE_SEND((short) 21),
     
     IS_IN_PLAYGROUND_SEND((short) 22),
     GOLD_AMOUNT_SEND((short) 23),

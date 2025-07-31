@@ -28,6 +28,8 @@ public class SlotInfo {
     Spawn spawn;
     Burg burg;
     List<Tower> towers;
+    @JsonProperty("minion_positions")
+    List<Vector2> minionPositions;
 
     @Data
     @AllArgsConstructor
@@ -73,6 +75,15 @@ public class SlotInfo {
             return spawn.getRotate();
         }
         return null;
+    }
+    
+    public Vector2 getRandomMinionPosition() {
+        if (minionPositions != null && !minionPositions.isEmpty()) {
+            int randomIndex = (int) (Math.random() * minionPositions.size());
+            return minionPositions.get(randomIndex);
+        }
+        // Fallback to champion spawn position if no minion positions are defined
+        return getSpawnPosition();
     }
 }
 

@@ -12,6 +12,8 @@ import com.server.game.resource.model.TroopDB;
 import com.server.game.resource.service.TroopService;
 import com.server.game.util.TroopEnum;
 
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -128,17 +130,26 @@ public class TroopInstance2 extends Entity {
 
     @Override // from Attackable implemented by Entity
     public void receiveAttack(AttackContext ctx) {
+        if (!isAlive()) {
+            return;
+        }
 
-        // TODO: handle attack animations, attack logic,... of troops here
-
-        // 2. Process the attack and calculate damage
-        // int attackerDamage = ctx.getAttacker().getDamage();
-        // int myDefense = this.getDefense();
-        // float actualDamage = attackerDamage * (100.0f / (100 * myDefense));
-        // this.decreaseHP((int) actualDamage);
-
-        // // 3. Send health update for the target
-        // SocketSender.sendHealthUpdate(ctx, (int) actualDamage);
+        // Process the attack and calculate damage
+        int attackerDamage = ctx.getAttacker().getComponent(AttackComponent.class).getDamage();
+        int myDefense = this.getDefense();
+        
+        // Calculate actual damage with defense
+        float defenseMultiplier = this.isBuffed ? this.defenseMultiplier : 1.0f;
+        int actualDamage = Math.max(1, (int)(attackerDamage * (100.0f / (100 + myDefense * defenseMultiplier))));
+        
+        // Apply damage using health component
+        this.getHealthComponent().takeDamage(actualDamage);
+        
+        log.debug("Troop {} received {} damage (defense: {}, actual damage: {})", 
+                this.getStringId(), attackerDamage, myDefense, actualDamage);
+                
+        // Send health update via the appropriate channel or manager
+        // This will be handled by TroopManager.applyDamageToTroop instead
     }
 
     
@@ -152,25 +163,24 @@ public class TroopInstance2 extends Entity {
      * @deprecated See {@link TroopInstance2#receiveAttack(AttackContext)} instead
      */
     @Deprecated
-     public void takeDamage(int damage) {
-        // if (isDead || damage <= 0) {
-        //     return;
-        // }
+    public void takeDamage(int damage) {
+        if (!isAlive() || damage <= 0) {
+            return;
+        }
         
-        // // Apply defense multiplier
-        // int actualDamage = Math.max(1, (int) (damage / defenseMultiplier));
+        // Apply defense multiplier if buffed
+        float defMultiplier = this.isBuffed ? this.defenseMultiplier : 1.0f;
+        int actualDamage = Math.max(1, (int) (damage / defMultiplier));
         
-        // int oldHP = this.currentHP;
-        // this.currentHP = Math.max(0, this.currentHP - actualDamage);
-        // this.lastDamageTime = System.currentTimeMillis();
+        // Use health component to apply damage
+        int oldHP = this.getCurrentHP();
+        this.healthComponent.takeDamage(actualDamage);
         
-        // if (this.currentHP == 0 && oldHP > 0) {
-        //     this.isDead = true;
-        //     this.aiState = TroopAIState.DEAD;
-        //     log.info("Troop {} died after taking {} damage", troopInstanceId, actualDamage);
-        // }
-        
-        // log.debug("Troop {} took {} damage: {} -> {}", troopInstanceId, actualDamage, oldHP, this.currentHP);
+        // Update AI state if died
+        if (this.getCurrentHP() == 0 && oldHP > 0) {
+            this.setAIState(TroopAIState.DEAD);
+            log.info("Troop {} died after taking {} damage", stringId, actualDamage);
+        }
     }
     
     /**
@@ -304,9 +314,71 @@ public class TroopInstance2 extends Entity {
     }
     
     /**
-     * Move towards target position
+     * Move towards target position using ThetaStarPathfinder
      */
     public void moveTowards(Vector2 target, float moveSpeed, float deltaTime) {
+        if (target == null || !this.isAlive()) return;
+
+        // Get pathfinding service
+        com.server.game.service.troop.TroopPathfindingService pathfindingService = 
+            com.server.game.config.SpringContextHolder.getBean(com.server.game.service.troop.TroopPathfindingService.class);
+        
+        // Get current waypoint or calculate new path
+        Vector2 currentWaypoint = pathfindingService.getNextWaypoint(this.getGameId(), this.getStringId());
+        
+        // If no waypoint exists, calculate a new path  
+        if (currentWaypoint == null) {
+            List<Vector2> path = pathfindingService.calculatePath(this.getGameState(), this, target);
+            if (path.isEmpty()) {
+                // If no path is found, fall back to direct movement
+                directMoveTowards(target, moveSpeed, deltaTime);
+                return;
+            }
+            currentWaypoint = path.get(0);
+        }
+        
+        // Move towards current waypoint
+        Vector2 currentPosition = this.getCurrentPosition();
+        float distance = currentPosition.distance(currentWaypoint);
+        
+        if (distance <= 0.2f) { // Close enough to waypoint
+            // Mark waypoint as reached
+            pathfindingService.waypointReached(this.getGameId(), this.getStringId());
+            
+            // Get next waypoint
+            Vector2 nextWaypoint = pathfindingService.getNextWaypoint(this.getGameId(), this.getStringId());
+            
+            if (nextWaypoint != null) {
+                // Continue to next waypoint
+                directMoveTowards(nextWaypoint, moveSpeed, deltaTime);
+            } else {
+                // Path completed or no more waypoints
+                if (currentPosition.distance(target) <= 0.2f) {
+                    // Reached final target
+                    this.setCurrentPosition(target);
+                    this.setStop();
+                    this.targetPosition = null;
+                } else {
+                    // Need to recalculate path
+                    List<Vector2> newPath = pathfindingService.calculatePath(this.getGameState(), this, target);
+                    if (!newPath.isEmpty()) {
+                        directMoveTowards(newPath.get(0), moveSpeed, deltaTime);
+                    } else {
+                        // No path found, try direct movement
+                        directMoveTowards(target, moveSpeed, deltaTime);
+                    }
+                }
+            }
+        } else {
+            // Continue moving towards current waypoint
+            directMoveTowards(currentWaypoint, moveSpeed, deltaTime);
+        }
+    }
+    
+    /**
+     * Direct movement towards a target (fallback method)
+     */
+    private void directMoveTowards(Vector2 target, float moveSpeed, float deltaTime) {
         if (target == null || !this.isAlive()) return;
 
         float distance = this.distanceTo(target);
@@ -317,13 +389,8 @@ public class TroopInstance2 extends Entity {
             return;
         }
         
-        // Calculate movement
-        // float dx = target.x() - position.x();
-        // float dy = target.y() - position.y();
-
         Vector2 currentPosition = this.getCurrentPosition();
-
-        Vector2 dPosition =  target.subtract(currentPosition);
+        Vector2 dPosition = target.subtract(currentPosition);
         float moveDistance = moveSpeed * deltaTime;
         
         if (moveDistance >= distance) {
@@ -334,9 +401,6 @@ public class TroopInstance2 extends Entity {
         } else {
             // Move towards target
             float ratio = moveDistance / distance;
-            // float newX = position.x() + dx * ratio;
-            // float newY = position.y() + dy * ratio;
-
             Vector2 newPosition = currentPosition.add(dPosition.multiply(ratio));
             this.setCurrentPosition(newPosition);
             this.setMove();
@@ -347,6 +411,13 @@ public class TroopInstance2 extends Entity {
      * Set movement target
      */
     public void setMoveTarget(Vector2 target) {
+        // Clear existing path when a new target is set
+        if (target != null && (this.targetPosition == null || !target.equals(this.targetPosition))) {
+            com.server.game.service.troop.TroopPathfindingService pathfindingService = 
+                com.server.game.config.SpringContextHolder.getBean(com.server.game.service.troop.TroopPathfindingService.class);
+            pathfindingService.clearTroopPath(this.getGameId(), this.getStringId());
+        }
+        
         this.targetPosition = target;
         this.setMoving(target != null);
     }

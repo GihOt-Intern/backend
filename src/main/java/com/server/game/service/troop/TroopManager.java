@@ -1,9 +1,12 @@
 package com.server.game.service.troop;
 
+import com.server.game.model.game.Entity;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.TroopCreateContext;
 import com.server.game.model.game.TroopInstance2;
 import com.server.game.model.game.TroopInstance2.TroopAIState;
+import com.server.game.model.game.component.HealthComponent;
+import com.server.game.model.game.component.attackComponent.AttackContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.service.TroopService;
 import com.server.game.service.attack.AttackTargetingService;
@@ -26,15 +29,26 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class TroopManager {
-    private TroopService troopService;
-    private GameStateService gameStateService;
-    private AttackTargetingService attackTargetingService;
-
+    private final TroopService troopService;
+    private final GameStateService gameStateService;
+    private final AttackTargetingService attackTargetingService;
+    
     // gameId -> Map<troopInstanceId, TroopInstance2>
     private final Map<String, Map<String, TroopInstance2>> gameTroops = new ConcurrentHashMap<>();
     
     // gameId -> Map<ownerSlot, List<troopInstanceId>>
     private final Map<String, Map<Short, List<String>>> playerTroops = new ConcurrentHashMap<>();
+    
+    // Constructor with dependencies
+    public TroopManager(
+            TroopService troopService, 
+            GameStateService gameStateService,
+            AttackTargetingService attackTargetingService,
+            com.server.game.service.position.TargetPositionBroadcastService targetPositionBroadcastService) {
+        this.troopService = troopService;
+        this.gameStateService = gameStateService;
+        this.attackTargetingService = attackTargetingService;
+    }
     
     /**
      * Create a new troop instance for a player
@@ -218,10 +232,32 @@ public class TroopManager {
             return false;
         }
         
-        troop.takeDamage(damage);
+        // Store HP before damage to detect death
+        int oldHP = troop.getCurrentHP();
+        
+        // Create an AttackContext for the damage and use the proper component-based system
+        AttackContext ctx = new AttackContext(
+            gameId,
+            (short) -1,             // Not a champion
+            "system",               // System-initiated damage
+            (short) -1,             // Not a champion
+            troopInstanceId,
+            null,                   // No attacker entity
+            troop.getCurrentPosition(),
+            troop,
+            System.currentTimeMillis(),
+            System.currentTimeMillis(),
+            null                    // No extra data
+        );
+        
+        // Use the proper attack system - invoke receiveAttack on the target entity
+        troop.receiveAttack(ctx);
         
         // If troop died, remove it
-        if (!troop.isAlive()) {
+        if (!troop.isAlive() && oldHP > 0) {
+            // Update AI state
+            troop.setAIState(TroopInstance2.TroopAIState.DEAD);
+            
             // Clear all attack targets that were targeting this dead troop
             attackTargetingService.clearTargetsAttackingTarget(gameId, troopInstanceId);
             
@@ -251,6 +287,47 @@ public class TroopManager {
     }
 
     /**
+     * Apply healing to a troop
+     */
+    public boolean applyHealingToTroop(String gameId, String troopInstanceId, int healAmount, Entity healer) {
+        TroopInstance2 troop = getTroop(gameId, troopInstanceId);
+        if (troop == null || !troop.isAlive() || troop.getCurrentHP() >= troop.getMaxHP()) {
+            return false;
+        }
+        
+        // Store HP before healing
+        int oldHP = troop.getCurrentHP();
+        
+        // Apply healing through the health component
+        HealthComponent healthComponent = troop.getHealthComponent();
+        if (healthComponent != null) {
+            healthComponent.increaseHP(healAmount);
+            
+            // Send health update message
+            com.server.game.netty.sendObject.pvp.HealthUpdateSend healthUpdate = new HealthUpdateSend(
+                troopInstanceId,
+                troop.getCurrentHP(),
+                troop.getMaxHP(),
+                -healAmount, // Negative value indicates healing
+                System.currentTimeMillis()
+            );
+
+            Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+            if (channel != null && channel.isActive()) {
+                channel.writeAndFlush(healthUpdate);
+            } else {
+                log.warn("No active channel found for game ID: {}", gameId);
+            }
+            
+            log.debug("Troop {} healed for {} HP (from {} to {})", 
+                troopInstanceId, healAmount, oldHP, troop.getCurrentHP());
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
      * Broadcast a troop death event
      */
     private void broadcastTroopDeath(String gameId, String troopInstanceId, short ownerSlot) {
@@ -273,7 +350,31 @@ public class TroopManager {
             return false;
         }
         
+        // Store HP before healing
+        int oldHP = troop.getCurrentHP();
+        
+        // Use the proper heal method from TroopInstance2
         troop.heal(healAmount);
+        
+        // Send health update to clients for the UI
+        HealthUpdateSend healthUpdate = new HealthUpdateSend(
+            troopInstanceId,
+            troop.getCurrentHP(),
+            troop.getMaxHP(),
+            -healAmount, // Negative damage means healing
+            System.currentTimeMillis()
+        );
+
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null && channel.isActive()) {
+            channel.writeAndFlush(healthUpdate);
+        } else {
+            log.warn("No active channel found for game ID: {}", gameId);
+        }
+        
+        log.debug("Healed troop {} for {} HP: {} -> {}", 
+                troopInstanceId, healAmount, oldHP, troop.getCurrentHP());
+                
         return true;
     }
     
@@ -398,7 +499,10 @@ public class TroopManager {
     private void updateHealingMovement(TroopInstance2 troop, float deltaTime) {
         // Similar to seeking, but for healing allies
         String targetId = troop.getCurrentTargetId();
-        if (targetId == null) return;
+        if (targetId == null) {
+            troop.setAIState(TroopAIState.IDLE);
+            return;
+        }
 
         TroopInstance2 target = getTroop(troop.getGameId(), targetId);
         if (target == null || !target.isAlive() || target.getHealthPercentage() >= 0.9f) {
@@ -408,12 +512,43 @@ public class TroopManager {
             return;
         }
         
-        float healRange = 4.0f; // Healing range
+        // Use a fixed healing range or get from component
+        float healRange = troop.getHealingRange();
         float currentDistance = troop.distanceTo(target.getCurrentPosition());
         
         // If in heal range, stop and heal
         if (currentDistance <= healRange) {
-            // Stay in healing state but stop moving
+            // Apply healing using health component
+            if (troop.getAttackComponent().canAttack(System.currentTimeMillis())) {
+                int healAmount = troop.getHealingPower();
+                target.heal(healAmount);
+                // Record the attack/heal
+                // Create a healing context and perform healing attack
+                AttackContext healContext = new AttackContext(
+                    troop.getGameId(),
+                    (short) -1,
+                    troop.getIdAString(),
+                    (short) -1,
+                    target.getIdAString(),
+                    troop,
+                    target.getCurrentPosition(),
+                    target,
+                    System.currentTimeMillis(),
+                    System.currentTimeMillis(),
+                    null
+                );
+                troop.getAttackComponent().performAttack(healContext);
+                
+                log.debug("Troop {} healed {} for {} HP (health now: {}/{})",
+                        troop.getIdAString(), target.getIdAString(), healAmount,
+                        target.getCurrentHP(), target.getMaxHP());
+                
+                // If target is fully healed, find a new target
+                if (target.getCurrentHP() >= target.getMaxHP()) {
+                    troop.setCurrentTargetId(null);
+                    troop.setAIState(TroopAIState.IDLE);
+                }
+            }
             return;
         }
         

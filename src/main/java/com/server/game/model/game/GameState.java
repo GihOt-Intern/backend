@@ -78,6 +78,10 @@ public class GameState {
     public Vector2 getSpawnPosition(Short slot) {
         return gameMap.getSpawnPosition(slot);
     }
+    
+    public Vector2 getRandomMinionPosition(Short slot) {
+        return gameMap.getRandomMinionPosition(slot);
+    }
 
     public float getSpawnRotate(Short slot) {
         Float rotateValue = gameMap.getInitialRotate(slot);

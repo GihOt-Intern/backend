@@ -88,4 +88,12 @@ public class GameMap {
         System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
         return null;
     }
+    
+    public Vector2 getRandomMinionPosition(short slot) {
+        if (slot2SlotInfo.containsKey(slot)) {
+            return slot2SlotInfo.get(slot).getRandomMinionPosition();
+        }
+        System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found when getting minion position.");
+        return null;
+    }
 }

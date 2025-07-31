@@ -61,6 +61,15 @@ public class GameMapService {
         }
         return gameMap.getSpawnPosition(slot);
     }
+    
+    public Vector2 getRandomMinionPosition(Short gameMapId, short slot) {
+        GameMap gameMap = getGameMapById(gameMapId);
+        if (gameMap == null) {
+            System.out.println(">>> [Log in GameMapService] GameMap with id " + gameMapId + " not found.");
+            return null;
+        }
+        return gameMap.getRandomMinionPosition(slot);
+    }
 
 
     public Float getInitialRotate(Short gameMapId, short slot) {
