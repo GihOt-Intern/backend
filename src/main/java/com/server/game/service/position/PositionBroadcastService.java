@@ -36,7 +36,7 @@ public class PositionBroadcastService {
      * Hủy đăng ký game - được gọi từ GameScheduler
      */
     public void unregisterGame(GameState gameState) {
-        positionService.clearGamePositions(gameState);
+        positionService.clearPendingPositionsOf(gameState);
         moveService.clearGameMoveTargets(gameState);
         ChannelManager.clearGameSlotMappings(gameState.getGameId());
         log.info("Unregistered game from position broadcasting: {}", gameState.getGameId());
@@ -81,12 +81,12 @@ public class PositionBroadcastService {
         // Update new positions for entities
         for (Map.Entry<Entity, PositionData> entry : gameStatePendingPositions.entrySet()) {
             Entity entity = entry.getKey();
-            Vector2 position = entry.getValue().getPosition();
-            gameStateService.updatePosition(entity, position);
+            Vector2 newPosition = entry.getValue().getPosition();
+            entity.updatePosition(newPosition);
         }
         
         // Xóa pending positions sau khi đã broadcast
-        positionService.clearPendingPositions(gameState);
+        positionService.clearPendingPositionsOf(gameState);
     }
     
     /**
@@ -100,8 +100,6 @@ public class PositionBroadcastService {
         // So sánh vị trí với ngưỡng thay đổi nhỏ
         float threshold = 0.005f; // Ngưỡng thay đổi tối thiểu
 
-        Vector2 delta = newPosition.subtract(oldPosition);
-        float dPos = delta.length();
-        return dPos > threshold;
+        return oldPosition.distance(newPosition) > threshold;
     }
 } 

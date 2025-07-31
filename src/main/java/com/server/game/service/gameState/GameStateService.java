@@ -126,18 +126,18 @@ public class GameStateService {
     //     }
     // }
 
-    public void updatePosition(Entity entity, Vector2 newPosition) {
-        GameState gameState = entity.getGameState();
-        if (gameState == null) {
-            log.warn("Game state not found for entity: {}", entity.getStringId());
-            return;
-        }
+    // public void updatePosition(Entity entity, Vector2 newPosition) {
+    //     GameState gameState = entity.getGameState();
+    //     if (gameState == null) {
+    //         log.warn("Game state not found for entity: {}", entity.getStringId());
+    //         return;
+    //     }
 
-        gameState.setEntityPosition(entity, newPosition);// TODO
+    //     gameState.setEntityPosition(entity, newPosition); // TODO
 
 
-        this.updateEntityGridCellMapping(gameState, entity);
-    }
+    //     this.updateEntityGridCellMapping(gameState, entity);
+    // }
 
     
     /**

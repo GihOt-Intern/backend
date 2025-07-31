@@ -59,7 +59,7 @@ public class PositionService {
         redisUtil.set(key, positionData, java.time.Duration.ofSeconds(POSITION_TTL));
 
         // Update position for SlotState in GameState
-        gameStateService.updateSlotPosition(gameId, slot, position);
+        // gameStateService.updateSlotPosition(gameId, slot, position);
     }
     
     /**

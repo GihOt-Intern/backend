@@ -189,6 +189,13 @@ public class MoveService {
      * Cập nhật vị trí dựa trên thời gian và mục tiêu di chuyển
      * Được gọi mỗi lần trước khi broadcast vị trí
      */
+    public void updatePositions(GameState gameState) {
+        for (Entity entity : gameState.getEntities()) {
+            this.updatePositions(entity);
+        }
+    }
+
+
     public void updatePositions(Entity entity) {
         MoveTarget target = moveTargets.get(entity);
         if (target == null) {
@@ -245,6 +252,10 @@ public class MoveService {
         if (reachedFinalDestination || !target.path.hasNext()) {
             moveTargets.remove(entity);
         }
+    }
+
+    public void pushMoveTarget(Entity entity) {
+        
     }
 
     public void popMoveTarget(Entity entity) {
@@ -374,6 +385,7 @@ public class MoveService {
             return lastFailTime != null && lastFailTime < failCleanupThreshold;
         });
     }
+
 
 
     /**

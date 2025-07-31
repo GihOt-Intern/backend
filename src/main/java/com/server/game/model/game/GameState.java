@@ -44,12 +44,21 @@ public class GameState {
             );
     }
 
+
     public int getNumPlayers() {
         return slotStates.size();
     }
 
-    public void setChampionPosition(Short slot, Vector2 newPosition) {
-        SlotState slotState = slotStates.get(slot);
+    public Set<Entity> getEntities() {
+        return stringId2Entity.values()
+            .stream()
+            .collect(Collectors.toSet());
+    }
+
+    @Deprecated
+    @SuppressWarnings("unused")
+    public void setEntityPosition(Entity entity, Vector2 newPosition) {
+        SlotState slotState = slotStates.get(entity.getOwnerSlot());
         if (slotState != null) {
             slotState.getChampion().setCurrentPosition(newPosition);
 
@@ -59,9 +68,11 @@ public class GameState {
             slotState.checkInPlayGround(this.gameId, gameMap.getPlayGround());
             return;
         }
-        System.err.println(">>> [Log in GameState.setSlotPosition] Slot " + slot + " not found in game state for gameId: " + gameId);
+        System.err.println(">>> [Log in GameState.setSlotPosition] Slot " + entity.getOwnerSlot() + 
+            " not found in game state for gameId: " + gameId);
     }
 
+    // TODO: See to migrate this method to TroopInstance2 class
     public void setTroopPosition(TroopInstance2 troop, Vector2 newPosition) {
         SlotState slotState = slotStates.get(troop.getOwnerSlot());
         if (slotState != null) {

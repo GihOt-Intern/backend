@@ -37,6 +37,8 @@ public class SlotState {
     }
 
 
+    @Deprecated
+    @SuppressWarnings("unused")
     public void checkInPlayGround(String gameId, PlayGround playGround) {
         boolean nextInPlayGround = this.champion.checkInPlayGround(playGround);
         

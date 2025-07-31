@@ -7,6 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
+import com.server.game.model.game.Champion;
+import com.server.game.model.game.Entity;
+import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.service.champion.ChampionService;
@@ -82,9 +85,12 @@ public class AttackTargetingService {
         if (target == null) {
             return false;
         }
-        
+
+        Champion attacker = gameStateService.getGameStateById(gameId)
+            .getChampionBySlot(attackerSlot);
+
         // Get attacker's real-time position (whether moving or not)
-        Vector2 attackerPosition = moveService.getCurrentRealTimePosition(gameId, attackerSlot);
+        Vector2 attackerPosition = moveService.getCurrentRealTimePosition(attacker);
         if (attackerPosition == null) {
             // Fallback to cached position if no real-time position available
             var attackerPos = positionService.getPlayerPosition(gameId, attackerSlot);
@@ -131,8 +137,12 @@ public class AttackTargetingService {
 
         // Check if we're in attack range
         if (isInAttackRange(gameId, attackerSlot)) {
+
+            Champion attacker = gameStateService.getGameStateById(gameId)
+                .getChampionBySlot(attackerSlot);
+
             // In range - stop movement and check if we can attack (cooldown)
-            moveService.clearMoveTarget(gameId, attackerSlot);
+            moveService.popMoveTarget(attacker);
             
             // Get champion info to check cooldown
             ChampionEnum attackerChampion = getChampionForSlot(gameId, attackerSlot);
@@ -181,9 +191,13 @@ public class AttackTargetingService {
 
         // Update tracking and set new move target
         gameLastUpdates.put(attackerSlot, currentTime);
-        
-        // Use simple setMoveTarget to the current target position
-        moveService.setMoveTarget(gameId, attackerSlot, currentTargetPos);
+
+        // Use simple setMove to the current target position
+
+        Champion attacker = gameStateService.getGameStateById(gameId)
+                .getChampionBySlot(attackerSlot);
+
+        moveService.setMove(attacker, currentTargetPos);
         
         log.debug("Recalculated target position for slot {} attacking {} at position {}", 
                 attackerSlot, 
@@ -255,7 +269,7 @@ public class AttackTargetingService {
     }
     
     /**
-     * Move champion towards their attack target - Simplified to use setMoveTarget
+     * Move champion towards their attack target - Simplified to use setMove
      */
     private void moveToAttackTarget(String gameId, short attackerSlot, AttackTarget target) {
         Vector2 targetPosition = getTargetPosition(gameId, target);
@@ -263,11 +277,14 @@ public class AttackTargetingService {
             log.warn("Could not find target position for attack target: {}", target);
             return;
         }
-        
-        // Use simple setMoveTarget for all types of targets
-        moveService.setMoveTarget(gameId, attackerSlot, targetPosition);
-        
-        String targetInfo = target.getType() == AttackTargetType.CHAMPION 
+
+        Champion attacker = gameStateService.getGameStateById(gameId)
+                .getChampionBySlot(attackerSlot);
+
+        // Use simple setMove for all types of targets
+        moveService.setMove(attacker, targetPosition);
+
+        String targetInfo = target.getType() == AttackTargetType.CHAMPION
             ? "champion in slot " + target.getChampionSlot() 
             : "target " + target.getTargetId();
         log.debug("Moving slot {} towards {} at position {}", attackerSlot, targetInfo, targetPosition);
@@ -288,9 +305,12 @@ public class AttackTargetingService {
                         return null; // Target is dead
                     }
                 }
-                
+
+                Champion targetChampion = gameStateService.getGameStateById(gameId)
+                        .getChampionBySlot(target.getChampionSlot());
+
                 // Use real-time position from move service first, then fall back to cached position
-                Vector2 realTimePos = moveService.getCurrentRealTimePosition(gameId, target.getChampionSlot());
+                Vector2 realTimePos = moveService.getCurrentRealTimePosition(targetChampion);
                 if (realTimePos != null) {
                     return realTimePos;
                 }

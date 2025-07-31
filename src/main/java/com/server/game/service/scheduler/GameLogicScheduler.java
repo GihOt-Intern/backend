@@ -77,7 +77,7 @@ public class GameLogicScheduler {
 
 
                 // Update movement positions
-                moveService.updatePositions(gameId);
+                moveService.updatePositions(gameStateService.getGameStateById(gameId));
                 troopManager.updateTroopMovements(gameId, 0.05f);
                 
                 // Process attack targeting and continuous combat

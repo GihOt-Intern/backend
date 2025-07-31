@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.position.PositionBroadcastService;
 
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BroadcastScheduler {
     
     private PositionBroadcastService positionBroadcastService;
+    private GameStateService gameStateService;
     
     // Lưu trữ các game đang hoạt động cho broadcasting
     private final Set<String> activeGames = ConcurrentHashMap.newKeySet();
@@ -35,7 +37,7 @@ public class BroadcastScheduler {
     public void unregisterGame(String gameId) {
         activeGames.remove(gameId);
         // Notify broadcast service to clean up
-        positionBroadcastService.unregisterGame(gameId);
+        positionBroadcastService.unregisterGame(gameStateService.getGameStateById(gameId));
         log.info("Unregistered game from broadcasting: {}", gameId);
     }
 
@@ -55,7 +57,7 @@ public class BroadcastScheduler {
         for (String gameId : activeGames) {
             try {
                 // Broadcast position updates to all players in the game
-                positionBroadcastService.broadcastGamePositions(gameId);
+                positionBroadcastService.broadcastGamePositions(gameStateService.getGameStateById(gameId));
                 
             } catch (Exception e) {
                 log.error("Error in broadcast loop for game: {}", gameId, e);

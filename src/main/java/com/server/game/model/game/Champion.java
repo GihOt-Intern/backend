@@ -3,6 +3,7 @@ package com.server.game.model.game;
 
 import java.util.UUID;
 
+import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.attackStrategy.ChampionAttackStrategy;
 import com.server.game.model.game.component.GoldComponent;
 import com.server.game.model.game.component.HealthComponent;
@@ -13,6 +14,8 @@ import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
+import com.server.game.model.map.component.Vector2;
+import com.server.game.netty.handler.PlaygroundHandler;
 import com.server.game.netty.handler.SocketSender;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.util.ChampionEnum;
@@ -89,6 +92,32 @@ public final class Champion extends Entity implements SkillReceivable {
         this.addComponent(GoldComponent.class, goldComponent);
         this.addComponent(SkillComponent.class, skillComponent);
         this.addComponent(AttackComponent.class, attackComponent);
+    }
+
+
+    @Override
+    protected void afterUpdatePosition(Vector2 newPosition) {
+        
+        this.checkInPlayGround();
+
+        super.afterUpdatePosition(newPosition);
+    }
+
+    private void checkInPlayGround() {
+
+        boolean nextInPlayGround = this.checkInPlayGround(
+            this.getGameState().getGameMap().getPlayGround());
+
+        System.out.println(">>> [Log in Champion.checkInPlayGround] " + this.stringId + " nextInPlayGround: " +
+            nextInPlayGround + ", current inPlayGround: " + this.isInPlayground());
+
+        if (nextInPlayGround != this.isInPlayground()) {
+            this.toggleInPlaygroundFlag(); // Toggle the state
+            PlaygroundHandler playgroundHandler =
+                SpringContextHolder.getBean(PlaygroundHandler.class);
+            playgroundHandler.sendInPlaygroundUpdateMessage(
+                this.getGameId(), this.getOwnerSlot(), this.isInPlayground());
+        }
     }
 
 

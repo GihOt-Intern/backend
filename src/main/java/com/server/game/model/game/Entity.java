@@ -3,12 +3,14 @@ package com.server.game.model.game;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
 import com.server.game.model.map.component.Vector2;
+import com.server.game.service.gameState.GameStateService;
 
 import lombok.experimental.Delegate;
 import lombok.Getter;
@@ -123,4 +125,19 @@ public abstract class Entity implements Attackable {
         }
     }
 
+
+    public void updatePosition(Vector2 newPosition) {
+        if (hasComponent(PositionComponent.class)) {
+            getComponent(PositionComponent.class).setCurrentPosition(newPosition);
+
+            this.afterUpdatePosition(newPosition);
+        } else {
+            throw new UnsupportedOperationException("Entity does not have PositionComponent");
+        }
+    }
+
+    protected void afterUpdatePosition(Vector2 newPosition) {
+        SpringContextHolder.getBean(GameStateService.class)
+            .updateEntityGridCellMapping(this.gameState, this);
+    } 
 }

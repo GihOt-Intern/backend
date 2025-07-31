@@ -37,12 +37,7 @@ public class PositionService2 {
         pendingPositionCache.put(entity, positionData);
     }
     
-    /**
-     * Cập nhật vị trí của player vào main cache (sau khi broadcast)
-     */
-    public void updatePosition(String gameId, short slot, Vector2 position, float speed, long timestamp) {
-        gameStateService.updateSlotPosition(gameId, slot, position);
-    }
+    
 
     public Map<Entity, PositionData> deepCopyPendingPositionsOf(GameState gameState) {
         return new ConcurrentHashMap<>(pendingPositionCache.entrySet()
@@ -145,7 +140,7 @@ public class PositionService2 {
     /**
      * Xóa dữ liệu vị trí khi game kết thúc
      */
-    public void clearGamePositions(GameState gameState) {
+    public void clearPendingPositionsOf(GameState gameState) {
         pendingPositionCache.entrySet()
             .removeIf(entry -> entry.getKey().getGameState().equals(gameState));
     }

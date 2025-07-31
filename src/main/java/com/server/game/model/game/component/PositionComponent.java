@@ -45,7 +45,8 @@ public class PositionComponent {
     }
 
     public boolean checkInPlayGround(PlayGround playGround) {
-        return currentPosition.isInRectangle(playGround.getPosition(), playGround.getWidth(), playGround.getLength());
+        return currentPosition.isInRectangle(
+            playGround.getPosition(), playGround.getWidth(), playGround.getLength());
     }
 
     public float distanceTo(Vector2 otherPosition) {
