@@ -7,6 +7,7 @@ import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.Attackable;
+import com.server.game.model.game.component.attributeComponent.AttributeComponent;
 import com.server.game.model.map.component.Vector2;
 
 import lombok.experimental.Delegate;
@@ -19,6 +20,7 @@ public abstract class Entity implements Attackable {
 
     protected String stringId;
     protected Short ownerSlot;
+    @Delegate
     protected GameState gameState;
 
     @Delegate
@@ -57,6 +59,14 @@ public abstract class Entity implements Attackable {
 
     protected boolean hasComponent(Class<?> clazz) {
         return components.containsKey(clazz);
+    }
+
+    public float getSpeed() {
+        if (hasComponent(AttributeComponent.class)) {
+            return getComponent(AttributeComponent.class).getMoveSpeed();
+        }
+        System.out.println("Entity does not have AttributeComponent, returning default speed=0.");
+        return 0; // Default value if no attribute component is present
     }
 
     public float getAttackSpeed() {
@@ -103,6 +113,14 @@ public abstract class Entity implements Attackable {
     public final float distanceTo(Entity other) {
         return this.getComponent(PositionComponent.class)
             .distanceTo(other.getCurrentPosition());
+    }
+
+    public void updateNewTargetPosition(Vector2 position) {
+        if (hasComponent(PositionComponent.class)) {
+            getComponent(PositionComponent.class).setTargetPosition(position);
+        } else {
+            throw new UnsupportedOperationException("Entity does not have PositionComponent");
+        }
     }
 
 }

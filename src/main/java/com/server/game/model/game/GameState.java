@@ -24,6 +24,7 @@ public class GameState {
     private Map<Short, SlotState> slotStates;
     private long currentTick = 0;
 
+    private final Map<String, Entity> stringId2Entity = new ConcurrentHashMap<>();
     private final Map<GridCell, Set<Entity>> grid2Entity = new ConcurrentHashMap<>();
     private final Map<Entity, GridCell> entity2Grid = new ConcurrentHashMap<>();
 
@@ -115,6 +116,11 @@ public class GameState {
             return 0.0f;
         }
         return rotateValue;
+    }
+
+
+    public Entity getEntityByStringId(String stringId) {
+        return stringId2Entity.get(stringId);
     }
 
     public Integer getGoldGeneratedPerSecond() {

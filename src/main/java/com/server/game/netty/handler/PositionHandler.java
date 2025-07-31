@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
+import com.server.game.model.game.Entity;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.PositionReceive;
 import com.server.game.service.attack.AttackTargetingService;
@@ -40,32 +41,30 @@ public class PositionHandler {
 
         String gameId = ChannelManager.getGameIdByChannel(channel);
         
-        // TODO: need to handle more general case for all entities, not just champions
-        String entityId = receiveObject.getStringId();
+        String entityStringId = receiveObject.getStringId();
 
-        Short slot = ChannelManager.getSlotByChannel(channel);
-
-        long timestamp = receiveObject.getTimestamp();
-        
-        if (gameId == null || slot == null) {
-            System.out.println(">>> Invalid gameId for position update");
-            return;
-        }
-        
-        // Kiểm tra slot có hợp lệ không (chống hack)
-        short expectedSlot = ChannelManager.getSlotByChannel(channel);
-        if (slot != expectedSlot) {
-            System.out.println(">>> Slot mismatch: received " + slot + ", expected " + expectedSlot);
+        Entity entity = gameStateService.getEntityByStringId(gameId, entityStringId);
+        if (entity == null) {
+            log.debug("Entity not found for stringId: {}", entityStringId);
             return;
         }
 
+        // Short slot = ChannelManager.getSlotByChannel(channel);
+
+        long clientTimestamp = receiveObject.getTimestamp();
+        
+        if (gameId == null) {
+            log.debug("Invalid gameId for position update");
+            return;
+        }
+        
         // Rate limiting check
-        String playerKey = gameId + ":" + slot;
+        String playerKey = gameId + ":" + entityStringId;
         long currentTime = System.currentTimeMillis();
         Long lastUpdate = lastUpdateTime.get(playerKey);
         
         if (lastUpdate != null && (currentTime - lastUpdate) < MIN_UPDATE_INTERVAL) {
-            log.debug("Rate limit exceeded for player {}:{} - ignoring update", gameId, slot);
+            log.debug("Rate limit exceeded for entity {}:{} - ignoring update", gameId, entityStringId);
             return;
         }
         
@@ -73,16 +72,12 @@ public class PositionHandler {
         lastUpdateTime.put(playerKey, currentTime);
 
         // Clear attack target when player manually moves
-        attackTargetingService.clearAttackTarget(gameId, slot);
+        // attackTargetingService.clearAttackTarget(gameId, slot);
 
-        moveService.setMoveTarget(
-            gameId,
-            slot,
-            receiveObject.getPosition()
-        );
+        moveService.setMove(entity, receiveObject.getPosition());
 
-        System.out.println(">>> Position updated for gameId: " + gameId + ", slot: " + slot +
-            ", X: " + receiveObject.getPosition().x() + ", Y: " + receiveObject.getPosition().y() + ", timestamp: " + timestamp);
+        System.out.println(">>> Position updated for gameId: " + entity.getGameId() + ", stringId: " + entity.getStringId() +
+            ", X: " + receiveObject.getPosition().x() + ", Y: " + receiveObject.getPosition().y() + ", timestamp: " + clientTimestamp);
     }
     
     /**

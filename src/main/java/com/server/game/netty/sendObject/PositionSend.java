@@ -4,14 +4,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.netty.channel.Channel;
 
+import com.server.game.model.game.Entity;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.messageEnum.SendMessageType;
+import com.server.game.service.move.MoveService.PositionData;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,11 +23,21 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PositionSend implements TLVEncodable {
     List<EntityPositionData> entities;
     long timestamp;
+
+    public PositionSend(Map<Entity, PositionData> gameStatePendingPositions, long timestamp) {
+        this.entities = gameStatePendingPositions.entrySet().stream()
+            .map(entry -> {
+                Entity entity = entry.getKey();
+                PositionData positionData = entry.getValue();
+                return new EntityPositionData(entity, positionData);
+            })
+            .collect(Collectors.toList());
+        this.timestamp = timestamp;
+    }
 
     @Override
     public SendMessageType getType() {
@@ -70,6 +84,12 @@ public class PositionSend implements TLVEncodable {
         String stringId;
         Vector2 position;
         float speed;
+
+        public EntityPositionData(Entity entity, PositionData positionData) {
+            this.stringId = entity.getStringId();
+            this.position = positionData.getPosition();
+            this.speed = positionData.getSpeed();
+        }
 
 
         public byte[] encode() {

@@ -10,6 +10,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PositionComponent {
     private Vector2 currentPosition;
+    private Vector2 targetPosition;
     private boolean isMoving;
     private boolean inPlayground;
 
@@ -37,6 +38,10 @@ public class PositionComponent {
 
     public void setCurrentPosition(Vector2 newPosition) {
         this.currentPosition = newPosition;
+    }
+    
+    public void setTargetPosition(Vector2 newTargetPosition) {
+        this.targetPosition = newTargetPosition;
     }
 
     public boolean checkInPlayGround(PlayGround playGround) {

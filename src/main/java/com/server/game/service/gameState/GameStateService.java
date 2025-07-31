@@ -59,19 +59,7 @@ public class GameStateService {
         gameStates.put(gameState.getGameId(), gameState);
         log.info("Registered game state for gameId: {}", gameState.getGameId());
     }
-    
-    /**
-     * Initialize player state with champion data
-     */
-    // public void initializePlayerState(String gameId, short slot, ChampionEnum championId, int initialHP) {
-    //     Map<Short, PlayerGameState> gameState = gameStates.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>());
-        
-    //     PlayerGameState playerState = new PlayerGameState(slot, championId, initialHP);
-    //     gameState.put(slot, playerState);
-        
-    //     log.info("Initialized player state for gameId: {}, slot: {}, championId: {}, initialHP: {}", 
-    //             gameId, slot, championId, initialHP);
-    // }
+
 
     /**
      * Get a game state by gameId
@@ -98,7 +86,21 @@ public class GameStateService {
         return slotState;
     }
 
-    public String getChampionStringIdBySlotId(String gameId, short slot) {
+    public Entity getEntityByStringId(String gameId, String entityId) {
+        GameState gameState = gameStates.get(gameId);
+        if (gameState == null) {
+            log.warn("Game state not found for gameId: {}", gameId);
+            return null;
+        }
+
+        Entity entity = gameState.getEntityByStringId(entityId);
+        if (entity == null) {
+            log.warn("Entity not found for gameId: {}, entityId: {}", gameId, entityId);
+        }
+        return entity;
+    }
+
+    public String getStringIdBySlotId(String gameId, short slot) {
         GameState gameState = this.getGameStateById(gameId);
         if (gameState == null) {
             log.warn("Game state not found for gameId: {}", gameId);
@@ -117,11 +119,24 @@ public class GameStateService {
     /**
      * Update position of a slot in the game state
      */
-    public void updateSlotPosition(String gameId, short slot, Vector2 newPosition) {
-        GameState gameState = this.getGameStateById(gameId);
-        if (gameState != null) {
-            gameState.setChampionPosition(slot, newPosition);
+    // public void updateSlotPosition(String gameId, short slot, Vector2 newPosition) {
+    //     GameState gameState = this.getGameStateById(gameId);
+    //     if (gameState != null) {
+    //         gameState.setChampionPosition(slot, newPosition);
+    //     }
+    // }
+
+    public void updatePosition(Entity entity, Vector2 newPosition) {
+        GameState gameState = entity.getGameState();
+        if (gameState == null) {
+            log.warn("Game state not found for entity: {}", entity.getStringId());
+            return;
         }
+
+        gameState.setEntityPosition(entity, newPosition);// TODO
+
+
+        this.updateEntityGridCellMapping(gameState, entity);
     }
 
     
