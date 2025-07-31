@@ -75,12 +75,13 @@ public class GameInititalLoadingHandler {
         List<SlotInfo> slotInfos = gameState.getSlotInfos();
 
         InitialPositionsSend championPositionsSend = 
-            new InitialPositionsSend(gameState.getGameMapId(), slotInfos);
+            new InitialPositionsSend(gameState);
         System.out.println(">>> Send loading initial positions message");
         return channel.writeAndFlush(championPositionsSend);
     }
 
     @Deprecated
+    @SuppressWarnings("unused")
     // This method is deprecated, do not use it anymore
     private ChannelFuture sendChampionInitialHPs(Channel channel, GameState gameState) {
         Map<Short, Champion> slot2Champion = gameState.getChampions();

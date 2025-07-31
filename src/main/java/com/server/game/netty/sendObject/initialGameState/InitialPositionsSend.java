@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import io.netty.channel.Channel;
 
+import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
@@ -28,10 +29,12 @@ public class InitialPositionsSend implements TLVEncodable {
     List<InitialPositionData> championPositionsData;
 
     
-    public InitialPositionsSend(short mapId, List<SlotInfo> slotInfos) {
-        this.mapId = mapId;
+    public InitialPositionsSend(GameState gameState) {
+        this.mapId = gameState.getGameMapId();
+        List<SlotInfo> slotInfos = gameState.getSlotInfos();
         this.championPositionsData = slotInfos.stream()
-            .map(slotInfo -> new InitialPositionData(slotInfo))
+            .map(slotInfo -> new InitialPositionData(slotInfo, 
+                gameState.getChampionBySlot(slotInfo.getSlot()).getStringId()))
             .collect(Collectors.toList());
     }
 
@@ -79,13 +82,15 @@ public class InitialPositionsSend implements TLVEncodable {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public static class InitialPositionData {
         short slot;
+        String championStringId;
         Vector2 position;
         float rotate;
 
-        public InitialPositionData(SlotInfo slotInfo) {
+        public InitialPositionData(SlotInfo slotInfo, String championStringId) {
             this.slot = slotInfo.getSlot();
             this.position = slotInfo.getSpawn().getPosition();
             this.rotate = slotInfo.getSpawn().getRotate();
+            this.championStringId = championStringId;
         }
 
         
@@ -95,6 +100,7 @@ public class InitialPositionsSend implements TLVEncodable {
                 DataOutputStream dos = new DataOutputStream(baos);
 
                 dos.writeShort(slot);
+                dos.writeUTF(championStringId); // This method already add first two bytes for length
                 dos.writeFloat((float) position.x());
                 dos.writeFloat((float) position.y());
                 dos.writeFloat(rotate);

@@ -34,6 +34,7 @@ public class PvPHandler {
      * Handle champion attacking another champion (PvP)
      */
     @Deprecated
+    @SuppressWarnings("unused")
     @MessageMapping(ChampionChampionReceive.class)
     public void handleChampionAttackChampion(ChampionChampionReceive receiveObject, Channel channel) {
         String gameId = ChannelManager.getGameIdByChannel(channel);

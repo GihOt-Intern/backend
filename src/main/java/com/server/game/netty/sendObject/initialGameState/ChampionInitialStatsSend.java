@@ -23,7 +23,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChampionInitialStatsSend implements TLVEncodable {
-    String stringId;
     Integer defense;
     Integer attack;
     Float moveSpeed;
@@ -37,7 +36,6 @@ public class ChampionInitialStatsSend implements TLVEncodable {
 
 
     public ChampionInitialStatsSend(Champion champion, Integer initGold, Map<Short, Integer> allInitHPs) {
-        this.stringId = champion.getStringId();
         this.defense = champion.getDefense();
         this.attack = champion.getDamage();
         this.moveSpeed = champion.getMoveSpeed();
@@ -62,7 +60,6 @@ public class ChampionInitialStatsSend implements TLVEncodable {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(baos);
 
-            dos.writeUTF(stringId); // this method already adds first 2 bytes for byte length
             dos.writeInt(defense);
             dos.writeInt(attack);
             dos.writeFloat(moveSpeed);
