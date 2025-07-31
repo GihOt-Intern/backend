@@ -33,6 +33,7 @@ public class PvPHandler {
     /**
      * Handle champion attacking another champion (PvP)
      */
+    @Deprecated
     @MessageMapping(ChampionChampionReceive.class)
     public void handleChampionAttackChampion(ChampionChampionReceive receiveObject, Channel channel) {
         String gameId = ChannelManager.getGameIdByChannel(channel);
@@ -67,6 +68,7 @@ public class PvPHandler {
     /**
      * Handle champion attacking a target (PvE)
      */
+    @Deprecated
     @MessageMapping(ChampionTarget.class)
     public void handleChampionAttackTarget(ChampionTarget receiveObject, Channel channel) {
         String gameId = ChannelManager.getGameIdByChannel(channel);
@@ -94,6 +96,7 @@ public class PvPHandler {
     /**
      * Handle target attacking a champion (PvE counter-attack)
      */
+    @Deprecated
     @MessageMapping(TargetChampion.class)
     public void handleTargetAttackChampion(TargetChampion receiveObject, Channel channel) {
         String gameId = ChannelManager.getGameIdByChannel(channel);
@@ -115,6 +118,8 @@ public class PvPHandler {
     /**
      * Handle target attacking another target
      */
+    @Deprecated
+    @SuppressWarnings("unused")
     @MessageMapping(TargetTarget.class)
     public void handleTargetAttackTarget(TargetTarget receiveObject, Channel channel) {
         String gameId = ChannelManager.getGameIdByChannel(channel);

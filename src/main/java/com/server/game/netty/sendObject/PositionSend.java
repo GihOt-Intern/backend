@@ -22,7 +22,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PositionSend implements TLVEncodable {
-    List<PlayerPositionData> players;
+    List<EntityPositionData> entities;
     long timestamp;
 
     @Override
@@ -37,11 +37,11 @@ public class PositionSend implements TLVEncodable {
             DataOutputStream dos = new DataOutputStream(baos);
 
             // Write number of players
-            dos.writeShort(players.size());
-            
-            // Write each player's data
-            for (PlayerPositionData player : players) {
-                dos.write(player.encode());
+            dos.writeShort(entities.size());
+
+            // Write each entity's data
+            for (EntityPositionData entity : entities) {
+                dos.write(entity.encode());
             }
             
             // Write timestamp
@@ -66,8 +66,8 @@ public class PositionSend implements TLVEncodable {
     // Inner class để lưu trữ dữ liệu vị trí player
     @Data
     @AllArgsConstructor
-    public static class PlayerPositionData {
-        short slot;
+    public static class EntityPositionData {
+        String stringId;
         Vector2 position;
         float speed;
 
@@ -77,7 +77,7 @@ public class PositionSend implements TLVEncodable {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 DataOutputStream dos = new DataOutputStream(baos);
 
-                dos.writeShort(slot);
+                dos.writeUTF(stringId); // this method already adds first 2 bytes for byte length
                 dos.writeFloat(position.x());
                 dos.writeFloat(position.y());
                 dos.writeFloat(speed);

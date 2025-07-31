@@ -7,7 +7,7 @@ import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.GoldComponent;
 import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.handler.PlayGroundHandler;
+import com.server.game.netty.handler.PlaygroundHandler;
 import com.server.game.resource.model.GameMap.PlayGround;
 
 import lombok.AllArgsConstructor;
@@ -25,9 +25,6 @@ public class SlotState {
     private Champion champion;
 
     @Delegate
-    private PositionComponent positionComponent;
-
-    @Delegate
     private GoldComponent goldComponent;
 
     private Set<TroopInstance2> troops;
@@ -35,23 +32,22 @@ public class SlotState {
     public SlotState(Short slot, Champion champion, Vector2 initialPosition, Integer initialGold) {
         this.slot = slot;
         this.champion = champion;
-        this.positionComponent = new PositionComponent(initialPosition);
         this.goldComponent = new GoldComponent(initialGold);
         this.troops = new HashSet<>();
     }
 
 
     public void checkInPlayGround(String gameId, PlayGround playGround) {
-        boolean nextInPlayGround = this.positionComponent.checkInPlayGround(playGround);
+        boolean nextInPlayGround = this.champion.checkInPlayGround(playGround);
         
         System.out.println(">>> [Log in SlotState.checkInPlayGround] Slot " + slot + " nextInPlayGround: " + 
-            nextInPlayGround + ", current inPlayGround: " + this.isInPlayGround());
-        
-            if (nextInPlayGround != this.isInPlayGround()) {
-            this.toggleInPlayGroundFlag(); // Toggle the state
-            PlayGroundHandler playGroundHandler =
-                SpringContextHolder.getBean(PlayGroundHandler.class);
-            playGroundHandler.sendInPlayGroundUpdateMessage(gameId, this.slot, this.isInPlayGround());
+            nextInPlayGround + ", current inPlayGround: " + this.champion.isInPlayground());
+
+        if (nextInPlayGround != this.champion.isInPlayground()) {
+            this.champion.toggleInPlaygroundFlag(); // Toggle the state
+            PlaygroundHandler playgroundHandler =
+                SpringContextHolder.getBean(PlaygroundHandler.class);
+            playgroundHandler.sendInPlaygroundUpdateMessage(gameId, this.slot, this.champion.isInPlayground());
         }
     }
 
@@ -89,8 +85,8 @@ public class SlotState {
     }
 
     public void handleGoldChange(String gameId) {
-        PlayGroundHandler playGroundHandler = 
-            SpringContextHolder.getBean(PlayGroundHandler.class);
+        PlaygroundHandler playGroundHandler = 
+            SpringContextHolder.getBean(PlaygroundHandler.class);
         playGroundHandler.sendGoldChangeMessage(gameId, this.slot, this.getCurrentGold());
     }
 

@@ -11,14 +11,14 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class PlayGroundHandler {
+public class PlaygroundHandler {
 
-    public void sendInPlayGroundUpdateMessage(String gameId, short slot, boolean isInPlayGround) {
+    public void sendInPlaygroundUpdateMessage(String gameId, Short slot, boolean isInPlayground) {
         Channel channel = ChannelManager.getChannelByGameIdAndSlot(gameId, slot);
         if (channel != null) {
-            IsInPlaygroundSend isInPlayGroundSend = new IsInPlaygroundSend(isInPlayGround);
-            channel.writeAndFlush(isInPlayGroundSend);        
-            log.info("Sending isInPlayGround update message for gameId: {}, slot: {}, isInPlayGround: {}", gameId, slot, isInPlayGround);
+            IsInPlaygroundSend isInPlaygroundSend = new IsInPlaygroundSend(isInPlayground);
+            channel.writeAndFlush(isInPlaygroundSend);
+            log.info("Sending isInPlayground update message for gameId: {}, slot: {}, isInPlayground: {}", gameId, slot, isInPlayground);
         }
     }
 

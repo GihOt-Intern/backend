@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.PositionSend;
+import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.move.MoveService;
 import com.server.game.service.move.MoveService.PositionData;
 
@@ -26,6 +27,7 @@ public class PositionBroadcastService {
     
     PositionService positionService;
     MoveService moveService;
+    GameStateService gameStateService;
     
     /**
      * Hủy đăng ký game - được gọi từ GameScheduler
@@ -52,7 +54,7 @@ public class PositionBroadcastService {
         Map<Short, PositionData> oldPositions = positionService.getGamePositions(gameId);
         
         // Tạo danh sách player data chỉ cho những player đã thay đổi vị trí
-        List<PositionSend.PlayerPositionData> playerDataList = new ArrayList<>();
+        List<PositionSend.EntityPositionData> playerDataList = new ArrayList<>();
         
         for (Map.Entry<Short, PositionData> entry : pendingPositions.entrySet()) {
             short playerSlot = entry.getKey();
@@ -61,8 +63,8 @@ public class PositionBroadcastService {
             
             // Kiểm tra xem player này có thay đổi vị trí không
             if (hasPositionChanged(oldPosition, newPosition)) {
-                playerDataList.add(new PositionSend.PlayerPositionData(
-                    playerSlot,
+                playerDataList.add(new PositionSend.EntityPositionData(
+                    gameStateService.getChampionStringIdBySlotId(gameId, playerSlot),
                     newPosition.getPosition(),
                     newPosition.getSpeed()
                 ));

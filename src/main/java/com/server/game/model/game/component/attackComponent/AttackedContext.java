@@ -3,6 +3,7 @@ package com.server.game.model.game.component.attackComponent;
 import java.util.Map;
 
 import com.server.game.model.game.Entity;
+import com.server.game.model.game.context.AttackContext;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -2,6 +2,8 @@ package com.server.game.model.game.component.attackComponent;
 
 
 import com.server.game.model.game.Entity;
+import com.server.game.model.game.attackStrategy.AttackStrategy;
+import com.server.game.model.game.context.AttackContext;
 import com.server.game.util.Util;
 
 import lombok.Getter;

@@ -52,6 +52,7 @@ public class ChampionService {
         return champion.getInitialHP();
     }
 
+    @Deprecated
     public List<ChampionInitialHPData> getChampionInitialHPsData(String gameId) {
         Map<Short, ChampionEnum> slot2ChampionId = ChannelManager.getSlot2ChampionId(gameId);
 

@@ -3,7 +3,7 @@ package com.server.game.netty.handler;
 
 import org.springframework.stereotype.Component;
 
-import com.server.game.model.game.component.attackComponent.AttackContext;
+import com.server.game.model.game.context.AttackContext;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.pvp.AttackAnimationDisplaySend;
 import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
@@ -20,15 +20,17 @@ public class SocketSender {
     public static void sendAttackAnimation(AttackContext ctx, ChampionAnimationEnum animationEnum) {
         try {
             // Create attack animation display message
-            AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(
-                ctx.getAttackerSlot(), 
-                ctx.getAttackerId(), 
-                ctx.getTargetSlot(), 
-                ctx.getTargetId(),
-                animationEnum, 
-                ctx.getAttacker().getAttackSpeed(),
-                ctx.getTimestamp()
-            );
+            // AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(
+            //     ctx.getAttacker().getSlot(), 
+            //     ctx.getAttackerId(), 
+            //     ctx.getTargetSlot(), 
+            //     ctx.getTargetId(),
+            //     animationEnum, 
+            //     ctx.getAttacker().getAttackSpeed(),
+            //     ctx.getTimestamp()
+            // );
+
+            AttackAnimationDisplaySend attackAnimation = null;
 
             // Get any channel from the game to trigger the framework
             Channel channel = ChannelManager.getAnyChannelByGameId(ctx.getGameId());
@@ -42,13 +44,15 @@ public class SocketSender {
     public static void sendHealthUpdate(AttackContext ctx, int actualDamage) {
         try {
             // Create health update message
-            HealthUpdateSend healthUpdateSend = new HealthUpdateSend(
-                ctx.getTargetSlot(),
-                ctx.getTarget().getCurrentHP(),
-                ctx.getTarget().getMaxHP(),
-                actualDamage,
-                ctx.getTimestamp()
-            );
+            HealthUpdateSend healthUpdateSend = null;
+            
+            // new HealthUpdateSend(
+            //     ctx.getTargetSlot(),
+            //     ctx.getTarget().getCurrentHP(),
+            //     ctx.getTarget().getMaxHP(),
+            //     actualDamage,
+            //     ctx.getTimestamp()
+            // );
 
             // Get any channel from the game to trigger the framework
             Channel channel = ChannelManager.getAnyChannelByGameId(ctx.getGameId());

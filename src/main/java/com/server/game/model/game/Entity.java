@@ -9,20 +9,32 @@ import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.map.component.Vector2;
 
+import lombok.experimental.Delegate;
+import lombok.Getter;
+
 // abstract class to represent an entity in the game
 // (Champion, Troop, Tower, Burg)
+@Getter
 public abstract class Entity implements Attackable {
 
-
+    protected String stringId;
     protected Short ownerSlot;
     protected GameState gameState;
+
+    @Delegate
+    private PositionComponent positionComponent;
 
 
     private final Map<Class<?>, Object> components = new HashMap<>();
 
-    public Entity(Short ownerSlot, GameState gameState){
+    public Entity(String stringId, Short ownerSlot, GameState gameState, Vector2 initPosition) {
+        this.stringId = stringId;
         this.ownerSlot = ownerSlot;
         this.gameState = gameState;
+        this.positionComponent = new PositionComponent(initPosition);
+
+
+        this.addComponent(PositionComponent.class, positionComponent);
     }
 
     public Short getOwnerSlot() { return ownerSlot; }
@@ -93,5 +105,4 @@ public abstract class Entity implements Attackable {
             .distanceTo(other.getCurrentPosition());
     }
 
-    public abstract String getIdAString();
 }

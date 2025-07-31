@@ -11,16 +11,16 @@ import lombok.Getter;
 public class PositionComponent {
     private Vector2 currentPosition;
     private boolean isMoving;
-    private boolean inPlayGround;
+    private boolean inPlayground;
 
-    public PositionComponent(Vector2 spawnPosition){
-        this.currentPosition = spawnPosition;
-        this.inPlayGround = false;
+    public PositionComponent(Vector2 initPosition){
+        this.currentPosition = initPosition;
+        this.inPlayground = false;
         this.isMoving = false;
     }
 
-    public void toggleInPlayGroundFlag(){
-        this.inPlayGround = !this.inPlayGround;
+    public void toggleInPlaygroundFlag(){
+        this.inPlayground = !this.inPlayground;
     }
 
     public boolean isMoving() {

@@ -1,10 +1,15 @@
 package com.server.game.service.gameState;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -12,12 +17,17 @@ import org.springframework.stereotype.Service;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
+import com.server.game.model.game.component.attackComponent.SkillReceivable;
+import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
+import com.server.game.model.map.shape.Shape;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.respawn.ChampionDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnTimeSend;
 import com.server.game.service.attack.AttackTargetingService;
+import com.server.game.util.Util;
+import com.server.game.model.game.Entity;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
@@ -87,6 +97,22 @@ public class GameStateService {
         }
         return slotState;
     }
+
+    public String getChampionStringIdBySlotId(String gameId, short slot) {
+        GameState gameState = this.getGameStateById(gameId);
+        if (gameState == null) {
+            log.warn("Game state not found for gameId: {}", gameId);
+            return null;
+        }
+        
+        Champion champion = gameState.getChampionBySlot(slot);
+        if (champion == null) {
+            log.warn("Champion not found for gameId: {}, slot: {}", gameId, slot);
+            return null;
+        }
+        
+        return champion.getStringId();
+    }
     
     /**
      * Update position of a slot in the game state
@@ -94,7 +120,7 @@ public class GameStateService {
     public void updateSlotPosition(String gameId, short slot, Vector2 newPosition) {
         GameState gameState = this.getGameStateById(gameId);
         if (gameState != null) {
-            gameState.setSlotPosition(slot, newPosition);
+            gameState.setChampionPosition(slot, newPosition);
         }
     }
 
@@ -444,7 +470,7 @@ public class GameStateService {
         Integer goldGeneratedPerSecond = gameState.getGoldGeneratedPerSecond();
         for (Map.Entry<Short, SlotState> entry : gameState.getSlotStates().entrySet()) {
             SlotState slotState = entry.getValue();
-            if (slotState.isInPlayGround()) {
+            if (slotState.getChampion().isInPlayground()) {
                 gameState.addGold(slotState.getSlot(), goldGeneratedPerSecond);
             }
         }
@@ -486,6 +512,188 @@ public class GameStateService {
     }
 
 
+    private GridCell getGridCellByEntity(GameState gameState, Entity entity) {
+        if (gameState == null || entity == null) {
+            log.warn("Invalid parameters for getting grid cell by entity");
+            return null;
+        }
+        
+        return gameState.getEntity2Grid().get(entity);
+    }
 
+    private Set<Entity> getEntitiesByGridCell(GameState gameState, GridCell gridCell) {
+        if (gameState == null || gridCell == null) {
+            log.warn("Invalid parameters for getting entities by grid cell");
+            return null;
+        }
+        
+        return gameState.getGrid2Entity().get(gridCell);
+    }
+
+    private void updateEntity2Grid(GameState gameState, Entity entity, GridCell gridCell) {
+        if (gameState == null || entity == null || gridCell == null) {
+            log.warn("Invalid parameters for updating entity to grid cell mapping");
+            return;
+        }
+        
+        gameState.getEntity2Grid().put(entity, gridCell);
+        log.debug("Updated entity {} to grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
+    }
+
+    private void popEntityFromGridCell(GameState gameState, Entity entity, GridCell gridCell) {
+        if (gameState == null || entity == null || gridCell == null) {
+            log.warn("Invalid parameters for popping entity from grid cell");
+            return;
+        }
+        Set<Entity> entities = this.getEntitiesByGridCell(gameState, gridCell);
+        if (entities != null) {
+            entities.remove(entity);
+            log.debug("Removed entity {} from grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
+        } else {
+            log.warn("No entities found in grid cell {} for gameId: {}", gridCell, gameState.getGameId());
+        }
+        if (entities == null || entities.isEmpty()) {
+            gameState.getGrid2Entity().remove(gridCell);
+            log.debug("Removed empty grid cell {} from gameId: {}", gridCell, gameState.getGameId());
+        }
+    }
+
+    private void pushEntityToGridCell(GameState gameState, GridCell gridCell, Entity entity) {
+        if (gameState == null || gridCell == null || entity == null) {
+            log.warn("Invalid parameters for pushing entity to grid cell");
+            return;
+        }
+        
+        gameState.getGrid2Entity().computeIfAbsent(gridCell, k -> ConcurrentHashMap.newKeySet()).add(entity);
+        log.debug("Pushed entity {} to grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
+    }
+
+
+    private void updateGridCell2Entity(GameState gameState, GridCell gridCell, Entity entity) {
+        if (gameState == null || gridCell == null || entity == null) {
+            log.warn("Invalid parameters for updating grid cell to entity mapping");
+            return;
+        }
+        
+        GridCell oldGridCell = this.getGridCellByEntity(gameState, entity);
+
+        if (oldGridCell != null) { // Entity was already in map at old grid cell
+            if (oldGridCell.equals(gridCell)) {
+                log.debug("Entity {} is already in grid cell {}, no update needed", entity, gridCell);
+                return; // No change needed
+            }
+            
+            // Overwrite the entity's old grid cell by the new one
+            this.updateEntity2Grid(gameState, entity, gridCell);
+
+            // Remove entity in old grid cell's set
+            this.popEntityFromGridCell(gameState, entity, oldGridCell);
+        }
+
+        // Update the entity to the new grid cell
+        this.pushEntityToGridCell(gameState, oldGridCell, entity);
+        
+        log.debug("Updated entity {} from old grid cell {} to new grid cell {}",
+                entity, oldGridCell, gridCell);
+
+        log.debug("Updated grid cell {} to entity {} in gameId: {}", gridCell, entity, gameState.getGameId());
+    }
+
+
+    /**
+     * Update the entity-grid cell mapping for an entity in the game state
+     * @param gameState The game state to update
+     * @param entity The entity to update
+     */
+    public void updateEntityGridCellMapping(GameState gameState, Entity entity) {
+        if (gameState == null || entity == null) {
+            log.warn("Invalid parameters for updating entity grid cell mapping");
+            return;
+        }
+
+        Vector2 newPosition = entity.getCurrentPosition();
+        GridCell gridCell = gameState.toGridCell(newPosition);
+        
+        // Update the grid cell for the entity
+        this.updateGridCell2Entity(gameState, gridCell, entity);
+    }
+
+
+    public Set<Entity> getEntitiesInScope(GameState gameState, Shape scope) {
+        
+        int dir[][] = Util.EIGHT_DIRECTIONS;
+
+        HashSet<GridCell> visitedCells = new HashSet<>();
+        
+        // Use BFS to find all GridCells that inside the ShapeInterface scope
+        Set<Entity> entitiesInScope = ConcurrentHashMap.newKeySet();
+        
+        Queue<GridCell> cellsToCheck = new ConcurrentLinkedQueue<>();
+        GridCell initialCell = gameState.toGridCell(scope.getCenter());
+        cellsToCheck.offer(initialCell);
+        visitedCells.add(initialCell);
+
+        while(!cellsToCheck.isEmpty()) {
+            GridCell currentCell = cellsToCheck.poll();
+            if (currentCell == null) {
+                continue;
+            }
+
+
+            Set<Entity> entities = this.getEntitiesByGridCell(gameState, currentCell);
+            if (entities != null) {
+                entitiesInScope.addAll(entities);
+            }
+
+            Vector2 cellCenter = gameState.toPosition(currentCell);
+            if (scope.contains(cellCenter)) {
+                // Add all entities in this cell to the result set
+                
+            }
+
+            // Check neighboring cells
+            for (int[] direction : dir) {
+                GridCell neighborCell = currentCell.add(direction[0], direction[1]);
+                
+                if (!gameState.isValidGridCell(neighborCell) || 
+                    visitedCells.contains(neighborCell) ||
+                    !scope.contains(gameState.toPosition(neighborCell))) {
+                    continue; // Skip invalid grid cells, already visited cells, or cells outside the scope
+                }
+                
+                cellsToCheck.offer(neighborCell);
+                visitedCells.add(neighborCell);
+            }
+        }
     
+        return entitiesInScope;
+    }
+
+    public Set<Entity> getEnemiesInScope(GameState gameState, Shape scope, short slot) {
+        Set<Entity> res = this.getEntitiesInScope(gameState, scope);
+        for (Entity entity : res) {
+            if (entity.getOwnerSlot() == slot) {
+                res.remove(entity);
+            }
+        }
+        return res;
+    }
+
+    public Set<Entity> getAlliesInScope(GameState gameState, Shape scope, short slot) {
+        Set<Entity> res = this.getEntitiesInScope(gameState, scope);
+        for (Entity entity : res) {
+            if (entity.getOwnerSlot() != slot) {
+                res.remove(entity);
+            }
+        }
+        return res;
+    }
+
+    public Set<SkillReceivable> getSkillReceivableEnemiesInScope(GameState gameState, Shape scope, short slot) {
+        Set<Entity> entities = this.getEnemiesInScope(gameState, scope, slot);
+        return entities.stream()
+            .filter(entity -> entity instanceof SkillReceivable)
+            .map(SkillReceivable.class::cast)
+            .collect(Collectors.toSet());
+    }
 }

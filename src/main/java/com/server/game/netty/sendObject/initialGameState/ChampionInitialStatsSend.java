@@ -3,6 +3,7 @@ package com.server.game.netty.sendObject.initialGameState;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 import io.netty.channel.Channel;
 
@@ -22,6 +23,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChampionInitialStatsSend implements TLVEncodable {
+    String stringId;
     Integer defense;
     Integer attack;
     Float moveSpeed;
@@ -31,8 +33,11 @@ public class ChampionInitialStatsSend implements TLVEncodable {
     Float skillCooldown;
     Integer initGold;
 
+    Map<Short, Integer> allInitHPs;
 
-    public ChampionInitialStatsSend(Champion champion, Integer initGold) {
+
+    public ChampionInitialStatsSend(Champion champion, Integer initGold, Map<Short, Integer> allInitHPs) {
+        this.stringId = champion.getStringId();
         this.defense = champion.getDefense();
         this.attack = champion.getDamage();
         this.moveSpeed = champion.getMoveSpeed();
@@ -41,6 +46,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
         this.resourceClaimingSpeed = champion.getResourceClaimingSpeed();
         this.skillCooldown = champion.getCooldown();
         this.initGold = initGold;
+        this.allInitHPs = allInitHPs;
     }
 
 
@@ -56,6 +62,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(baos);
 
+            dos.writeUTF(stringId); // this method already adds first 2 bytes for byte length
             dos.writeInt(defense);
             dos.writeInt(attack);
             dos.writeFloat(moveSpeed);
@@ -65,10 +72,16 @@ public class ChampionInitialStatsSend implements TLVEncodable {
             dos.writeFloat(skillCooldown);
             dos.writeInt(initGold);
 
+            dos.writeInt(allInitHPs.size());
+            for (Map.Entry<Short, Integer> entry : allInitHPs.entrySet()) {
+                dos.writeShort(entry.getKey());
+                dos.writeInt(entry.getValue());
+            }
+
 
             return baos.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException("Cannot encode ChampionInitialHPsSend", e);
+            throw new RuntimeException("Cannot encode ChampionInitialStatsSend", e);
         }
     }
 

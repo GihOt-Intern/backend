@@ -13,21 +13,24 @@ import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.PositionReceive;
 import com.server.game.service.attack.AttackTargetingService;
+import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.move.MoveService;
 
 import io.netty.channel.Channel;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class PositionHandler {
     private final MoveService moveService;
 
     @Lazy
-    @Autowired
     private AttackTargetingService attackTargetingService;
+    
+    private GameStateService gameStateService;
+    
     
     // Rate limiting: minimum time between position updates (in milliseconds)
     private static final long MIN_UPDATE_INTERVAL = 50; // 50ms = max 20 updates per second
@@ -37,7 +40,12 @@ public class PositionHandler {
     public void handlePosition(PositionReceive receiveObject, Channel channel) {
 
         String gameId = ChannelManager.getGameIdByChannel(channel);
-        Short slot = receiveObject.getSlot();
+        
+        // TODO: need to handle more general case for all entities, not just champions
+        String entityId = receiveObject.getStringId();
+
+        Short slot = ChannelManager.getSlotByChannel(channel);
+
         long timestamp = receiveObject.getTimestamp();
         
         if (gameId == null || slot == null) {

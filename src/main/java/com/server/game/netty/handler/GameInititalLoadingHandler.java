@@ -4,6 +4,7 @@ package com.server.game.netty.handler;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
@@ -39,7 +40,7 @@ public class GameInititalLoadingHandler {
         GameState gameState = gameStateBuilder.build(channel);
         ChannelFuture future = 
             this.sendInitialPositions(channel, gameState);
-        future = this.sendChampionInitialHPs(channel, gameState);
+        // future = this.sendChampionInitialHPs(channel, gameState);
         future = this.sendChampionInitialStats(channel, gameState);
 
         // Initialize game state before completing
@@ -69,41 +70,6 @@ public class GameInititalLoadingHandler {
         });
     }
 
-    /**
-     * Initialize game state for the given gameId
-     * @param gameId
-     * @param gameState
-     * @return
-     */
-    // private void initializeGameState(String gameId, GameState gameState) {
-    //     Map<Short, ChampionEnum> slot2Champion = new HashMap<>();
-        
-    //     // Populate slot to champion map from game state
-    //     for (Map.Entry<Short, Champion> entry : gameState.getChampions().entrySet()) {
-    //         Short slot = entry.getKey();
-    //         Champion champion = entry.getValue();
-    //         ChampionEnum championEnum = ChampionEnum.fromShort(champion.getId());
-    //         slot2Champion.put(slot, championEnum);
-    //         System.out.println(">>> Adding champion " + championEnum + " for slot " + slot);
-    //     }
-
-    //     Map<ChampionEnum, Integer> championInitialHPMap = new HashMap<>();
-    //     for (ChampionEnum championId : slot2Champion.values()) {
-    //         Integer initialHP = championService.getInitialHP(championId);
-    //         championInitialHPMap.put(championId, initialHP);
-    //         System.out.println(">>> Setting initial HP " + initialHP + " for champion " + championId);
-    //     }
-
-    //     boolean initSuccess = gameStateManager.initializeGame(gameId, slot2Champion, championInitialHPMap);
-
-    //     if (initSuccess) {
-    //         System.out.println(">>> [Log in GameLoadingHandler.initializeGameState] Successfully initialized game state for gameId: " + gameId);
-    //     } else {
-    //         System.err.println(">>> [Log in GameLoadingHandler.initializeGameState] Failed to initialize game state for gameId: " + gameId);
-    //     }
-    // }
-
-
 
     private ChannelFuture sendInitialPositions(Channel channel, GameState gameState) {
         List<SlotInfo> slotInfos = gameState.getSlotInfos();
@@ -114,6 +80,8 @@ public class GameInititalLoadingHandler {
         return channel.writeAndFlush(championPositionsSend);
     }
 
+    @Deprecated
+    // This method is deprecated, do not use it anymore
     private ChannelFuture sendChampionInitialHPs(Channel channel, GameState gameState) {
         Map<Short, Champion> slot2Champion = gameState.getChampions();
         ChampionInitialHPsSend championInitialHPsSend = 
@@ -125,6 +93,13 @@ public class GameInititalLoadingHandler {
     private ChannelFuture sendChampionInitialStats(Channel channel, GameState gameState) {
         // Send message is unicast, need to get all channels in room and send one by one
         Set<Channel> playersInRoom = ChannelManager.getGameChannelsByInnerChannel(channel);
+        
+        // Get champions' initial HPs
+        Map<Short, Integer> allInitHPs = gameState.getChampions()
+            .entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, 
+                    entry -> entry.getValue().getInitialHP()));
+        
         ChannelFuture lastFuture = null;
         for (Channel playerChannel : playersInRoom) {
             Short slot = ChannelManager.getSlotByChannel(playerChannel);
@@ -134,8 +109,11 @@ public class GameInititalLoadingHandler {
                 continue;
             }
             Integer initGold = gameState.peekGold(slot);
+
+
             ChampionInitialStatsSend championInitialStatsSend = 
-                new ChampionInitialStatsSend(champion, initGold);
+                new ChampionInitialStatsSend(champion, initGold, allInitHPs);
+
             lastFuture = playerChannel.writeAndFlush(championInitialStatsSend);
         }
 

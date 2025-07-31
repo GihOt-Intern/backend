@@ -26,6 +26,17 @@ public class Util {
 
     private static Integer gameTickIntervalMs;
 
+    public static final int[][] EIGHT_DIRECTIONS = {
+        {-1, 0},  // up
+        {1, 0},   // down
+        {0, -1},  // left
+        {0, 1},   // right
+        {-1, -1}, // diagonal up left
+        {-1, 1},  // diagonal up right
+        {1, -1},  // diagonal down left
+        {1, 1}    // diagonal down right
+    };
+
     public static void printHex(ByteBuffer buffer, boolean isFromBeginning) {
         ByteBuffer readOnly = buffer.asReadOnlyBuffer();
         if (isFromBeginning) {

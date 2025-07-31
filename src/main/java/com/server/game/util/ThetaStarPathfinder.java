@@ -8,16 +8,7 @@ import com.server.game.model.map.component.GridCell;
 public class ThetaStarPathfinder {
 
     // 4 directions or 8 directions ???
-    private static final int[][] DIRECTIONS = {
-        {-1, 0},  // up
-        {1, 0},   // down
-        {0, -1},  // left
-        {0, 1},   // right
-        {-1, -1}, // diagonal up left
-        {-1, 1},  // diagonal up right
-        {1, -1},  // diagonal down left
-        {1, 1}    // diagonal down right
-    };
+    private static final int[][] DIRECTIONS = Util.EIGHT_DIRECTIONS;
 
     public static List<GridCell> findPath(boolean[][] grid, GridCell start, GridCell end) {
         int rows = grid.length;

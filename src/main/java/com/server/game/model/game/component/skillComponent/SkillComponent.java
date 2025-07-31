@@ -2,22 +2,29 @@ package com.server.game.model.game.component.skillComponent;
 
 
 
+import org.springframework.stereotype.Component;
+
 import com.server.game.model.game.Champion;
+import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 import com.server.game.util.Util;
 
 import lombok.Data;
 
 @Data
+@Component
 public abstract class SkillComponent {
+    protected Champion skillOwner;
     protected String name;
     protected float cooldownSeconds;
     protected long cooldownTick;
     protected long lastUsedTick;
 
-    public SkillComponent(ChampionAbility ability) {
+    public SkillComponent(Champion owner, ChampionAbility ability) {
+        this.skillOwner = owner;
         this.name = ability.getName();
         this.cooldownSeconds = ability.getCooldown();
+        
         this.cooldownTick = Util.seconds2GameTick(cooldownSeconds);
         this.lastUsedTick = -cooldownTick; // Initialize to allow immediate use
     }
@@ -48,17 +55,17 @@ public abstract class SkillComponent {
     // Template method pattern
     // Wrapper method to ensure cooldown is checked before using the skill
     // Concrete subclasses must only implement the doUse method below
-    public final void use(Champion caster, SkillContext context) {
+    public final void use(CastSkillContext context) {
         long currentTick = context.getCurrentTick();
         if (!isReady(currentTick)) return;
 
-        doUse(caster, context);
+        doUse(context);
 
         lastUsedTick = currentTick;
     }
 
     // Protected access modifier to allow subclasses to implement their specific skill logic
     // but not to be called directly
-    protected abstract void doUse(Champion caster, SkillContext context);
-    public abstract void update(long currentTick); // Nếu có skill cần xử lý theo thời gian
+    protected abstract void doUse(CastSkillContext context);
+    public abstract void update(CastSkillContext context); // Nếu có skill cần xử lý theo thời gian
 }

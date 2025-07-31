@@ -2,13 +2,17 @@ package com.server.game.model.game;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import com.server.game.config.SpringContextHolder;
 import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.GameMapGrid;
 import com.server.game.resource.model.SlotInfo;
+import com.server.game.service.gameState.GameStateService;
 
 import lombok.Getter;
 
@@ -19,6 +23,9 @@ public class GameState {
     private GameMapGrid gameMapGrid;
     private Map<Short, SlotState> slotStates;
     private long currentTick = 0;
+
+    private final Map<GridCell, Set<Entity>> grid2Entity = new ConcurrentHashMap<>();
+    private final Map<Entity, GridCell> entity2Grid = new ConcurrentHashMap<>();
 
     public GameState(String gameId, GameMap gameMap, GameMapGrid gameMapGrid, Map<Short, Champion> slot2Champion) {
         this.gameId = gameId;
@@ -40,15 +47,34 @@ public class GameState {
         return slotStates.size();
     }
 
-    public void setSlotPosition(Short slot, Vector2 newPosition) {
+    public void setChampionPosition(Short slot, Vector2 newPosition) {
         SlotState slotState = slotStates.get(slot);
         if (slotState != null) {
-            slotState.setCurrentPosition(newPosition);
+            slotState.getChampion().setCurrentPosition(newPosition);
+
+            SpringContextHolder.getBean(GameStateService.class)
+                .updateEntityGridCellMapping(this, slotState.getChampion());
 
             slotState.checkInPlayGround(this.gameId, gameMap.getPlayGround());
             return;
         }
         System.err.println(">>> [Log in GameState.setSlotPosition] Slot " + slot + " not found in game state for gameId: " + gameId);
+    }
+
+    public void setTroopPosition(TroopInstance2 troop, Vector2 newPosition) {
+        SlotState slotState = slotStates.get(troop.getOwnerSlot());
+        if (slotState != null) {
+            slotState.getTroops().stream()
+                .filter(t -> t.getStringId().equals(troop.getStringId()))
+                .findFirst()
+                .ifPresent(t -> t.setCurrentPosition(newPosition));
+
+            SpringContextHolder.getBean(GameStateService.class)
+                .updateEntityGridCellMapping(this, troop);
+
+            return;
+        }
+        System.err.println(">>> [Log in GameState.setTroopPosition] Slot " + troop.getOwnerSlot() + " not found in game state for gameId: " + gameId);
     }
 
     public Float getSpeed(Short slot) {
@@ -168,5 +194,11 @@ public class GameState {
 
     public void incrementTick() {
         this.currentTick++;
+    }
+
+    public boolean isValidGridCell(GridCell cell) {
+        return cell != null && 
+               cell.r() >= 0 && cell.r() < gameMapGrid.getNRows() &&
+               cell.c() >= 0 && cell.c() < gameMapGrid.getNCols();
     }
 }

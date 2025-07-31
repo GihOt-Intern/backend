@@ -1,7 +1,8 @@
-package com.server.game.model.game.component.attackComponent;
+package com.server.game.model.game.attackStrategy;
 
 import org.springframework.stereotype.Component;
 
+import com.server.game.model.game.context.AttackContext;
 import com.server.game.netty.handler.SocketSender;
 import com.server.game.util.ChampionAnimationEnum;
 

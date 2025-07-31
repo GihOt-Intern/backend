@@ -8,6 +8,7 @@ import com.server.game.annotation.customAnnotation.ReceiveType;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.tlv.interf4ce.TLVDecodable;
 import com.server.game.netty.tlv.messageEnum.ReceiveMessageType;
+import com.server.game.util.Util;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -20,13 +21,16 @@ import lombok.experimental.FieldDefaults;
 @ReceiveType(ReceiveMessageType.POSITION_UPDATE_RECEIVE)
 @Component
 public class PositionReceive implements TLVDecodable {
-    short slot;
+    String stringId;
     Vector2 position;
     long timestamp;
 
     @Override
     public void decode(ByteBuffer buffer) {
-        slot = buffer.getShort();
+        int stringIdByteLength = buffer.getShort();
+        byte[] stringIdBytes = new byte[stringIdByteLength];
+        buffer.get(stringIdBytes);
+        stringId = Util.bytesToString(stringIdBytes);
         position = new Vector2(buffer.getFloat(), buffer.getFloat());
         timestamp = buffer.getLong();
     }

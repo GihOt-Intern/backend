@@ -1,12 +1,12 @@
 package com.server.game.model.game;
 
 import com.server.game.config.SpringContextHolder;
+import com.server.game.model.game.attackStrategy.TroopAttackStrategy;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
-import com.server.game.model.game.component.attackComponent.AttackContext;
-import com.server.game.model.game.component.attackComponent.TroopAttackStrategy;
 import com.server.game.model.game.component.attributeComponent.TroopAttributeComponent;
+import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.handler.SocketSender;
 import com.server.game.resource.model.TroopDB;
@@ -29,16 +29,17 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TroopInstance2 extends Entity {
 
-    private final String stringId;
+    // This field below is inherited from Entity
+    // private final String stringId; 
+
     private final TroopEnum troopEnum;
 
-    // Two field above have been inherited from Entity
+    // Three fields below have been inherited from Entity
     // private final short ownerSlot;
     // private final GameState gameState;
+    // @Delegate
+    // PositionComponent positionComponent;
 
-
-    @Delegate
-    PositionComponent positionComponent;
     Vector2 targetPosition;
 
     @Delegate
@@ -71,18 +72,15 @@ public class TroopInstance2 extends Entity {
 
 
     public TroopInstance2(TroopCreateContext ctx) {
-        super(ctx.getOwnerSlot(), ctx.getGameState());
+        super("troop_" + UUID.randomUUID().toString(),
+            ctx.getOwnerSlot(), ctx.getGameState(),
+            ctx.getGameState().getSpawnPosition(ctx.getOwnerSlot()));
 
-        this.stringId = "troop_" + UUID.randomUUID().toString();
         this.troopEnum = ctx.getTroopEnum();
 
         TroopDB troopDB = SpringContextHolder.getBean(TroopService.class)
             .getTroopDBById(troopEnum);
 
-
-        this.positionComponent = new PositionComponent(
-            this.gameState.getSpawnPosition(this.ownerSlot)
-        );
 
         this.attributeComponent = new TroopAttributeComponent(
             troopDB.getStats().getDefense(),
@@ -112,21 +110,17 @@ public class TroopInstance2 extends Entity {
         this.stateChangeTime = System.currentTimeMillis();
 
         log.debug("Created troop instance {} of type {} for player {} of gameid={}, at position {}",
-            stringId, troopEnum, ownerSlot, gameState.getGameId(), positionComponent.getCurrentPosition());
+            stringId, troopEnum, ownerSlot, gameState.getGameId(), this.getCurrentPosition());
     }
 
     @Override
     protected void addAllComponents() {
-        this.addComponent(PositionComponent.class, positionComponent);
         this.addComponent(TroopAttributeComponent.class, attributeComponent);
         this.addComponent(HealthComponent.class, healthComponent);
         this.addComponent(AttackComponent.class, attackComponent);
     }
 
-    @Override
-    public String getIdAString() { return this.getStringId(); }
-
-
+   
 
     @Override // from Attackable implemented by Entity
     public void receiveAttack(AttackContext ctx) {
@@ -358,8 +352,8 @@ public class TroopInstance2 extends Entity {
         return aiState;
     }
     
-    public String getStickEntityId() {
-        return stickEntity.getIdAString();
+    public String getStickEntityStringId() {
+        return stickEntity.getStringId();
     }
     
     
@@ -401,4 +395,5 @@ public class TroopInstance2 extends Entity {
                 aiState, this.getCurrentPosition().x(), this.getCurrentPosition().y()
         );
     }
+
 }

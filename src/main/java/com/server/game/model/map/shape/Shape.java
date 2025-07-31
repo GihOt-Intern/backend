@@ -2,11 +2,18 @@ package com.server.game.model.map.shape;
 
 import com.server.game.model.map.component.Vector2;
 
-public interface CollisionShape {
-    
-    boolean intersects(Vector2 thisPos, CollisionShape other, Vector2 otherPos);
-    boolean contains(Vector2 thisPos, Vector2 point);
-    float getBoundingRadius();
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public abstract class Shape {
+
+    protected Vector2 center;
+
+    public abstract boolean intersects(Vector2 thisPos, Shape other, Vector2 otherPos);
+    public abstract boolean contains(Vector2 point);
+    public abstract float getBoundingRadius();
 
 
     public static boolean circleVsRect(Vector2 circlePos, float radius, Vector2 rectPos, float width, float height) {

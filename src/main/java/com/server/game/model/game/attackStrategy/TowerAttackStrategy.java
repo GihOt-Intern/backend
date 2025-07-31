@@ -1,5 +1,6 @@
-package com.server.game.model.game.component.attackComponent;
+package com.server.game.model.game.attackStrategy;
 
+import com.server.game.model.game.context.AttackContext;
 
 public class TowerAttackStrategy implements AttackStrategy {
     @Override
