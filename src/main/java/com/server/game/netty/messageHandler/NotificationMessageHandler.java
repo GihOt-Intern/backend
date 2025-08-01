@@ -1,4 +1,4 @@
-package com.server.game.netty.sender;
+package com.server.game.netty.messageHandler;
 
 import org.springframework.stereotype.Component;
 
@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class NotificationSender {
+public class NotificationMessageHandler {
 
     @MessageMapping(PingReceive.class)
     public PongSend sendPongMessage(PingReceive receiveObject) {

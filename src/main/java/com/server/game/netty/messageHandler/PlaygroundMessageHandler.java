@@ -1,4 +1,4 @@
-package com.server.game.netty.sender;
+package com.server.game.netty.messageHandler;
 
 import org.springframework.stereotype.Component;
 
@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class PlaygroundSender {
+public class PlaygroundMessageHandler {
 
     public void sendInPlaygroundUpdateMessage(String gameId, Short slot, boolean isInPlayground) {
         Channel channel = ChannelManager.getChannelByGameIdAndSlot(gameId, slot);

@@ -1,4 +1,4 @@
-package com.server.game.netty.sender;
+package com.server.game.netty.messageHandler;
 
 
 import java.util.List;
@@ -22,9 +22,9 @@ import lombok.AllArgsConstructor;
 
 @Component
 @AllArgsConstructor
-public class LobbySender {
+public class LobbyMessageHandler {
 
-    private final GameInititalLoadingSender gameLoadingHandler;
+    private final GameInititalLoadingMessageHandler gameLoadingHandler;
 
 
     @MessageMapping(LobbyLoadedReceive.class)

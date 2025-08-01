@@ -1,4 +1,4 @@
-package com.server.game.netty.sender.pvpSender;
+package com.server.game.netty.messageHandler.pvpMessageHandler;
 // package com.server.game.netty.handler.pvpHandler;
 
 // import org.springframework.stereotype.Component;

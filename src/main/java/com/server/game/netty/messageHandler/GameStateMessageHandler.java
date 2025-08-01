@@ -1,4 +1,4 @@
-package com.server.game.netty.sender;
+package com.server.game.netty.messageHandler;
 
 
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class GameStateSender {
+public class GameStateMessageHandler {
 
     public void sendAttackAnimation(AttackContext ctx, ChampionAnimationEnum animationEnum) {
         try {

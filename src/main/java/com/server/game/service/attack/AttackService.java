@@ -16,6 +16,7 @@
 // import com.server.game.service.gameState.GameStateService;
 // import com.server.game.service.move.MoveService;
 // import com.server.game.service.position.PositionService;
+// import com.server.game.service.position.PositionService2;
 // import com.server.game.service.troop.TroopManager;
 // import com.server.game.util.ChampionEnum;
 
@@ -30,9 +31,9 @@
 // @Service
 // @RequiredArgsConstructor
 // @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-// public class AttackTargetingService {
+// public class AttackService {
 
-//     PositionService positionService;
+//     PositionService2 positionService;
 //     MoveService moveService;
 //     ChampionService championService;
 //     GameStateService gameStateService;

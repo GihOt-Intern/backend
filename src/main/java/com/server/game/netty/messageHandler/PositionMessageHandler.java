@@ -1,4 +1,4 @@
-package com.server.game.netty.sender;
+package com.server.game.netty.messageHandler;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class PositionSender {
+public class PositionMessageHandler {
     private final MoveService moveService;
 
     // @Lazy

@@ -1,4 +1,4 @@
-package com.server.game.netty.sender;
+package com.server.game.netty.messageHandler;
 
 
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import com.server.game.netty.sendObject.DistanceSend;
 
 
 @Component
-public class MoveSender {
+public class MoveMessageHandler {
 
     // @MessageMapping(MoveRequest.class)
     // public void handleMove(MoveRequest msg) {

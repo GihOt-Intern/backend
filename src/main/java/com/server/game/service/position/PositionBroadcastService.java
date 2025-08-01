@@ -1,7 +1,5 @@
 package com.server.game.service.position;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
@@ -10,7 +8,6 @@ import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.PositionSend;
-import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.move.MoveService;
 import com.server.game.service.move.MoveService.PositionData;
 import com.server.game.model.game.Entity;
@@ -28,9 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PositionBroadcastService {
     
-    PositionService2 positionService;
+    PositionService positionService;
     MoveService moveService;
-    GameStateService gameStateService;
     
     /**
      * Hủy đăng ký game - được gọi từ GameScheduler

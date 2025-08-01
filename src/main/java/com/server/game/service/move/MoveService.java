@@ -17,7 +17,7 @@ import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMapGrid;
 import com.server.game.service.gameState.GameCoordinator;
 import com.server.game.service.move.MoveService.MoveTarget.PathComponent;
-import com.server.game.service.position.PositionService2;
+import com.server.game.service.position.PositionService;
 import com.server.game.util.ThetaStarPathfinder;
 
 import lombok.Data;
@@ -29,24 +29,24 @@ import lombok.extern.slf4j.Slf4j;
 public class MoveService {
     
     @Autowired
-    private PositionService2 positionService;
+    private PositionService positionService;
 
     @Autowired
     @Lazy
     private GameCoordinator gameCoordinator;
 
 
-    private final Map<Entity, MoveTarget> moveTargets = new ConcurrentHashMap<>();
+    private final Map<GameState, Map<Entity, MoveTarget>> moveTargets = new ConcurrentHashMap<>();
 
     // Minimum distance threshold to avoid unnecessary pathfinding
     private static final float MIN_MOVE_DISTANCE = 0.5f;
     
     // Service-level rate limiting - Reduced to allow more responsive movement
     private static final long MIN_MOVE_TARGET_INTERVAL = 50; // 50ms = max 20 updates per second
-    private final Map<String, Long> lastMoveTargetTime = new ConcurrentHashMap<>();
-    
+    private final Map<GameState, Map<String, Long>> lastMoveTargetTimestamp = new ConcurrentHashMap<>();
+
     // Track failed pathfinding attempts to prevent repeated invalid requests
-    private final Map<String, Integer> failedPathfindingCount = new ConcurrentHashMap<>();
+    private final Map<GameState, Map<String, Integer>> failedPathfindingCount = new ConcurrentHashMap<>();
     private static final int MAX_FAILED_ATTEMPTS = 5; // Increased threshold
     private static final long FAILED_ATTEMPT_COOLDOWN = 300; // Reduced cooldown
 
@@ -62,9 +62,143 @@ public class MoveService {
         return mappingKey + ":fail";
     }
 
-    private boolean isKeyEligibleForCleaning(String key, GameState gameState) {
-        return key.startsWith(gameState.getGameId() + ":");
+
+//******* MAPS PRIVATE INTERFACE *********//
+    private void pushMoveTarget2Map(Entity entity, MoveTarget target) {
+        // Push the move target to the map
+        GameState gameState = entity.getGameState();
+        Map<Entity, MoveTarget> gameMoveTargets = 
+            moveTargets.computeIfAbsent(gameState, k -> new ConcurrentHashMap<>());
+        gameMoveTargets.put(entity, target);
     }
+
+    private MoveTarget peekMoveTargetFromMap(Entity entity) {
+        // Get the move target from the map
+        GameState gameState = entity.getGameState();
+        Map<Entity, MoveTarget> gameMoveTargets = moveTargets.get(gameState);
+        if (gameMoveTargets == null) {
+            return null;
+        }
+        return gameMoveTargets.get(entity);
+    }
+
+    private void removeMoveTargetFromMap(Entity entity) {
+        GameState gameState = entity.getGameState();
+        Map<Entity, MoveTarget> gameMoveTargets = moveTargets.get(gameState);
+        if (gameMoveTargets != null) {
+            gameMoveTargets.remove(entity);
+        }
+        if (gameMoveTargets == null || gameMoveTargets.isEmpty()) {
+            moveTargets.remove(gameState);
+        }
+    }
+
+    
+
+    private void pushLastMoveTargetTimestamp(Entity entity, long currentTime) {
+        GameState gameState = entity.getGameState();
+        Map<String, Long> lastMoveTargetTime = 
+            this.lastMoveTargetTimestamp.computeIfAbsent(
+                gameState, k -> new ConcurrentHashMap<>());
+        String mappingKey = this.getMappingKeyFor(entity);
+        lastMoveTargetTime.put(mappingKey, currentTime);
+    }
+
+    private Long peekLastMoveTargetTimestamp(Entity entity) {
+        GameState gameState = entity.getGameState();
+        Map<String, Long> lastMoveTargetTime = this.lastMoveTargetTimestamp.get(gameState);
+        if (lastMoveTargetTime == null) {
+            return null;
+        }
+        String mappingKey = this.getMappingKeyFor(entity);
+        return lastMoveTargetTime.get(mappingKey);
+    }
+    
+    private Long peekFailedLastMoveTargetTimestamp(GameState gameState, String keyMapping) {
+        Map<String, Long> gameLastMoveTargetTimestamp = lastMoveTargetTimestamp.get(gameState);
+        if (gameLastMoveTargetTimestamp == null) { return null; }
+        String failedMappingKey = this.getFailedMappingKeyFor(keyMapping);
+        return gameLastMoveTargetTimestamp.get(failedMappingKey);
+    }
+
+    private void cleanupOutdatedLastMoveTargetTimestamps(long cleanupThreshold) {
+        lastMoveTargetTimestamp.entrySet().removeIf(entry -> {
+            Map<String, Long> gameMoveTargets = entry.getValue();
+
+            gameMoveTargets.entrySet().removeIf(moveEntry -> {
+                Long timestamp = moveEntry.getValue();
+                return timestamp < cleanupThreshold;
+            });
+
+            // Remove empty gameMoveTargets map
+            return gameMoveTargets.isEmpty();
+        });
+    }
+
+    private void cleanupOutdatedFailedPathfindingCounts(long cleanupThreshold) {
+        failedPathfindingCount.entrySet().removeIf(entry -> {
+            GameState gameState = entry.getKey();
+            Map<String, Integer> failCounts = entry.getValue();
+
+            failCounts.entrySet().removeIf(failEntry -> {
+                String mappingKey = failEntry.getKey();
+                Long lastFailTime = this.peekFailedLastMoveTargetTimestamp(gameState, mappingKey);
+                return lastFailTime != null && lastFailTime < cleanupThreshold;
+            });
+
+            return failCounts.isEmpty();
+        });
+    }
+    
+    private void pushFailedLastMoveTargetTime(Entity entity, long currentTime) {
+        GameState gameState = entity.getGameState();
+        Map<String, Long> lastMoveTargetTime = 
+            this.lastMoveTargetTimestamp.computeIfAbsent(
+                gameState, k -> new ConcurrentHashMap<>());
+        String mappingKey = this.getFailedMappingKeyFor(entity);
+        lastMoveTargetTime.put(mappingKey, currentTime);
+    }
+
+    private Long peekFailedLastMoveTargetTime(Entity entity) {
+        GameState gameState = entity.getGameState();
+        Map<String, Long> failedLastMoveTargetTime = this.lastMoveTargetTimestamp.get(gameState);
+        if (failedLastMoveTargetTime == null) {
+            return null;
+        }
+        String failedMappingKey = this.getFailedMappingKeyFor(entity);
+        return failedLastMoveTargetTime.get(failedMappingKey);
+    }
+
+    private void increaseFailedPathfindingCount(Entity entity) {
+        GameState gameState = entity.getGameState();
+        Map<String, Integer> failedPathfindingCount = 
+            this.failedPathfindingCount.computeIfAbsent(
+                gameState, k -> new ConcurrentHashMap<>());
+        String mappingKey = this.getMappingKeyFor(entity);
+        failedPathfindingCount.put(mappingKey, 
+            failedPathfindingCount.getOrDefault(mappingKey, 0) + 1);
+    }
+
+    private Integer peekFailedPathfindingCount(Entity entity) {
+        GameState gameState = entity.getGameState();
+        Map<String, Integer> failedPathfindingCount = this.failedPathfindingCount.get(gameState);
+        if (failedPathfindingCount == null) {
+            return 0; // No failed attempts recorded
+        }
+        return failedPathfindingCount.getOrDefault(this.getMappingKeyFor(entity), 0);
+    }
+
+    private void removeFailedPathfindingCount(Entity entity) {
+        GameState gameState = entity.getGameState();
+        Map<String, Integer> failedPathfindingCount = this.failedPathfindingCount.get(gameState);
+        if (failedPathfindingCount != null) {
+            failedPathfindingCount.remove(this.getMappingKeyFor(entity));
+            if (failedPathfindingCount.isEmpty()) {
+                this.failedPathfindingCount.remove(gameState);
+            }
+        }
+    }
+//******* END MAPS PRIVATE INTERFACE *********//
 
     /**
      * Đặt mục tiêu di chuyển mới cho người chơi
@@ -78,6 +212,9 @@ public class MoveService {
             log.error("Pre-check conditions failed for entity {}: {}", entity.getStringId(), e.getMessage());
             return;
         }
+
+        // If prechecks ok, update last move target time
+        this.pushLastMoveTargetTimestamp(entity, currentTime);
 
 
         float entitySpeed = entity.getSpeed();
@@ -116,8 +253,8 @@ public class MoveService {
             return;
         }
         
-        // Reset failure count on successful pathfinding
-        failedPathfindingCount.remove(entity.getStringId());
+        // Reset failure count on successful pathfinding (by removing it)
+        this.removeFailedPathfindingCount(entity);
 
         PathComponent pathComponent = new PathComponent(path);
 
@@ -130,23 +267,18 @@ public class MoveService {
         );
 
         // Save and overwrite new target (if any)
-        moveTargets.put(entity, target);
+        this.pushMoveTarget2Map(entity, target);
     }
 
     private void preCheckConditions(Entity entity, Long currentTime) {
-
         this.checkInRateLimit(entity, currentTime);
         this.checkRepeatedFailedPathfindingAttempts(entity, currentTime);
-
-
-        lastMoveTargetTime.put(entity.getStringId(), currentTime);
     }
 
 
     private void checkInRateLimit(Entity entity, long currentTime) {
         // Service-level rate limiting
-        Long lastTime = lastMoveTargetTime.get(
-            this.getMappingKeyFor(entity));
+        Long lastTime = this.peekLastMoveTargetTimestamp(entity);
 
         if (lastTime != null && (currentTime - lastTime) < MIN_MOVE_TARGET_INTERVAL) {
             log.debug("Service-level rate limit exceeded for entity {} - ignoring move request", entity.getStringId());
@@ -154,34 +286,30 @@ public class MoveService {
         }
     }
 
-
     private void checkRepeatedFailedPathfindingAttempts(Entity entity, long currentTime) {
         // Check for repeated failed pathfinding attempts
-        Integer failCount = failedPathfindingCount.get(this.getMappingKeyFor(entity));
+        Integer failCount = this.peekFailedPathfindingCount(entity);
         if (failCount != null && failCount >= MAX_FAILED_ATTEMPTS) {
-            Long lastFailTime = lastMoveTargetTime.get(this.getFailedMappingKeyFor(entity));
+            Long lastFailTime = this.peekFailedLastMoveTargetTime(entity);
             if (lastFailTime != null && (currentTime - lastFailTime) < FAILED_ATTEMPT_COOLDOWN) {
                 log.debug("Entity {} in cooldown due to repeated failed pathfinding attempts", entity.getStringId());
                 throw new IllegalStateException("Entity " + entity.getStringId() + " is in cooldown due to repeated failed pathfinding attempts");
             } else {
-                // Reset failure count after cooldown
-                failedPathfindingCount.remove(this.getMappingKeyFor(entity));
+                // Reset failure count after cooldown (by removing it)
+                this.removeFailedPathfindingCount(entity);
             }
         }
     }
 
     private void trackFailedPathfinding(Entity entity, long currentTime) {
-        String mappingKey = this.getMappingKeyFor(entity);
-        String failMappingKey = this.getFailedMappingKeyFor(entity);
-        int currentFailCount = failedPathfindingCount.getOrDefault(mappingKey, 0);
-        currentFailCount++;
+        int currentFailCount = this.peekFailedPathfindingCount(entity);
 
-        failedPathfindingCount.put(mappingKey, currentFailCount);
-        lastMoveTargetTime.put(failMappingKey, currentTime);
+        this.increaseFailedPathfindingCount(entity);
+        this.pushFailedLastMoveTargetTime(entity, currentTime);
 
         if (currentFailCount >= MAX_FAILED_ATTEMPTS) {
             log.warn("Entity {} has reached max failed pathfinding attempts ({}), entering cooldown",
-                mappingKey, currentFailCount);
+                entity.getStringId(), currentFailCount);
         }
     }
 
@@ -190,16 +318,14 @@ public class MoveService {
      * Được gọi mỗi lần trước khi broadcast vị trí
      */
     public void updatePositions(GameState gameState) {
-        // System.out.println(">>> [Log in MoveService.updatePositions] UPDATE POSITION FOR GAME: " + gameState.getGameId());
         for (Entity entity : gameState.getEntities()) {
             this.updatePositions(entity);
         }
     }
 
 
-    public void updatePositions(Entity entity) {
-        // System.out.println(">>> [Log in MoveService.updatePositions] UPDATE POSITION FOR ENTITY: " + entity.getStringId());
-        MoveTarget target = moveTargets.get(entity);
+    private void updatePositions(Entity entity) {
+        MoveTarget target = this.peekMoveTargetFromMap(entity);
         if (target == null) {
             log.debug("No move target found for entity {}", entity.getStringId());
             return; // No move target set, nothing to update
@@ -256,25 +382,16 @@ public class MoveService {
             " in gameId=" + entity.getGameId());
 
         if (reachedFinalDestination || !target.path.hasNext()) {
-            moveTargets.remove(entity);
+            this.removeMoveTargetFromMap(entity);
         }
     }
-
-    public void pushMoveTarget(Entity entity) {
-        
-    }
-
-    public void popMoveTarget(Entity entity) {
-        moveTargets.remove(entity);
-    }
-    
 
     /**
      * Get the current real-time position of entity (whether moving or not)
      */
-    public Vector2 getCurrentRealTimePosition(Entity entity) {
+    private Vector2 getCurrentRealTimePosition(Entity entity) {
         // First check if entity is currently moving
-        MoveTarget currentTarget = moveTargets.get(entity);
+        MoveTarget currentTarget = this.peekMoveTargetFromMap(entity);
         if (currentTarget != null) {
             // Entity is moving - calculate current real-time position
             GameState gameState = entity.getGameState();
@@ -325,7 +442,6 @@ public class MoveService {
         }
         
         // If no pending position, get current entity position
-        System.out.println(">>> [Log in MoveService.getCurrentRealTimePosition] No optimize, get current pos: " + entity.getCurrentPosition());
         return entity.getCurrentPosition();
     }
 
@@ -339,9 +455,6 @@ public class MoveService {
         private final float speed;
         @Delegate
         private final PathComponent path;
-
-
-
 
         public static class PathComponent {
             private List<GridCell> path;
@@ -382,15 +495,12 @@ public class MoveService {
         long currentTime = System.currentTimeMillis();
         long cleanupThreshold = currentTime - (MIN_MOVE_TARGET_INTERVAL * 1000); // Remove entries older than 100 seconds
         
-        lastMoveTargetTime.entrySet().removeIf(entry -> entry.getValue() < cleanupThreshold);
+        this.cleanupOutdatedLastMoveTargetTimestamps(cleanupThreshold);
         
         // Also cleanup failed pathfinding counts that are older than the cooldown period
         long failCleanupThreshold = currentTime - (FAILED_ATTEMPT_COOLDOWN * 2); // Double the cooldown period
-        failedPathfindingCount.entrySet().removeIf(entry -> {
-            String failMappingKey = this.getFailedMappingKeyFor(entry.getKey());
-            Long lastFailTime = lastMoveTargetTime.get(failMappingKey);
-            return lastFailTime != null && lastFailTime < failCleanupThreshold;
-        });
+        
+        this.cleanupOutdatedFailedPathfindingCounts(failCleanupThreshold);
     }
 
 
@@ -399,15 +509,13 @@ public class MoveService {
      * Clear all move targets for a specific game (e.g., when game ends)
      */
     public void clearGameMoveTargets(GameState gameState) {
-        moveTargets.entrySet().removeIf(entry -> entry.getKey().getGameState().equals(gameState));
+        moveTargets.remove(gameState); 
         
         // Also clean up rate limiter entries for this game
-        lastMoveTargetTime.entrySet().removeIf(entry -> 
-            this.isKeyEligibleForCleaning(entry.getKey(), gameState));
+        lastMoveTargetTimestamp.remove(gameState);
 
         // Clean up failed pathfinding counts for this game
-        failedPathfindingCount.entrySet().removeIf(entry -> 
-            this.isKeyEligibleForCleaning(entry.getKey(), gameState));
+        failedPathfindingCount.remove(gameState);
     }
 
 

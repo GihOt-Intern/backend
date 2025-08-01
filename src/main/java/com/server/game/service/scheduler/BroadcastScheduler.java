@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.server.game.model.game.GameState;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.position.PositionBroadcastService;
 
@@ -20,62 +21,20 @@ public class BroadcastScheduler {
     private PositionBroadcastService positionBroadcastService;
     private GameStateService gameStateService;
     
-    // Lưu trữ các game đang hoạt động cho broadcasting
-    private final Set<String> activeGames = ConcurrentHashMap.newKeySet();
-    
     /**
-     * Đăng ký game để thực hiện broadcasting
-     */
-    public void registerGame(String gameId) {
-        activeGames.add(gameId);
-        log.info("Registered game for broadcasting: {}", gameId);
-    }
-    
-    /**
-     * Hủy đăng ký game khỏi broadcasting
-     */
-    public void unregisterGame(String gameId) {
-        activeGames.remove(gameId);
-        // Notify broadcast service to clean up
-        positionBroadcastService.unregisterGame(gameStateService.getGameStateById(gameId));
-        log.info("Unregistered game from broadcasting: {}", gameId);
-    }
-
-    /**
-     * Kiểm tra xem game có hoạt động hay không
-     */
-    public boolean isGameActive(String gameId) {
-        return activeGames.contains(gameId);
-    }
-    
-    /**
-     * High-frequency broadcasting loop - runs every 50ms (20 FPS)
+     * High-frequency broadcasting loop - runs every game tick
      * Handles position updates broadcasting to clients
      */
-    @Scheduled(fixedDelay = 33) // 33ms = 30 FPS
+    @Scheduled(fixedDelayString = "${game.tick-interval-ms}") // 33ms ~ 30 FPS for responsive gameplay
     public void broadcastLoop() {
-        for (String gameId : activeGames) {
+        for (GameState gameState : gameStateService.getAllActiveGameStates()) {
             try {
                 // Broadcast position updates to all players in the game
-                positionBroadcastService.broadcastGamePositions(gameStateService.getGameStateById(gameId));
+                positionBroadcastService.broadcastGamePositions(gameState);
                 
             } catch (Exception e) {
-                log.error("Error in broadcast loop for game: {}", gameId, e);
+                log.error("Error in broadcast loop for game: {}", gameState.getGameId(), e);
             }
         }
-    }
-    
-    /**
-     * Get all active games being broadcasted
-     */
-    public Set<String> getActiveGames() {
-        return Set.copyOf(activeGames);
-    }
-    
-    /**
-     * Get the number of active games
-     */
-    public int getActiveGameCount() {
-        return activeGames.size();
     }
 }

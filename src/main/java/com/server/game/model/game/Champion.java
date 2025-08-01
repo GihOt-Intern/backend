@@ -13,8 +13,8 @@ import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.sender.AnimationSender;
-import com.server.game.netty.sender.PlaygroundSender;
+import com.server.game.netty.messageHandler.AnimationMessageHandler;
+import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.util.ChampionEnum;
 
@@ -43,11 +43,11 @@ public final class Champion extends Entity implements SkillReceivable {
     @Delegate
     AttackComponent attackComponent;
 
-    final PlaygroundSender playgroundHandler;
+    final PlaygroundMessageHandler playgroundHandler;
 
 
     public Champion(ChampionDB championDB, SlotState ownerSlot, GameState gameState, 
-        PlaygroundSender playgroundHandler) {
+        PlaygroundMessageHandler playgroundHandler) {
         super("champion_" + UUID.randomUUID().toString(),
             ownerSlot, gameState, 
             gameState.getSpawnPosition(ownerSlot)

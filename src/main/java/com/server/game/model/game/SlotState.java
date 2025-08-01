@@ -6,7 +6,7 @@ import java.util.Set;
 import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.GoldComponent;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.sender.PlaygroundSender;
+import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -76,8 +76,8 @@ public class SlotState {
 
     // TODO: do not use SpringContextHolder 
     public void handleGoldChange(String gameId) {
-        PlaygroundSender playGroundHandler = 
-            SpringContextHolder.getBean(PlaygroundSender.class);
+        PlaygroundMessageHandler playGroundHandler = 
+            SpringContextHolder.getBean(PlaygroundMessageHandler.class);
         playGroundHandler.sendGoldChangeMessage(gameId, this.slot, this.getCurrentGold());
     }
 

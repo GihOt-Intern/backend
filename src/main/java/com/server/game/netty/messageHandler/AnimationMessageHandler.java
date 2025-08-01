@@ -1,4 +1,4 @@
-package com.server.game.netty.sender;
+package com.server.game.netty.messageHandler;
 
 
 import org.springframework.stereotype.Component;
@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.pvp.AttackAnimationDisplaySend;
-import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
 import com.server.game.util.ChampionAnimationEnum;
 
 import io.netty.channel.Channel;
@@ -15,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class AnimationSender {
+public class AnimationMessageHandler {
 
     public void sendAttackAnimation(AttackContext ctx, ChampionAnimationEnum animationEnum) {
         try {

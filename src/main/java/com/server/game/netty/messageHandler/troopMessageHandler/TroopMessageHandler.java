@@ -1,4 +1,4 @@
-package com.server.game.netty.sender.troopSender;
+package com.server.game.netty.messageHandler.troopMessageHandler;
 
 import org.springframework.stereotype.Component;
 
@@ -26,7 +26,7 @@ import java.util.Set;
 @Component
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class TroopHandler {
+public class TroopMessageHandler {
     TroopManager troopManager;
     GameCoordinator gameCoordinator;
 

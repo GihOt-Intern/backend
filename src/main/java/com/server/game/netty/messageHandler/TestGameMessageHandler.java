@@ -1,4 +1,4 @@
-package com.server.game.netty.sender;
+package com.server.game.netty.messageHandler;
 // package com.server.game.netty.handler;
 
 // import java.util.ArrayList;

@@ -2,7 +2,6 @@ package com.server.game.netty.receiveObject.troop;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.nio.ByteBuffer;
 
 import org.springframework.stereotype.Component;
 

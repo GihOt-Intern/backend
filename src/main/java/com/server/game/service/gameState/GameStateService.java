@@ -22,10 +22,9 @@ import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.model.map.shape.Shape;
 import com.server.game.netty.ChannelManager;
+import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
 import com.server.game.netty.sendObject.respawn.ChampionDeathSend;
-import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnTimeSend;
-import com.server.game.netty.sender.PlaygroundSender;
 // import com.server.game.service.attack.AttackTargetingService;
 import com.server.game.util.Util;
 import com.server.game.model.game.Entity;
@@ -40,10 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameStateService {
 
-    PlaygroundSender playgroundSender;
-    
-    // gameId -> GameState
-    private final Map<String, GameState> gameStates = new ConcurrentHashMap<>();
+    PlaygroundMessageHandler playgroundSender;
     
     // Track active respawn schedulers to prevent duplicates: gameId:slot -> scheduler
     private final Map<String, ScheduledExecutorService> activeRespawnSchedulers = new ConcurrentHashMap<>();
@@ -53,7 +49,7 @@ public class GameStateService {
 
     public GameStateService(
         @Lazy GameCoordinator gameCoordinator,
-        PlaygroundSender playgroundSender
+        PlaygroundMessageHandler playgroundSender
         // ,@Lazy AttackTargetingService attackTargetingService
         ) {
         this.gameCoordinator = gameCoordinator;
@@ -64,9 +60,26 @@ public class GameStateService {
     /**
      * Initialize game state for a specific game
      */
-    public void register(GameState gameState) {
-        gameStates.put(gameState.getGameId(), gameState);
-        log.info("Registered game state for gameId: {}", gameState.getGameId());
+    // public void register(GameState gameState) {
+    //     gameStates.put(gameState.getGameId(), gameState);
+    //     log.info("Registered game state for gameId: {}", gameState.getGameId());
+    // }
+
+    
+    /**
+     * Get a game state by gameId
+     */
+    public GameState getGameStateById(String gameId) {
+        GameState gameState = gameCoordinator.getGameState(gameId);
+        if (gameState == null) {
+            log.warn("Game state not found for gameId: {}", gameId);
+            return null; // Return null if not found
+        }
+        return gameState;
+    }
+
+    public Set<GameState> getAllActiveGameStates() {
+        return gameCoordinator.getAllActiveGameStates();
     }
 
     public void addEntityTo(GameState gameState, Entity entity) {
@@ -78,23 +91,10 @@ public class GameStateService {
         gameState.addEntity(entity);
         log.debug("Added entity {} to game state {}", entity.getStringId(), gameState.getGameId());
     }
-
-
-    /**
-     * Get a game state by gameId
-     */
-    public GameState getGameStateById(String gameId) {
-        GameState gameState = gameStates.get(gameId);
-        if (gameState == null) {
-            log.warn("Game state not found for gameId: {}", gameId);
-            return null; // Return null if not found
-        }
-        return gameState;
-    }
     
 
     public Entity getEntityByStringId(String gameId, String entityId) {
-        GameState gameState = gameStates.get(gameId);
+        GameState gameState = gameCoordinator.getGameState(gameId);
         if (gameState == null) {
             log.warn("Game state not found for gameId: {}", gameId);
             return null;
@@ -374,7 +374,7 @@ public class GameStateService {
      * Clean up game state when game ends
      */
     public void cleanupGameState(String gameId) {
-        GameState removed = gameStates.remove(gameId);
+        GameState removed = gameCoordinator.popGameState(gameId);
         if (removed != null) {
             log.info("Cleaned up game state for gameId: {} with {} players", gameId, removed.getNumPlayers());
         }
@@ -384,14 +384,14 @@ public class GameStateService {
      * Get the number of active games being tracked
      */
     public int getActiveGameCount() {
-        return gameStates.size();
+        return gameCoordinator.getActiveGameCount();
     }
     
     /**
      * Get the number of players in a specific game
      */
     public int getPlayerCount(String gameId) {
-        GameState gameState = gameStates.get(gameId);
+        GameState gameState = gameCoordinator.getGameState(gameId);
         return gameState != null ? gameState.getNumPlayers() : 0;
     }
     
@@ -399,7 +399,7 @@ public class GameStateService {
      * Check if a game exists in the state manager
      */
     public boolean gameExists(String gameId) {
-        return gameStates.containsKey(gameId);
+        return gameCoordinator.getGameState(gameId) != null;
     }
     
     /**
