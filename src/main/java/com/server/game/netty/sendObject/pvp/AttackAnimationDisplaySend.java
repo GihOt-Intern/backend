@@ -19,6 +19,8 @@ import lombok.experimental.FieldDefaults;
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Deprecated
+@SuppressWarnings("unused")
 public class AttackAnimationDisplaySend implements TLVEncodable {
     short attackerSlot; // Champion slot that's attacking (-1 if it's a target/NPC)
     String attackerId; // Target/NPC ID that's attacking (null if it's a champion)

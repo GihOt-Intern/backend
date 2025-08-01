@@ -1,5 +1,6 @@
 package com.server.game.util;
 
+import java.io.DataInputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -130,5 +131,12 @@ public class Util {
         }
 
         return array;
+    }
+
+    public static String readString(DataInputStream dis, Class<?> lengthType) throws Exception {
+        int lengthByte = lengthType == Short.class ? dis.readShort() : dis.readInt();
+        byte[] bytes = new byte[lengthByte];
+        dis.readFully(bytes);
+        return Util.bytesToString(bytes);
     }
 }

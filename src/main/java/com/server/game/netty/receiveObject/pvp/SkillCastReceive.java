@@ -25,13 +25,13 @@ public class SkillCastReceive implements TLVDecodable {
     long timestamp;
 
     @Override
-    public void decode(ByteBuffer buffer) {
-        this.slot = buffer.getShort();
+    public void decode(byte[] value) {
+        // this.slot = buffer.getShort();
 
-        float x = buffer.getFloat();
-        float y = buffer.getFloat();
-        this.targetPosition = new Vector2(x, y);
+        // float x = buffer.getFloat();
+        // float y = buffer.getFloat();
+        // this.targetPosition = new Vector2(x, y);
 
-        this.timestamp = buffer.getLong();
+        // this.timestamp = buffer.getLong();
     }
 }

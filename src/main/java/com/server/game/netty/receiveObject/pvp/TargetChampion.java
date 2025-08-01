@@ -13,27 +13,29 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-@Deprecated
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @ReceiveType(ReceiveMessageType.TARGET_ATTACK_CHAMPION_RECEIVE)
 @Component
+@Deprecated
+@SuppressWarnings("unused")
 public class TargetChampion implements TLVDecodable {
     String attackerId;
     short slot;
     long timestamp;
 
     @Override
-    public void decode(ByteBuffer buffer) {
-        short attackerIdLength = buffer.getShort();
-        byte[] attackerIdBytes = new byte[attackerIdLength];
-        buffer.get(attackerIdBytes);
-        this.attackerId = Util.bytesToString(attackerIdBytes);
-        
-        this.slot = buffer.getShort();
-        this.timestamp = buffer.getLong();
+    public void decode(byte[] value) {
 
-        System.out.println(">>> Server Decoded Attacker ID: " + this.attackerId + ", Slot: " + this.slot + ", Timestamp: " + this.timestamp + " Type: 102");
+        // short attackerIdLength = buffer.getShort();
+        // byte[] attackerIdBytes = new byte[attackerIdLength];
+        // buffer.get(attackerIdBytes);
+        // this.attackerId = Util.bytesToString(attackerIdBytes);
+        
+        // this.slot = buffer.getShort();
+        // this.timestamp = buffer.getLong();
+
+        // System.out.println(">>> Server Decoded Attacker ID: " + this.attackerId + ", Slot: " + this.slot + ", Timestamp: " + this.timestamp + " Type: 102");
     }
 }

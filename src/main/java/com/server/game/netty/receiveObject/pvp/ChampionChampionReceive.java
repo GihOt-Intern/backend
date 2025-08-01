@@ -14,12 +14,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-@Deprecated
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @ReceiveType(ReceiveMessageType.CHAMPION_ATTACK_CHAMPION_RECEIVE)
 @Component
+@Deprecated
+@SuppressWarnings("unused")
 public class ChampionChampionReceive implements TLVDecodable{
     short slot;
     short targetSlot; // The slot of the champion being attacked
@@ -27,11 +28,11 @@ public class ChampionChampionReceive implements TLVDecodable{
 
     // Example decode method, assuming TLVDecodable requires this
     @Override
-    public void decode(ByteBuffer buffer) {
-        this.slot = buffer.getShort();
-        this.targetSlot = buffer.getShort();
-        this.timestamp = buffer.getLong();
+    public void decode(byte[] value) {
+        // this.slot = buffer.getShort();
+        // this.targetSlot = buffer.getShort();
+        // this.timestamp = buffer.getLong();
 
-        System.out.println(">>> Server Decoded Slot: " + this.slot + ", Target Slot: " + this.targetSlot + ", Timestamp: " + this.timestamp + " Type: 100");
+        // System.out.println(">>> Server Decoded Slot: " + this.slot + ", Target Slot: " + this.targetSlot + ", Timestamp: " + this.timestamp + " Type: 100");
     }
 }

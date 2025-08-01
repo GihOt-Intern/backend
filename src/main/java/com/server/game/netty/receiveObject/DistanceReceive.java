@@ -1,5 +1,7 @@
 package com.server.game.netty.receiveObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.nio.ByteBuffer;
 
 import org.springframework.stereotype.Component;
@@ -7,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.server.game.annotation.customAnnotation.ReceiveType;
 import com.server.game.netty.tlv.interf4ce.TLVDecodable;
 import com.server.game.netty.tlv.messageEnum.ReceiveMessageType;
+import com.server.game.util.Util;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -24,11 +27,19 @@ public class DistanceReceive implements TLVDecodable {
     float x2;
     float y2;
 
-    @Override // must override this method of TLVDecodable interface
-    public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
-        x1 = buffer.getFloat();
-        y1 = buffer.getFloat();
-        x2 = buffer.getFloat();
-        y2 = buffer.getFloat();
+    @Override
+    public void decode(byte[] value) {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(value);
+            DataInputStream dis = new DataInputStream(bais);
+
+            this.x1 = dis.readFloat();
+            this.y1 = dis.readFloat();
+            this.x2 = dis.readFloat();
+            this.y2 = dis.readFloat();
+
+        } catch (Exception e) {
+            throw new  RuntimeException("Cannot decode " + this.getClass().getSimpleName(), e);
+        }
     }
 }

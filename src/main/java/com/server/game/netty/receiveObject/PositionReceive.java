@@ -1,5 +1,7 @@
 package com.server.game.netty.receiveObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.nio.ByteBuffer;
 
 import org.springframework.stereotype.Component;
@@ -26,15 +28,17 @@ public class PositionReceive implements TLVDecodable {
     long timestamp;
 
     @Override
-    public void decode(ByteBuffer buffer) {
-        Util.printHex(buffer, false);
-        short stringIdByteLength = buffer.getShort();
-        byte[] stringIdBytes = new byte[stringIdByteLength];
-        buffer.get(stringIdBytes);
-        this.stringId = Util.bytesToString(stringIdBytes);
-        System.out.println(">>> [Log in PositionReceive.decode] stringId: <<" + stringId + ">>");
-        this.position = new Vector2(buffer.getFloat(), buffer.getFloat());
-        this.timestamp = buffer.getLong();
-        System.out.println(">>> [Log in PositionReceive.decode] position: " + position + ", timestamp: " + timestamp);
+    public void decode(byte[] value) {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(value);
+            DataInputStream dis = new DataInputStream(bais);
+
+            this.stringId = Util.readString(dis, Short.class);
+            this.position = new Vector2(dis.readFloat(), dis.readFloat());
+            this.timestamp = dis.readLong();
+
+        } catch (Exception e) {
+            throw new  RuntimeException("Cannot decode " + this.getClass().getSimpleName(), e);
+        }
     }
 } 

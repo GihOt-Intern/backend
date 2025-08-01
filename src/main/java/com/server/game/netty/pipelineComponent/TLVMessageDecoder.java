@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import com.server.game.netty.tlv.codec.TLVDecoder;
@@ -30,10 +29,10 @@ public class TLVMessageDecoder extends MessageToMessageDecoder<ByteBuf> {
             return;
         }
 
-        // Convert from io.netty.buffer.ByteBuf to java.nio.ByteBuffer
-        ByteBuffer buffer = buf.nioBuffer();
+        byte[] value = new byte[length];
+        buf.readBytes(value);
 
-        TLVDecodable receiveObject = TLVDecoder.bytes2Object(type, buffer);
+        TLVDecodable receiveObject = TLVDecoder.bytes2Object(type, value);
         //System.out.println(">>> Server Decoded ByteBuf to TLVDecodable object: " + receiveObject.getClass().getSimpleName());
 
         out.add(receiveObject);            

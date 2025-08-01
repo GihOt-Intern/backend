@@ -1,5 +1,7 @@
 package com.server.game.netty.receiveObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.nio.ByteBuffer;
 
 import org.springframework.stereotype.Component;
@@ -23,11 +25,15 @@ public class MessageReceive implements TLVDecodable {
     String message;
 
     @Override
-    public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
-        int messageByteLength = buffer.getInt();
-        byte[] messageBytes = new byte[messageByteLength];
-        buffer.get(messageBytes);
-        this.message = Util.bytesToString(messageBytes);
-        System.out.println(">>> Server Decoded Message: " + this.message);
+    public void decode(byte[] value) {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(value);
+            DataInputStream dis = new DataInputStream(bais);
+
+            this.message = Util.readString(dis, Integer.class);
+
+        } catch (Exception e) {
+            throw new  RuntimeException("Cannot decode " + this.getClass().getSimpleName(), e);
+        }
     }
 }

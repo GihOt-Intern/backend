@@ -21,7 +21,7 @@ public class TLVDecoder {
     }
 
 
-    public static TLVDecodable bytes2Object(short type, ByteBuffer buffer) {
+    public static TLVDecodable bytes2Object(short type, byte[] value) {
         // OOP abstraction: use interface (abstraction) to create an concrete instance base on [type]
         Class<? extends TLVDecodable> clazz = registry.get(type);
         if (clazz == null) {
@@ -31,7 +31,7 @@ public class TLVDecoder {
 
         try {
             TLVDecodable instance = clazz.getDeclaredConstructor().newInstance();
-            instance.decode(buffer);
+            instance.decode(value);
             return instance;
         } catch (Exception e) {
             throw new RuntimeException("Failed to decode TLV message for type: " + type, e);

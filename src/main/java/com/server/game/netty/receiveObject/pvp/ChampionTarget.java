@@ -15,25 +15,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-@Deprecated
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @ReceiveType(ReceiveMessageType.CHAMPION_ATTACK_TARGET_RECEIVE)
 @Component
+@Deprecated
+@SuppressWarnings("unused")
 public class ChampionTarget implements TLVDecodable{
     String targetId;
     long timestamp;
 
     // Example decode method, assuming TLVDecodable requires this
     @Override
-    public void decode(ByteBuffer buffer) {
-        short targetIdLength = buffer.getShort();
-        byte[] targetIdBytes = new byte[targetIdLength];
-        buffer.get(targetIdBytes);
-        this.targetId = Util.bytesToString(targetIdBytes);
-        this.timestamp = buffer.getLong();
+    public void decode(byte[] value) {
+        // short targetIdLength = buffer.getShort();
+        // byte[] targetIdBytes = new byte[targetIdLength];
+        // buffer.get(targetIdBytes);
+        // this.targetId = Util.bytesToString(targetIdBytes);
+        // this.timestamp = buffer.getLong();
 
-        System.out.println(">>> Server Decoded Target ID: " + this.targetId + ", Timestamp: " + this.timestamp + " Type: 101");
+        // System.out.println(">>> Server Decoded Target ID: " + this.targetId + ", Timestamp: " + this.timestamp + " Type: 101");
     }
 }
