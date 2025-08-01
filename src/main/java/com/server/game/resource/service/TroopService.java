@@ -1,7 +1,5 @@
 package com.server.game.resource.service;
 
-import com.server.game.model.game.TroopCreateContext;
-import com.server.game.model.game.TroopInstance2;
 import com.server.game.resource.model.TroopDB;
 import com.server.game.resource.repository.TroopDBRepository;
 import com.server.game.util.TroopEnum;
@@ -111,10 +109,5 @@ public class TroopService {
         // Add some randomness (±20%)
         int variation = (int) (baseDamage * 0.2);
         return baseDamage + (int) (Math.random() * variation * 2) - variation;
-    }
-
-
-    public TroopInstance2 createInstanceOf(TroopCreateContext ctx) {
-        return new TroopInstance2(ctx);
     }
 }

@@ -25,16 +25,22 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.respawn.ChampionDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnTimeSend;
-import com.server.game.service.attack.AttackTargetingService;
+import com.server.game.netty.sender.PlaygroundSender;
+// import com.server.game.service.attack.AttackTargetingService;
 import com.server.game.util.Util;
 import com.server.game.model.game.Entity;
 
 import io.netty.channel.Channel;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameStateService {
+
+    PlaygroundSender playgroundSender;
     
     // gameId -> GameState
     private final Map<String, GameState> gameStates = new ConcurrentHashMap<>();
@@ -43,13 +49,16 @@ public class GameStateService {
     private final Map<String, ScheduledExecutorService> activeRespawnSchedulers = new ConcurrentHashMap<>();
 
     private GameCoordinator gameCoordinator;
-    private AttackTargetingService attackTargetingService;
+    // private AttackTargetingService attackTargetingService;
 
     public GameStateService(
-        @Lazy GameCoordinator gameCoordinator, 
-        @Lazy AttackTargetingService attackTargetingService) {
+        @Lazy GameCoordinator gameCoordinator,
+        PlaygroundSender playgroundSender
+        // ,@Lazy AttackTargetingService attackTargetingService
+        ) {
         this.gameCoordinator = gameCoordinator;
-        this.attackTargetingService = attackTargetingService;
+        this.playgroundSender = playgroundSender;
+        // this.attackTargetingService = attackTargetingService;
     }
 
     /**
@@ -58,6 +67,16 @@ public class GameStateService {
     public void register(GameState gameState) {
         gameStates.put(gameState.getGameId(), gameState);
         log.info("Registered game state for gameId: {}", gameState.getGameId());
+    }
+
+    public void addEntityTo(GameState gameState, Entity entity) {
+        if (gameState == null || entity == null) {
+            log.warn("Invalid parameters for adding entity to game state");
+            return;
+        }
+        
+        gameState.addEntity(entity);
+        log.debug("Added entity {} to game state {}", entity.getStringId(), gameState.getGameId());
     }
 
 
@@ -73,18 +92,6 @@ public class GameStateService {
         return gameState;
     }
     
-    /**
-     * Get player state by game and slot
-     */
-    public SlotState getSlotState(String gameId, short slot) {
-        GameState gameState = this.getGameStateById(gameId);
-        SlotState slotState = gameState.getSlotState(slot);
-        if (slotState == null) {
-            log.warn("Slot state not found for gameId: {}, slot: {}", gameId, slot);
-            return null; // Return null if not found
-        }
-        return slotState;
-    }
 
     public Entity getEntityByStringId(String gameId, String entityId) {
         GameState gameState = gameStates.get(gameId);
@@ -116,28 +123,6 @@ public class GameStateService {
         return champion.getStringId();
     }
     
-    /**
-     * Update position of a slot in the game state
-     */
-    // public void updateSlotPosition(String gameId, short slot, Vector2 newPosition) {
-    //     GameState gameState = this.getGameStateById(gameId);
-    //     if (gameState != null) {
-    //         gameState.setChampionPosition(slot, newPosition);
-    //     }
-    // }
-
-    // public void updatePosition(Entity entity, Vector2 newPosition) {
-    //     GameState gameState = entity.getGameState();
-    //     if (gameState == null) {
-    //         log.warn("Game state not found for entity: {}", entity.getStringId());
-    //         return;
-    //     }
-
-    //     gameState.setEntityPosition(entity, newPosition); // TODO
-
-
-    //     this.updateEntityGridCellMapping(gameState, entity);
-    // }
 
     
     /**
@@ -184,6 +169,7 @@ public class GameStateService {
         
         return success;
     }
+    
     private boolean applyDamage(GameState gameState, short slot, int damage) {
         Champion champion = gameState.getChampionBySlot(slot);
         if (champion == null) {
@@ -259,7 +245,7 @@ public class GameStateService {
                 slot);
         
         // Clear all attack targets that were targeting this dead champion
-        attackTargetingService.clearTargetsAttackingChampion(gameId, slot);
+        // attackTargetingService.clearTargetsAttackingChampion(gameId, slot);
         
         // Notify clients about the death
         sendChampionDeathMessage(gameId, slot);
@@ -315,37 +301,39 @@ public class GameStateService {
      * Respawn a champion after death
      */
     private void respawnChampion(String gameId, short slot) {
-        GameState gameState = this.getGameStateById(gameId);
-        if (gameState == null) {
-            log.warn("Cannot respawn champion, game state is null for gameId {}", gameId);
-            return;
-        }
+        // GameState gameState = this.getGameStateById(gameId);
+        // if (gameState == null) {
+        //     log.warn("Cannot respawn champion, game state is null for gameId {}", gameId);
+        //     return;
+        // }
 
-        SlotState slotState = gameState.getSlotState(slot);
-        if (slotState == null) {
-            log.warn("Cannot respawn champion, slot state is null for gameId {}", gameId);
-            return;
-        }
+        // SlotState slotState = gameState.getSlotState(slot);
+        // if (slotState == null) {
+        //     log.warn("Cannot respawn champion, slot state is null for gameId {}", gameId);
+        //     return;
+        // }
 
-        Vector2 initialPosition = gameState.getSpawnPosition(slot);
-        Champion champion = gameState.getChampionBySlot(slot);
-        int maxHealth = champion.getMaxHP();
-        float rotateAngle = gameState.getSpawnRotate(slot);
+        // Vector2 initialPosition = gameState.getSpawnPosition(slot);
+        // Champion champion = gameState.getChampionBySlot(slot);
+        // int maxHealth = champion.getMaxHP();
+        // float rotateAngle = gameState.getSpawnRotate(slot);
 
-        // Reset the state
-        slotState.setChampionRevive();
-        slotState.setCurrentHP(maxHealth);
+        // // Reset the state
+        // slotState.setChampionRevive();
+        // slotState.setCurrentHP(maxHealth);
 
-        gameCoordinator.updatePosition(gameId, slot, initialPosition, slot, maxHealth);
+        // gameCoordinator.updatePosition(gameId, slot, initialPosition, slot, maxHealth);
 
-        log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
+        // log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
 
-        //Send message
-        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slot, initialPosition, rotateAngle, maxHealth);
-        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
-        if (channel != null) {
-            channel.writeAndFlush(respawnSend);
-        }
+        // //Send message
+        // ChampionRespawnSend respawnSend = new ChampionRespawnSend(slot, initialPosition, rotateAngle, maxHealth);
+        // Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        // if (channel != null) {
+        //     channel.writeAndFlush(respawnSend);
+        // }
+
+        // TODO
     }
     
     /**
@@ -684,31 +672,41 @@ public class GameStateService {
         return entitiesInScope;
     }
 
-    public Set<Entity> getEnemiesInScope(GameState gameState, Shape scope, short slot) {
+    public Set<Entity> getEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
         Set<Entity> res = this.getEntitiesInScope(gameState, scope);
         for (Entity entity : res) {
-            if (entity.getOwnerSlot() == slot) {
+            if (entity.getOwnerSlot().equals(slotState)) {
                 res.remove(entity);
             }
         }
         return res;
     }
 
-    public Set<Entity> getAlliesInScope(GameState gameState, Shape scope, short slot) {
+    public Set<Entity> getAlliesInScope(GameState gameState, Shape scope, SlotState slotState) {
         Set<Entity> res = this.getEntitiesInScope(gameState, scope);
         for (Entity entity : res) {
-            if (entity.getOwnerSlot() != slot) {
+            if (!entity.getOwnerSlot().equals(slotState)) {
                 res.remove(entity);
             }
         }
         return res;
     }
 
-    public Set<SkillReceivable> getSkillReceivableEnemiesInScope(GameState gameState, Shape scope, short slot) {
-        Set<Entity> entities = this.getEnemiesInScope(gameState, scope, slot);
+    public Set<SkillReceivable> getSkillReceivableEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
+        Set<Entity> entities = this.getEnemiesInScope(gameState, scope, slotState);
         return entities.stream()
             .filter(entity -> entity instanceof SkillReceivable)
             .map(SkillReceivable.class::cast)
             .collect(Collectors.toSet());
+    }
+
+    public void sendInPlaygroundUpdateMessage(GameState gameState, SlotState slot, boolean isInPlayground) {
+        if (gameState == null || slot == null) {
+            log.warn("Invalid parameters for sending in-playground update message");
+            return;
+        }
+        
+        // Send the update message to all players in the game
+        this.playgroundSender.sendInPlaygroundUpdateMessage(gameState.getGameId(), slot.getSlot(), isInPlayground);
     }
 }

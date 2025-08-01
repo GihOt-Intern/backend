@@ -9,6 +9,7 @@ import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
+import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.gameState.GameStateService;
 
@@ -22,9 +23,8 @@ import lombok.Setter;
 public abstract class Entity implements Attackable {
 
     protected String stringId;
-    @Setter
-    protected Short ownerSlot;
-    @Delegate @Setter
+    protected SlotState ownerSlot;
+    @Delegate
     protected GameState gameState;
 
     @Delegate
@@ -33,7 +33,7 @@ public abstract class Entity implements Attackable {
 
     private final Map<Class<?>, Object> components = new HashMap<>();
 
-    public Entity(String stringId, Short ownerSlot, GameState gameState, Vector2 initPosition) {
+    public Entity(String stringId, SlotState ownerSlot, GameState gameState, Vector2 initPosition) {
         this.stringId = stringId;
         this.ownerSlot = ownerSlot;
         this.gameState = gameState;
@@ -43,19 +43,25 @@ public abstract class Entity implements Attackable {
         this.addComponent(PositionComponent.class, positionComponent);
     }
 
-    public Short getOwnerSlot() { return ownerSlot; }
-
-    public GameState getGameState() { return gameState; }
-
-
-
     // Concrete classes have to implement this method to add all their components
     // to the Map above. This method must be called in the constructor of the concrete class.
     protected abstract void addAllComponents();
 
+    // protected <T> void addComponent(Class<T> clazz, T component) {
+    //     components.put(clazz, component);
+    // }
+
+    // Add a component to the entity, also adds it to all its superclasses and interfaces
     protected <T> void addComponent(Class<T> clazz, T component) {
-        components.put(clazz, component);
+    Class<?> current = clazz;
+    while (current != null && current != Object.class) {
+        components.put(current, component);
+        for (Class<?> iface : current.getInterfaces()) {
+            components.put(iface, component);
+        }
+        current = current.getSuperclass();
     }
+}
 
     public <T> T getComponent(Class<T> clazz) {
         return clazz.cast(components.get(clazz));
@@ -65,10 +71,15 @@ public abstract class Entity implements Attackable {
         return components.containsKey(clazz);
     }
 
+
     public float getSpeed() {
         if (hasComponent(AttributeComponent.class)) {
             return getComponent(AttributeComponent.class).getMoveSpeed();
         }
+        // if (hasComponent(ChampionAttributeComponent.class)) { 
+        //     return getComponent(ChampionAttributeComponent.class).getMoveSpeed();
+        // }
+        
         System.out.println("Entity does not have AttributeComponent, returning default speed=0.");
         return 0; // Default value if no attribute component is present
     }
@@ -139,7 +150,7 @@ public abstract class Entity implements Attackable {
     }
 
     protected void afterUpdatePosition(Vector2 newPosition) {
-        SpringContextHolder.getBean(GameStateService.class)
+        this.getGameStateService()
             .updateEntityGridCellMapping(this.gameState, this);
-    } 
+    }
 }

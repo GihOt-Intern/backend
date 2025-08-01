@@ -1,4 +1,4 @@
-package com.server.game.netty.handler;
+package com.server.game.netty.sender;
 
 
 import org.springframework.stereotype.Component;
@@ -15,9 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class SocketSender {
+public class GameStateSender {
 
-    public static void sendAttackAnimation(AttackContext ctx, ChampionAnimationEnum animationEnum) {
+    public void sendAttackAnimation(AttackContext ctx, ChampionAnimationEnum animationEnum) {
         try {
             // Create attack animation display message
             // AttackAnimationDisplaySend attackAnimation = new AttackAnimationDisplaySend(
@@ -41,7 +41,7 @@ public class SocketSender {
         }
     }
 
-    public static void sendHealthUpdate(AttackContext ctx, int actualDamage) {
+    public void sendHealthUpdate(AttackContext ctx, int actualDamage) {
         try {
             // Create health update message
             HealthUpdateSend healthUpdateSend = null;

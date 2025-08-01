@@ -27,11 +27,14 @@ public class PositionReceive implements TLVDecodable {
 
     @Override
     public void decode(ByteBuffer buffer) {
-        int stringIdByteLength = buffer.getShort();
+        Util.printHex(buffer, false);
+        short stringIdByteLength = buffer.getShort();
         byte[] stringIdBytes = new byte[stringIdByteLength];
         buffer.get(stringIdBytes);
-        stringId = Util.bytesToString(stringIdBytes);
-        position = new Vector2(buffer.getFloat(), buffer.getFloat());
-        timestamp = buffer.getLong();
+        this.stringId = Util.bytesToString(stringIdBytes);
+        System.out.println(">>> [Log in PositionReceive.decode] stringId: <<" + stringId + ">>");
+        this.position = new Vector2(buffer.getFloat(), buffer.getFloat());
+        this.timestamp = buffer.getLong();
+        System.out.println(">>> [Log in PositionReceive.decode] position: " + position + ", timestamp: " + timestamp);
     }
 } 

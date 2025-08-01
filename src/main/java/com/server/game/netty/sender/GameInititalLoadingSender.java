@@ -1,4 +1,4 @@
-package com.server.game.netty.handler;
+package com.server.game.netty.sender;
 
 
 import java.util.List;
@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.server.game.factory.GameStateFactory;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.netty.ChannelManager;
@@ -16,7 +17,6 @@ import com.server.game.netty.sendObject.initialGameState.ChampionInitialStatsSen
 import com.server.game.netty.sendObject.initialGameState.InitialPositionsSend;
 import com.server.game.resource.model.SlotInfo;
 import com.server.game.service.gameState.GameCoordinator;
-import com.server.game.service.gameState.GameStateBuilder;
 import com.server.game.service.gameState.GameStateManager;
 
 import io.netty.channel.Channel;
@@ -29,15 +29,15 @@ import lombok.experimental.FieldDefaults;
 @Component
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class GameInititalLoadingHandler {
+public class GameInititalLoadingSender {
 
-    GameStateBuilder gameStateBuilder;
+    GameStateFactory gameStateBuilder;
     GameCoordinator gameCoordinator;
     GameStateManager gameStateManager;
     
     // This method is called by LobbyHandler when all players are ready
     public void loadInitial(Channel channel) {
-        GameState gameState = gameStateBuilder.build(channel);
+        GameState gameState = gameStateBuilder.createGameState(channel);
         ChannelFuture future = 
             this.sendInitialPositions(channel, gameState);
         // future = this.sendChampionInitialHPs(channel, gameState);
@@ -132,7 +132,7 @@ public class GameInititalLoadingHandler {
                 gameCoordinator.updatePosition(
                     gameId, 
                     slot, 
-                    gameState.getSpawnPosition(slot), 
+                    gameState.getSpawnPosition(gameState.getSlotState(slot)), 
                     champion.getMoveSpeed(), 
                     System.currentTimeMillis()
                 );

@@ -1,4 +1,4 @@
-package com.server.game.netty.handler;
+package com.server.game.netty.sender;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -12,7 +12,7 @@ import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.model.game.Entity;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.PositionReceive;
-import com.server.game.service.attack.AttackTargetingService;
+// import com.server.game.service.attack.AttackTargetingService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.move.MoveService;
 
@@ -23,11 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class PositionHandler {
+public class PositionSender {
     private final MoveService moveService;
 
-    @Lazy
-    private AttackTargetingService attackTargetingService;
+    // @Lazy
+    // private AttackTargetingService attackTargetingService;
     
     private GameStateService gameStateService;
     
@@ -76,8 +76,7 @@ public class PositionHandler {
 
         moveService.setMove(entity, receiveObject.getPosition());
 
-        System.out.println(">>> Position updated for gameId: " + entity.getGameId() + ", stringId: " + entity.getStringId() +
-            ", X: " + receiveObject.getPosition().x() + ", Y: " + receiveObject.getPosition().y() + ", timestamp: " + clientTimestamp);
+        System.out.println(">>> [Log in PositionHandler.handlePosition] Received position update for entity: " + entityStringId + ", position: " + receiveObject.getPosition() + ", timestamp: " + clientTimestamp);
     }
     
     /**

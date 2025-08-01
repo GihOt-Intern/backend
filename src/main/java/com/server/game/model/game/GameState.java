@@ -6,53 +6,71 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import com.server.game.config.SpringContextHolder;
+import com.server.game.factory.SlotStateFactory;
 import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.GameMapGrid;
 import com.server.game.resource.model.SlotInfo;
 import com.server.game.service.gameState.GameStateService;
+import com.server.game.util.ChampionEnum;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
 @Getter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class GameState {
-    private String gameId;
-    private GameMap gameMap;
-    private GameMapGrid gameMapGrid;
-    private Map<Short, SlotState> slotStates;
-    private long currentTick = 0;
+    String gameId;
+    GameMap gameMap;
+    GameMapGrid gameMapGrid;
+    long currentTick = 0;
 
-    private final Map<String, Entity> stringId2Entity = new ConcurrentHashMap<>();
-    private final Map<GridCell, Set<Entity>> grid2Entity = new ConcurrentHashMap<>();
-    private final Map<Entity, GridCell> entity2Grid = new ConcurrentHashMap<>();
+    final Map<Short, SlotState> slotStates = new ConcurrentHashMap<>();
+    final Map<String, Entity> stringId2Entity = new ConcurrentHashMap<>();
+    final Map<GridCell, Set<Entity>> grid2Entity = new ConcurrentHashMap<>();
+    final Map<Entity, GridCell> entity2Grid = new ConcurrentHashMap<>();
 
-    public GameState(String gameId, GameMap gameMap, GameMapGrid gameMapGrid, Map<Short, Champion> slot2Champion) {
+    final GameStateService gameStateService;
+
+
+    public GameState(String gameId, GameMap gameMap,
+        GameMapGrid gameMapGrid, 
+        Map<Short, ChampionEnum> slot2ChampionEnum, 
+        GameStateService gameStateService, 
+        SlotStateFactory slotStateFactory) {
+
         this.gameId = gameId;
         this.gameMap = gameMap;
         this.gameMapGrid = gameMapGrid;
-        this.slotStates = slot2Champion.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, 
-                entry -> {
-                    Short slot = entry.getKey();
-                    Champion champion = entry.getValue();
 
-                    champion.setGameState(this);
-                    champion.setOwnerSlot(slot);
+        for (Map.Entry<Short, ChampionEnum> entry : slot2ChampionEnum.entrySet()) {
+            Short slot = entry.getKey();
+            ChampionEnum championEnum = entry.getValue();
 
-                    stringId2Entity.put(champion.getStringId(), champion);
+            SlotState slotState = slotStateFactory.createSlotState(this, slot, championEnum);
+            this.slotStates.put(slot, slotState);
+        }
 
-                    Vector2 initialPosition = gameMap.getSpawnPosition(slot);
-                    Integer initialGold = gameMap.getInitialGoldEachSlot();
-                    return new SlotState(slot, champion, initialPosition, initialGold);
-                })
-            );
+        this.gameStateService = gameStateService;
     }
 
 
     public int getNumPlayers() {
         return slotStates.size();
+    }
+
+    public void addEntity(Entity entity) {
+        if (entity == null || entity.getStringId() == null) {
+            System.err.println(">>> [Log in GameState.addEntity] Invalid entity or stringId");
+            return;
+        }
+
+        stringId2Entity.put(entity.getStringId(), entity);
+        GridCell gridCell = toGridCell(entity.getCurrentPosition());
+        grid2Entity.computeIfAbsent(gridCell, k -> ConcurrentHashMap.newKeySet()).add(entity);
+        entity2Grid.put(entity, gridCell);
     }
 
     public Set<Entity> getEntities() {
@@ -61,46 +79,12 @@ public class GameState {
             .collect(Collectors.toSet());
     }
 
-    @Deprecated
-    @SuppressWarnings("unused")
-    public void setEntityPosition(Entity entity, Vector2 newPosition) {
-        SlotState slotState = slotStates.get(entity.getOwnerSlot());
-        if (slotState != null) {
-            slotState.getChampion().setCurrentPosition(newPosition);
-
-            SpringContextHolder.getBean(GameStateService.class)
-                .updateEntityGridCellMapping(this, slotState.getChampion());
-
-            slotState.checkInPlayGround(this.gameId, gameMap.getPlayGround());
-            return;
-        }
-        System.err.println(">>> [Log in GameState.setSlotPosition] Slot " + entity.getOwnerSlot() + 
-            " not found in game state for gameId: " + gameId);
-    }
-
-    // TODO: See to migrate this method to TroopInstance2 class
-    public void setTroopPosition(TroopInstance2 troop, Vector2 newPosition) {
-        SlotState slotState = slotStates.get(troop.getOwnerSlot());
-        if (slotState != null) {
-            slotState.getTroops().stream()
-                .filter(t -> t.getStringId().equals(troop.getStringId()))
-                .findFirst()
-                .ifPresent(t -> t.setCurrentPosition(newPosition));
-
-            SpringContextHolder.getBean(GameStateService.class)
-                .updateEntityGridCellMapping(this, troop);
-
-            return;
-        }
-        System.err.println(">>> [Log in GameState.setTroopPosition] Slot " + troop.getOwnerSlot() + " not found in game state for gameId: " + gameId);
-    }
-
     public Float getSpeed(Short slot) {
         SlotState slotState = slotStates.get(slot);
         if (slotState != null) {
             Champion champion = slotState.getChampion();
             if (champion != null) {
-                return champion.getMoveSpeed();
+                return champion.getSpeed();
             }
         }
         return null;
@@ -123,10 +107,15 @@ public class GameState {
         return gameMap.getSpawnPosition(slot);
     }
 
-    public float getSpawnRotate(Short slot) {
-        Float rotateValue = gameMap.getInitialRotate(slot);
+
+    public Vector2 getSpawnPosition(SlotState slotState) {
+        return this.getSpawnPosition(slotState.getSlot());
+    }
+
+    public float getSpawnRotate(SlotState slotState) {
+        Float rotateValue = gameMap.getInitialRotate(slotState.getSlot());
         if (rotateValue == null) {
-            Vector2 spawnPos = getSpawnPosition(slot);
+            Vector2 spawnPos = getSpawnPosition(slotState);
             if (spawnPos != null) {
                 return (float) Math.atan2(-spawnPos.y(), -spawnPos.x());
             }
@@ -138,6 +127,10 @@ public class GameState {
 
     public Entity getEntityByStringId(String stringId) {
         return stringId2Entity.get(stringId);
+    }
+
+    public Integer getInitialGold() {
+        return gameMap.getInitialGoldEachSlot();
     }
 
     public Integer getGoldGeneratedPerSecond() {

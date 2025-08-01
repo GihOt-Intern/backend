@@ -1,506 +1,506 @@
-package com.server.game.service.attack;
+// package com.server.game.service.attack;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+// import java.util.ArrayList;
+// import java.util.List;
+// import java.util.Map;
+// import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.stereotype.Service;
+// import org.springframework.stereotype.Service;
 
-import com.server.game.model.game.Champion;
-import com.server.game.model.game.Entity;
-import com.server.game.model.game.GameState;
-import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.ChannelManager;
-import com.server.game.service.champion.ChampionService;
-import com.server.game.service.gameState.GameStateService;
-import com.server.game.service.move.MoveService;
-import com.server.game.service.position.PositionService;
-import com.server.game.service.troop.TroopManager;
-import com.server.game.util.ChampionEnum;
+// import com.server.game.model.game.Champion;
+// import com.server.game.model.game.Entity;
+// import com.server.game.model.game.GameState;
+// import com.server.game.model.map.component.Vector2;
+// import com.server.game.netty.ChannelManager;
+// import com.server.game.service.champion.ChampionService;
+// import com.server.game.service.gameState.GameStateService;
+// import com.server.game.service.move.MoveService;
+// import com.server.game.service.position.PositionService;
+// import com.server.game.service.troop.TroopManager;
+// import com.server.game.util.ChampionEnum;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+// import lombok.AccessLevel;
+// import lombok.AllArgsConstructor;
+// import lombok.Data;
+// import lombok.RequiredArgsConstructor;
+// import lombok.experimental.FieldDefaults;
+// import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AttackTargetingService {
+// @Slf4j
+// @Service
+// @RequiredArgsConstructor
+// @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+// public class AttackTargetingService {
 
-    PositionService positionService;
-    MoveService moveService;
-    ChampionService championService;
-    GameStateService gameStateService;
-    AttackHandler attackHandler;
-    TroopManager troopManager;
+//     PositionService positionService;
+//     MoveService moveService;
+//     ChampionService championService;
+//     GameStateService gameStateService;
+//     AttackHandler attackHandler;
+//     TroopManager troopManager;
     
-    // Store attack targets for each game and player
-    private final Map<String, Map<Short, AttackTarget>> attackTargets = new ConcurrentHashMap<>();
+//     // Store attack targets for each game and player
+//     private final Map<String, Map<Short, AttackTarget>> attackTargets = new ConcurrentHashMap<>();
 
     
-    /**
-     * Set an attack target for a champion
-     */
-    public void setAttackTarget(String gameId, short attackerSlot, AttackTarget target) {
-        attackTargets.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
-                    .put(attackerSlot, target);
+//     /**
+//      * Set an attack target for a champion
+//      */
+//     public void setAttackTarget(String gameId, short attackerSlot, AttackTarget target) {
+//         attackTargets.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
+//                     .put(attackerSlot, target);
         
-        log.debug("Set attack target for slot {} in game {}: {}", attackerSlot, gameId, target);
+//         log.debug("Set attack target for slot {} in game {}: {}", attackerSlot, gameId, target);
         
-        // Start moving towards the target
-        moveToAttackTarget(gameId, attackerSlot, target);
-    }
+//         // Start moving towards the target
+//         moveToAttackTarget(gameId, attackerSlot, target);
+//     }
     
-    /**
-     * Clear attack target for a champion (when they manually move)
-     */
-    public void clearAttackTarget(String gameId, short attackerSlot) {
-        Map<Short, AttackTarget> gameTargets = attackTargets.get(gameId);
-        if (gameTargets != null) {
-            AttackTarget removed = gameTargets.remove(attackerSlot);
-            if (removed != null) {
-                log.debug("Cleared attack target for slot {} in game {}", attackerSlot, gameId);
-            }
-        }
-    }
+//     /**
+//      * Clear attack target for a champion (when they manually move)
+//      */
+//     public void clearAttackTarget(String gameId, short attackerSlot) {
+//         Map<Short, AttackTarget> gameTargets = attackTargets.get(gameId);
+//         if (gameTargets != null) {
+//             AttackTarget removed = gameTargets.remove(attackerSlot);
+//             if (removed != null) {
+//                 log.debug("Cleared attack target for slot {} in game {}", attackerSlot, gameId);
+//             }
+//         }
+//     }
     
-    /**
-     * Get current attack target for a champion
-     */
-    public AttackTarget getAttackTarget(String gameId, short attackerSlot) {
-        Map<Short, AttackTarget> gameTargets = attackTargets.get(gameId);
-        return gameTargets != null ? gameTargets.get(attackerSlot) : null;
-    }
+//     /**
+//      * Get current attack target for a champion
+//      */
+//     public AttackTarget getAttackTarget(String gameId, short attackerSlot) {
+//         Map<Short, AttackTarget> gameTargets = attackTargets.get(gameId);
+//         return gameTargets != null ? gameTargets.get(attackerSlot) : null;
+//     }
     
-    /**
-     * Check if champion is in attack range of their target
-     */
-    public boolean isInAttackRange(String gameId, short attackerSlot) {
-        AttackTarget target = getAttackTarget(gameId, attackerSlot);
-        if (target == null) {
-            return false;
-        }
+//     /**
+//      * Check if champion is in attack range of their target
+//      */
+//     public boolean isInAttackRange(String gameId, short attackerSlot) {
+//         AttackTarget target = getAttackTarget(gameId, attackerSlot);
+//         if (target == null) {
+//             return false;
+//         }
 
-        Champion attacker = gameStateService.getGameStateById(gameId)
-            .getChampionBySlot(attackerSlot);
+//         Champion attacker = gameStateService.getGameStateById(gameId)
+//             .getChampionBySlot(attackerSlot);
 
-        // Get attacker's real-time position (whether moving or not)
-        Vector2 attackerPosition = moveService.getCurrentRealTimePosition(attacker);
-        if (attackerPosition == null) {
-            // Fallback to cached position if no real-time position available
-            var attackerPos = positionService.getPlayerPosition(gameId, attackerSlot);
-            if (attackerPos == null) {
-                return false;
-            }
-            attackerPosition = attackerPos.getPosition();
-        }
+//         // Get attacker's real-time position (whether moving or not)
+//         Vector2 attackerPosition = moveService.getCurrentRealTimePosition(attacker);
+//         if (attackerPosition == null) {
+//             // Fallback to cached position if no real-time position available
+//             var attackerPos = positionService.getPlayerPosition(gameId, attackerSlot);
+//             if (attackerPos == null) {
+//                 return false;
+//             }
+//             attackerPosition = attackerPos.getPosition();
+//         }
         
-        // Get attacker's champion stats for attack range
-        ChampionEnum attackerChampion = getChampionForSlot(gameId, attackerSlot);
-        if (attackerChampion == null) {
-            return false;
-        }
+//         // Get attacker's champion stats for attack range
+//         ChampionEnum attackerChampion = getChampionForSlot(gameId, attackerSlot);
+//         if (attackerChampion == null) {
+//             return false;
+//         }
         
-        float attackRange = getChampionAttackRange(attackerChampion);
-        Vector2 targetPosition = getTargetPosition(gameId, target);
+//         float attackRange = getChampionAttackRange(attackerChampion);
+//         Vector2 targetPosition = getTargetPosition(gameId, target);
         
-        if (targetPosition == null) {
-            return false;
-        }
+//         if (targetPosition == null) {
+//             return false;
+//         }
         
-        float distance = attackerPosition.distanceTo(targetPosition);
-        boolean inRange = distance <= attackRange;
+//         float distance = attackerPosition.distanceTo(targetPosition);
+//         boolean inRange = distance <= attackRange;
         
-        log.debug("Attack range check for slot {}: distance={}, range={}, inRange={}", 
-                attackerSlot, distance, attackRange, inRange);
+//         log.debug("Attack range check for slot {}: distance={}, range={}, inRange={}", 
+//                 attackerSlot, distance, attackRange, inRange);
         
-        return inRange;
-    }
+//         return inRange;
+//     }
     
-    // Optimized target following constants
-    private static final long POSITION_UPDATE_COOLDOWN = 200; // 200ms to reduce server load
-    private final Map<String, Map<Short, Long>> lastPositionUpdate = new ConcurrentHashMap<>();
+//     // Optimized target following constants
+//     private static final long POSITION_UPDATE_COOLDOWN = 200; // 200ms to reduce server load
+//     private final Map<String, Map<Short, Long>> lastPositionUpdate = new ConcurrentHashMap<>();
 
-    /**
-     * Process continuous attacking while in range - Simplified with 200ms recalculation
-     */
-    public boolean processContinuousAttack(String gameId, short attackerSlot) {
-        AttackTarget target = getAttackTarget(gameId, attackerSlot);
-        if (target == null) {
-            return false;
-        }
+//     /**
+//      * Process continuous attacking while in range - Simplified with 200ms recalculation
+//      */
+//     public boolean processContinuousAttack(String gameId, short attackerSlot) {
+//         AttackTarget target = getAttackTarget(gameId, attackerSlot);
+//         if (target == null) {
+//             return false;
+//         }
 
-        // Check if we're in attack range
-        if (isInAttackRange(gameId, attackerSlot)) {
+//         // Check if we're in attack range
+//         if (isInAttackRange(gameId, attackerSlot)) {
 
-            Champion attacker = gameStateService.getGameStateById(gameId)
-                .getChampionBySlot(attackerSlot);
+//             Champion attacker = gameStateService.getGameStateById(gameId)
+//                 .getChampionBySlot(attackerSlot);
 
-            // In range - stop movement and check if we can attack (cooldown)
-            moveService.popMoveTarget(attacker);
+//             // In range - stop movement and check if we can attack (cooldown)
+//             moveService.popMoveTarget(attacker);
             
-            // Get champion info to check cooldown
-            ChampionEnum attackerChampion = getChampionForSlot(gameId, attackerSlot);
-            if (attackerChampion != null) {
-                // Check if champion can attack (not on cooldown)
-                boolean canAttack = attackHandler.canChampionAttack(gameId, attackerSlot, attackerChampion);
-                if (canAttack) {
-                    // Trigger attack based on target type
-                    long currentTime = System.currentTimeMillis();
-                    if (target.getType() == AttackTargetType.CHAMPION) {
-                        attackHandler.handleChampionAttackChampion(gameId, attackerSlot, target.getChampionSlot(), currentTime);
-                    } else {
-                        attackHandler.handleChampionAttackTarget(gameId, attackerSlot, target.getTargetId(), currentTime);
-                    }
-                    return true;
-                } else {
-                    // Still in range but on cooldown, stay in position
-                    return true;
-                }
-            }
-            return true;
-        }
+//             // Get champion info to check cooldown
+//             ChampionEnum attackerChampion = getChampionForSlot(gameId, attackerSlot);
+//             if (attackerChampion != null) {
+//                 // Check if champion can attack (not on cooldown)
+//                 boolean canAttack = attackHandler.canChampionAttack(gameId, attackerSlot, attackerChampion);
+//                 if (canAttack) {
+//                     // Trigger attack based on target type
+//                     long currentTime = System.currentTimeMillis();
+//                     if (target.getType() == AttackTargetType.CHAMPION) {
+//                         attackHandler.handleChampionAttackChampion(gameId, attackerSlot, target.getChampionSlot(), currentTime);
+//                     } else {
+//                         attackHandler.handleChampionAttackTarget(gameId, attackerSlot, target.getTargetId(), currentTime);
+//                     }
+//                     return true;
+//                 } else {
+//                     // Still in range but on cooldown, stay in position
+//                     return true;
+//                 }
+//             }
+//             return true;
+//         }
 
-        // Out of range - use simple recalculation every 100ms
-        return handleTargetRecalculation(gameId, attackerSlot, target);
-    }
+//         // Out of range - use simple recalculation every 100ms
+//         return handleTargetRecalculation(gameId, attackerSlot, target);
+//     }
 
-    /**
-     * Handle target position recalculation every 100ms
-     */
-    private boolean handleTargetRecalculation(String gameId, short attackerSlot, AttackTarget target) {
-        long currentTime = System.currentTimeMillis();
+//     /**
+//      * Handle target position recalculation every 100ms
+//      */
+//     private boolean handleTargetRecalculation(String gameId, short attackerSlot, AttackTarget target) {
+//         long currentTime = System.currentTimeMillis();
         
-        // Check 300ms cooldown
-        Map<Short, Long> gameLastUpdates = lastPositionUpdate.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>());
-        Long lastUpdate = gameLastUpdates.get(attackerSlot);
-        if (lastUpdate != null && (currentTime - lastUpdate) < POSITION_UPDATE_COOLDOWN) {
-            return false; // Still in cooldown
-        }
+//         // Check 300ms cooldown
+//         Map<Short, Long> gameLastUpdates = lastPositionUpdate.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>());
+//         Long lastUpdate = gameLastUpdates.get(attackerSlot);
+//         if (lastUpdate != null && (currentTime - lastUpdate) < POSITION_UPDATE_COOLDOWN) {
+//             return false; // Still in cooldown
+//         }
 
-        // Get current target position
-        Vector2 currentTargetPos = getTargetPosition(gameId, target);
-        if (currentTargetPos == null) {
-            return false;
-        }
+//         // Get current target position
+//         Vector2 currentTargetPos = getTargetPosition(gameId, target);
+//         if (currentTargetPos == null) {
+//             return false;
+//         }
 
-        // Update tracking and set new move target
-        gameLastUpdates.put(attackerSlot, currentTime);
+//         // Update tracking and set new move target
+//         gameLastUpdates.put(attackerSlot, currentTime);
 
-        // Use simple setMove to the current target position
+//         // Use simple setMove to the current target position
 
-        Champion attacker = gameStateService.getGameStateById(gameId)
-                .getChampionBySlot(attackerSlot);
+//         Champion attacker = gameStateService.getGameStateById(gameId)
+//                 .getChampionBySlot(attackerSlot);
 
-        moveService.setMove(attacker, currentTargetPos);
+//         moveService.setMove(attacker, currentTargetPos);
         
-        log.debug("Recalculated target position for slot {} attacking {} at position {}", 
-                attackerSlot, 
-                target.getType() == AttackTargetType.CHAMPION ? "champion " + target.getChampionSlot() : "target " + target.getTargetId(),
-                currentTargetPos);
+//         log.debug("Recalculated target position for slot {} attacking {} at position {}", 
+//                 attackerSlot, 
+//                 target.getType() == AttackTargetType.CHAMPION ? "champion " + target.getChampionSlot() : "target " + target.getTargetId(),
+//                 currentTargetPos);
         
-        return false; // Still moving towards target
-    }
+//         return false; // Still moving towards target
+//     }
     
-    /**
-     * Process all attackers in a game (called by game loop)
-     */
-    public void processAllAttackers(String gameId) {
-        Map<Short, AttackTarget> gameTargets = attackTargets.get(gameId);
-        if (gameTargets == null || gameTargets.isEmpty()) {
-            return;
-        }
+//     /**
+//      * Process all attackers in a game (called by game loop)
+//      */
+//     public void processAllAttackers(String gameId) {
+//         Map<Short, AttackTarget> gameTargets = attackTargets.get(gameId);
+//         if (gameTargets == null || gameTargets.isEmpty()) {
+//             return;
+//         }
         
-        // Use iterator to safely remove invalid targets during iteration
-        var iterator = gameTargets.entrySet().iterator();
-        while (iterator.hasNext()) {
-            var entry = iterator.next();
-            short attackerSlot = entry.getKey();
-            AttackTarget target = entry.getValue();
+//         // Use iterator to safely remove invalid targets during iteration
+//         var iterator = gameTargets.entrySet().iterator();
+//         while (iterator.hasNext()) {
+//             var entry = iterator.next();
+//             short attackerSlot = entry.getKey();
+//             AttackTarget target = entry.getValue();
             
-            try {
-                // Check if target is still valid by getting its position
-                Vector2 targetPosition = getTargetPosition(gameId, target);
-                if (targetPosition == null) {
-                    // Target is dead or invalid, remove it
-                    iterator.remove();
-                    log.debug("Removed invalid attack target for slot {} in game {}", attackerSlot, gameId);
-                    continue;
-                }
+//             try {
+//                 // Check if target is still valid by getting its position
+//                 Vector2 targetPosition = getTargetPosition(gameId, target);
+//                 if (targetPosition == null) {
+//                     // Target is dead or invalid, remove it
+//                     iterator.remove();
+//                     log.debug("Removed invalid attack target for slot {} in game {}", attackerSlot, gameId);
+//                     continue;
+//                 }
                 
-                // Check if attacker is in range and can attack
-                if (processContinuousAttack(gameId, attackerSlot)) {
-                    // In range, trigger attack based on attack speed
-                    // This could be enhanced with actual attack cooldowns
-                    long currentTime = System.currentTimeMillis();
-                    long lastAttackTime = target.getTimestamp();
+//                 // Check if attacker is in range and can attack
+//                 if (processContinuousAttack(gameId, attackerSlot)) {
+//                     // In range, trigger attack based on attack speed
+//                     // This could be enhanced with actual attack cooldowns
+//                     long currentTime = System.currentTimeMillis();
+//                     long lastAttackTime = target.getTimestamp();
                     
-                    // Simple attack cooldown - attack every 1000ms (1 second)
-                    if (currentTime - lastAttackTime >= 1000) {
-                        performAttack(gameId, attackerSlot, target);
-                        target.setTimestamp(currentTime); // Update last attack time
-                    }
-                }
-            } catch (Exception e) {
-                log.error("Error processing attacker {} in game {}: {}", attackerSlot, gameId, e.getMessage());
-            }
-        }
-    }
+//                     // Simple attack cooldown - attack every 1000ms (1 second)
+//                     if (currentTime - lastAttackTime >= 1000) {
+//                         performAttack(gameId, attackerSlot, target);
+//                         target.setTimestamp(currentTime); // Update last attack time
+//                     }
+//                 }
+//             } catch (Exception e) {
+//                 log.error("Error processing attacker {} in game {}: {}", attackerSlot, gameId, e.getMessage());
+//             }
+//         }
+//     }
     
-    /**
-     * Perform actual attack logic
-     */
-    private void performAttack(String gameId, short attackerSlot, AttackTarget target) {
-        switch (target.getType()) {
-            case CHAMPION:
-                // Champion attacking another champion
-                attackHandler.handleChampionAttackChampion(gameId, attackerSlot, target.getChampionSlot(), System.currentTimeMillis());
-                break;
-            case TARGET:
-                // Champion attacking a target/NPC
-                attackHandler.handleChampionAttackTarget(gameId, attackerSlot, target.getTargetId(), System.currentTimeMillis());
-                break;
-        }
-    }
+//     /**
+//      * Perform actual attack logic
+//      */
+//     private void performAttack(String gameId, short attackerSlot, AttackTarget target) {
+//         switch (target.getType()) {
+//             case CHAMPION:
+//                 // Champion attacking another champion
+//                 attackHandler.handleChampionAttackChampion(gameId, attackerSlot, target.getChampionSlot(), System.currentTimeMillis());
+//                 break;
+//             case TARGET:
+//                 // Champion attacking a target/NPC
+//                 attackHandler.handleChampionAttackTarget(gameId, attackerSlot, target.getTargetId(), System.currentTimeMillis());
+//                 break;
+//         }
+//     }
     
-    /**
-     * Move champion towards their attack target - Simplified to use setMove
-     */
-    private void moveToAttackTarget(String gameId, short attackerSlot, AttackTarget target) {
-        Vector2 targetPosition = getTargetPosition(gameId, target);
-        if (targetPosition == null) {
-            log.warn("Could not find target position for attack target: {}", target);
-            return;
-        }
+//     /**
+//      * Move champion towards their attack target - Simplified to use setMove
+//      */
+//     private void moveToAttackTarget(String gameId, short attackerSlot, AttackTarget target) {
+//         Vector2 targetPosition = getTargetPosition(gameId, target);
+//         if (targetPosition == null) {
+//             log.warn("Could not find target position for attack target: {}", target);
+//             return;
+//         }
 
-        Champion attacker = gameStateService.getGameStateById(gameId)
-                .getChampionBySlot(attackerSlot);
+//         Champion attacker = gameStateService.getGameStateById(gameId)
+//                 .getChampionBySlot(attackerSlot);
 
-        // Use simple setMove for all types of targets
-        moveService.setMove(attacker, targetPosition);
+//         // Use simple setMove for all types of targets
+//         moveService.setMove(attacker, targetPosition);
 
-        String targetInfo = target.getType() == AttackTargetType.CHAMPION
-            ? "champion in slot " + target.getChampionSlot() 
-            : "target " + target.getTargetId();
-        log.debug("Moving slot {} towards {} at position {}", attackerSlot, targetInfo, targetPosition);
-    }
+//         String targetInfo = target.getType() == AttackTargetType.CHAMPION
+//             ? "champion in slot " + target.getChampionSlot() 
+//             : "target " + target.getTargetId();
+//         log.debug("Moving slot {} towards {} at position {}", attackerSlot, targetInfo, targetPosition);
+//     }
     
-    /**
-     * Get position of the target (champion or NPC)
-     */
-    private Vector2 getTargetPosition(String gameId, AttackTarget target) {
-        switch (target.getType()) {
-            case CHAMPION:
-                // Check if the target champion is still alive
-                var gameState = gameStateService.getGameStateById(gameId);
-                if (gameState != null) {
-                    var slotState = gameState.getSlotState(target.getChampionSlot());
-                    if (slotState == null || !slotState.isChampionAlive()) {
-                        log.debug("Target champion {} is dead or not found, clearing attack target", target.getChampionSlot());
-                        return null; // Target is dead
-                    }
-                }
+//     /**
+//      * Get position of the target (champion or NPC)
+//      */
+//     private Vector2 getTargetPosition(String gameId, AttackTarget target) {
+//         switch (target.getType()) {
+//             case CHAMPION:
+//                 // Check if the target champion is still alive
+//                 var gameState = gameStateService.getGameStateById(gameId);
+//                 if (gameState != null) {
+//                     var slotState = gameState.getSlotState(target.getChampionSlot());
+//                     if (slotState == null || !slotState.isChampionAlive()) {
+//                         log.debug("Target champion {} is dead or not found, clearing attack target", target.getChampionSlot());
+//                         return null; // Target is dead
+//                     }
+//                 }
 
-                Champion targetChampion = gameStateService.getGameStateById(gameId)
-                        .getChampionBySlot(target.getChampionSlot());
+//                 Champion targetChampion = gameStateService.getGameStateById(gameId)
+//                         .getChampionBySlot(target.getChampionSlot());
 
-                // Use real-time position from move service first, then fall back to cached position
-                Vector2 realTimePos = moveService.getCurrentRealTimePosition(targetChampion);
-                if (realTimePos != null) {
-                    return realTimePos;
-                }
+//                 // Use real-time position from move service first, then fall back to cached position
+//                 Vector2 realTimePos = moveService.getCurrentRealTimePosition(targetChampion);
+//                 if (realTimePos != null) {
+//                     return realTimePos;
+//                 }
                 
-                // Fallback to cached position if no real-time position available
-                var championPos = positionService.getPlayerPosition(gameId, target.getChampionSlot());
-                return championPos != null ? championPos.getPosition() : null;
-            case TARGET:
-                // Check if the target (troop) is still alive
-                var troop = troopManager.getTroop(gameId, target.getTargetId());
-                if (troop == null || !troop.isAlive()) {
-                    log.debug("Target troop {} is dead or not found, clearing attack target", target.getTargetId());
-                    return null; // Target is dead
-                }
+//                 // Fallback to cached position if no real-time position available
+//                 var championPos = positionService.getPlayerPosition(gameId, target.getChampionSlot());
+//                 return championPos != null ? championPos.getPosition() : null;
+//             case TARGET:
+//                 // Check if the target (troop) is still alive
+//                 var troop = troopManager.getTroop(gameId, target.getTargetId());
+//                 if (troop == null || !troop.isAlive()) {
+//                     log.debug("Target troop {} is dead or not found, clearing attack target", target.getTargetId());
+//                     return null; // Target is dead
+//                 }
                 
-                // Return troop position
-                return troop.getPosition();
-            default:
-                return null;
-        }
-    }
+//                 // Return troop position
+//                 return troop.getPosition();
+//             default:
+//                 return null;
+//         }
+//     }
     
-    /**
-     * Get champion enum for a slot
-     */
-    private ChampionEnum getChampionForSlot(String gameId, short slot) {
-        Map<Short, ChampionEnum> slot2ChampionId = ChannelManager.getSlot2ChampionId(gameId);
-        return slot2ChampionId != null ? slot2ChampionId.get(slot) : null;
-    }
+//     /**
+//      * Get champion enum for a slot
+//      */
+//     private ChampionEnum getChampionForSlot(String gameId, short slot) {
+//         Map<Short, ChampionEnum> slot2ChampionId = ChannelManager.getSlot2ChampionId(gameId);
+//         return slot2ChampionId != null ? slot2ChampionId.get(slot) : null;
+//     }
     
-    /**
-     * Get champion's attack range
-     */
-    private float getChampionAttackRange(ChampionEnum championEnum) {
-        var champion = championService.getChampionById(championEnum);
-        return champion != null ? champion.getAttackRange() : 1.0f; // Default range
-    }
+//     /**
+//      * Get champion's attack range
+//      */
+//     private float getChampionAttackRange(ChampionEnum championEnum) {
+//         var champion = championService.getChampionById(championEnum);
+//         return champion != null ? champion.getAttackRange() : 1.0f; // Default range
+//     }
     
-    /**
-     * Clear all attack targets for a game (when game ends)
-     */
-    public void clearGameTargets(String gameId) {
-        attackTargets.remove(gameId);
-        lastPositionUpdate.remove(gameId);
-        log.info("Cleared attack targets and tracking data for game {}", gameId);
-    }
+//     /**
+//      * Clear all attack targets for a game (when game ends)
+//      */
+//     public void clearGameTargets(String gameId) {
+//         attackTargets.remove(gameId);
+//         lastPositionUpdate.remove(gameId);
+//         log.info("Cleared attack targets and tracking data for game {}", gameId);
+//     }
 
-    /**
-     * Clear all attackers targeting a specific champion (when champion dies)
-     */
-    public void clearTargetsAttackingChampion(String gameId, short targetSlot) {
-        Map<Short, AttackTarget> gameTargets = attackTargets.get(gameId);
-        if (gameTargets == null) {
-            return;
-        }
+//     /**
+//      * Clear all attackers targeting a specific champion (when champion dies)
+//      */
+//     public void clearTargetsAttackingChampion(String gameId, short targetSlot) {
+//         Map<Short, AttackTarget> gameTargets = attackTargets.get(gameId);
+//         if (gameTargets == null) {
+//             return;
+//         }
         
-        // Count and remove targets attacking the dead champion
-        List<Short> toRemove = new ArrayList<>();
-        for (Map.Entry<Short, AttackTarget> entry : gameTargets.entrySet()) {
-            AttackTarget target = entry.getValue();
-            if (target.getType() == AttackTargetType.CHAMPION && target.getChampionSlot() == targetSlot) {
-                short attackerSlot = entry.getKey();
-                toRemove.add(attackerSlot);
-                log.debug("Cleared attack target for slot {} - target champion {} died", attackerSlot, targetSlot);
-            }
-        }
+//         // Count and remove targets attacking the dead champion
+//         List<Short> toRemove = new ArrayList<>();
+//         for (Map.Entry<Short, AttackTarget> entry : gameTargets.entrySet()) {
+//             AttackTarget target = entry.getValue();
+//             if (target.getType() == AttackTargetType.CHAMPION && target.getChampionSlot() == targetSlot) {
+//                 short attackerSlot = entry.getKey();
+//                 toRemove.add(attackerSlot);
+//                 log.debug("Cleared attack target for slot {} - target champion {} died", attackerSlot, targetSlot);
+//             }
+//         }
         
-        for (Short slot : toRemove) {
-            gameTargets.remove(slot);
-        }
+//         for (Short slot : toRemove) {
+//             gameTargets.remove(slot);
+//         }
         
-        if (!toRemove.isEmpty()) {
-            log.info("Cleared {} attack targets in game {} that were targeting dead champion {}", 
-                    toRemove.size(), gameId, targetSlot);
-        }
-    }
+//         if (!toRemove.isEmpty()) {
+//             log.info("Cleared {} attack targets in game {} that were targeting dead champion {}", 
+//                     toRemove.size(), gameId, targetSlot);
+//         }
+//     }
 
-    /**
-     * Clear all attackers targeting a specific target/troop (when target dies)
-     */
-    public void clearTargetsAttackingTarget(String gameId, String targetId) {
-        Map<Short, AttackTarget> gameTargets = attackTargets.get(gameId);
-        if (gameTargets == null) {
-            return;
-        }
+//     /**
+//      * Clear all attackers targeting a specific target/troop (when target dies)
+//      */
+//     public void clearTargetsAttackingTarget(String gameId, String targetId) {
+//         Map<Short, AttackTarget> gameTargets = attackTargets.get(gameId);
+//         if (gameTargets == null) {
+//             return;
+//         }
         
-        // Count and remove targets attacking the dead target
-        List<Short> toRemove = new ArrayList<>();
-        for (Map.Entry<Short, AttackTarget> entry : gameTargets.entrySet()) {
-            AttackTarget target = entry.getValue();
-            if (target.getType() == AttackTargetType.TARGET && targetId.equals(target.getTargetId())) {
-                short attackerSlot = entry.getKey();
-                toRemove.add(attackerSlot);
-                log.debug("Cleared attack target for slot {} - target {} died", attackerSlot, targetId);
-            }
-        }
+//         // Count and remove targets attacking the dead target
+//         List<Short> toRemove = new ArrayList<>();
+//         for (Map.Entry<Short, AttackTarget> entry : gameTargets.entrySet()) {
+//             AttackTarget target = entry.getValue();
+//             if (target.getType() == AttackTargetType.TARGET && targetId.equals(target.getTargetId())) {
+//                 short attackerSlot = entry.getKey();
+//                 toRemove.add(attackerSlot);
+//                 log.debug("Cleared attack target for slot {} - target {} died", attackerSlot, targetId);
+//             }
+//         }
         
-        for (Short slot : toRemove) {
-            gameTargets.remove(slot);
-        }
+//         for (Short slot : toRemove) {
+//             gameTargets.remove(slot);
+//         }
         
-        if (!toRemove.isEmpty()) {
-            log.info("Cleared {} attack targets in game {} that were targeting dead target {}", 
-                    toRemove.size(), gameId, targetId);
-        }
-    }
+//         if (!toRemove.isEmpty()) {
+//             log.info("Cleared {} attack targets in game {} that were targeting dead target {}", 
+//                     toRemove.size(), gameId, targetId);
+//         }
+//     }
 
-    /**
-     * Set attack target by champion slot (for PvP combat)
-     */
-    public void setChampionAttackTarget(String gameId, short attackerSlot, short targetSlot) {
-        AttackTarget target = new AttackTarget(targetSlot, System.currentTimeMillis());
-        setAttackTarget(gameId, attackerSlot, target);
-        log.info("Set champion attack target: slot {} attacking slot {} in game {}", 
-                attackerSlot, targetSlot, gameId);
-    }
+//     /**
+//      * Set attack target by champion slot (for PvP combat)
+//      */
+//     public void setChampionAttackTarget(String gameId, short attackerSlot, short targetSlot) {
+//         AttackTarget target = new AttackTarget(targetSlot, System.currentTimeMillis());
+//         setAttackTarget(gameId, attackerSlot, target);
+//         log.info("Set champion attack target: slot {} attacking slot {} in game {}", 
+//                 attackerSlot, targetSlot, gameId);
+//     }
 
-    /**
-     * Set attack target by target ID (for PvE combat)
-     */
-    public void setTargetAttackTarget(String gameId, short attackerSlot, String targetId) {
-        AttackTarget target = new AttackTarget(targetId, System.currentTimeMillis());
-        setAttackTarget(gameId, attackerSlot, target);
-        log.info("Set target attack target: slot {} attacking target {} in game {}", 
-                attackerSlot, targetId, gameId);
-    }
+//     /**
+//      * Set attack target by target ID (for PvE combat)
+//      */
+//     public void setTargetAttackTarget(String gameId, short attackerSlot, String targetId) {
+//         AttackTarget target = new AttackTarget(targetId, System.currentTimeMillis());
+//         setAttackTarget(gameId, attackerSlot, target);
+//         log.info("Set target attack target: slot {} attacking target {} in game {}", 
+//                 attackerSlot, targetId, gameId);
+//     }
 
-    /**
-     * Check if a champion has any attack target
-     */
-    public boolean hasAttackTarget(String gameId, short attackerSlot) {
-        return getAttackTarget(gameId, attackerSlot) != null;
-    }
+//     /**
+//      * Check if a champion has any attack target
+//      */
+//     public boolean hasAttackTarget(String gameId, short attackerSlot) {
+//         return getAttackTarget(gameId, attackerSlot) != null;
+//     }
 
-    /**
-     * Get current combat status for debugging
-     */
-    public String getCombatStatus(String gameId, short attackerSlot) {
-        AttackTarget target = getAttackTarget(gameId, attackerSlot);
-        if (target == null) {
-            return "No target";
-        }
+//     /**
+//      * Get current combat status for debugging
+//      */
+//     public String getCombatStatus(String gameId, short attackerSlot) {
+//         AttackTarget target = getAttackTarget(gameId, attackerSlot);
+//         if (target == null) {
+//             return "No target";
+//         }
         
-        boolean inRange = isInAttackRange(gameId, attackerSlot);
-        String targetInfo = target.getType() == AttackTargetType.CHAMPION 
-            ? "champion " + target.getChampionSlot() 
-            : "target " + target.getTargetId();
+//         boolean inRange = isInAttackRange(gameId, attackerSlot);
+//         String targetInfo = target.getType() == AttackTargetType.CHAMPION 
+//             ? "champion " + target.getChampionSlot() 
+//             : "target " + target.getTargetId();
             
-        return String.format("Attacking %s - %s", targetInfo, inRange ? "IN RANGE" : "OUT OF RANGE");
-    }
+//         return String.format("Attacking %s - %s", targetInfo, inRange ? "IN RANGE" : "OUT OF RANGE");
+//     }
     
-    /**
-     * Attack target data class
-     */
-    @Data
-    @AllArgsConstructor
-    @FieldDefaults(level = AccessLevel.PRIVATE)
-    public static class AttackTarget {
-        AttackTargetType type;
-        short championSlot; // Used when type is CHAMPION
-        String targetId;    // Used when type is TARGET
-        long timestamp;
+//     /**
+//      * Attack target data class
+//      */
+//     @Data
+//     @AllArgsConstructor
+//     @FieldDefaults(level = AccessLevel.PRIVATE)
+//     public static class AttackTarget {
+//         AttackTargetType type;
+//         short championSlot; // Used when type is CHAMPION
+//         String targetId;    // Used when type is TARGET
+//         long timestamp;
         
-        // Constructor for attacking a champion
-        public AttackTarget(short championSlot, long timestamp) {
-            this.type = AttackTargetType.CHAMPION;
-            this.championSlot = championSlot;
-            this.targetId = null;
-            this.timestamp = timestamp;
-        }
+//         // Constructor for attacking a champion
+//         public AttackTarget(short championSlot, long timestamp) {
+//             this.type = AttackTargetType.CHAMPION;
+//             this.championSlot = championSlot;
+//             this.targetId = null;
+//             this.timestamp = timestamp;
+//         }
         
-        // Constructor for attacking a target/NPC
-        public AttackTarget(String targetId, long timestamp) {
-            this.type = AttackTargetType.TARGET;
-            this.championSlot = -1;
-            this.targetId = targetId;
-            this.timestamp = timestamp;
-        }
+//         // Constructor for attacking a target/NPC
+//         public AttackTarget(String targetId, long timestamp) {
+//             this.type = AttackTargetType.TARGET;
+//             this.championSlot = -1;
+//             this.targetId = targetId;
+//             this.timestamp = timestamp;
+//         }
         
-        // Setter for timestamp to update last attack time
-        public void setTimestamp(long timestamp) {
-            this.timestamp = timestamp;
-        }
-    }
+//         // Setter for timestamp to update last attack time
+//         public void setTimestamp(long timestamp) {
+//             this.timestamp = timestamp;
+//         }
+//     }
     
-    /**
-     * Attack target type enum
-     */
-    public enum AttackTargetType {
-        CHAMPION,
-        TARGET
-    }
-}
+//     /**
+//      * Attack target type enum
+//      */
+//     public enum AttackTargetType {
+//         CHAMPION,
+//         TARGET
+//     }
+// }

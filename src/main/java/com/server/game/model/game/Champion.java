@@ -3,9 +3,7 @@ package com.server.game.model.game;
 
 import java.util.UUID;
 
-import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.attackStrategy.ChampionAttackStrategy;
-import com.server.game.model.game.component.GoldComponent;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.SkillReceivable;
@@ -15,8 +13,8 @@ import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.handler.PlaygroundHandler;
-import com.server.game.netty.handler.SocketSender;
+import com.server.game.netty.sender.AnimationSender;
+import com.server.game.netty.sender.PlaygroundSender;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.util.ChampionEnum;
 
@@ -41,20 +39,18 @@ public final class Champion extends Entity implements SkillReceivable {
     @Delegate
     HealthComponent healthComponent;
     @Delegate
-    GoldComponent goldComponent;
-    @Delegate
     SkillComponent skillComponent;
     @Delegate
     AttackComponent attackComponent;
 
-    public Champion(ChampionDB championDB) {
-        this(championDB, null, null);
-    }
+    final PlaygroundSender playgroundHandler;
 
-    public Champion(ChampionDB championDB, Short ownerSlot, GameState gameState) {
+
+    public Champion(ChampionDB championDB, SlotState ownerSlot, GameState gameState, 
+        PlaygroundSender playgroundHandler) {
         super("champion_" + UUID.randomUUID().toString(),
             ownerSlot, gameState, 
-            gameState != null ? gameState.getSpawnPosition(ownerSlot) : null
+            gameState.getSpawnPosition(ownerSlot)
         );
 
         this.championEnum = ChampionEnum.fromShort(championDB.getId());
@@ -82,6 +78,8 @@ public final class Champion extends Entity implements SkillReceivable {
             new ChampionAttackStrategy()
         );
 
+        this.playgroundHandler = playgroundHandler;
+
         this.addAllComponents();
     }
 
@@ -89,7 +87,6 @@ public final class Champion extends Entity implements SkillReceivable {
     protected void addAllComponents() {
         this.addComponent(ChampionAttributeComponent.class, attributeComponent);
         this.addComponent(HealthComponent.class, healthComponent);
-        this.addComponent(GoldComponent.class, goldComponent);
         this.addComponent(SkillComponent.class, skillComponent);
         this.addComponent(AttackComponent.class, attackComponent);
     }
@@ -113,10 +110,13 @@ public final class Champion extends Entity implements SkillReceivable {
 
         if (nextInPlayGround != this.isInPlayground()) {
             this.toggleInPlaygroundFlag(); // Toggle the state
-            PlaygroundHandler playgroundHandler =
-                SpringContextHolder.getBean(PlaygroundHandler.class);
-            playgroundHandler.sendInPlaygroundUpdateMessage(
-                this.getGameId(), this.getOwnerSlot(), this.isInPlayground());
+        
+            this.getGameStateService()
+                .sendInPlaygroundUpdateMessage(
+                    this.getGameState(),
+                    this.getOwnerSlot(),
+                    this.isInPlayground()
+                );
         }
     }
 
@@ -131,7 +131,7 @@ public final class Champion extends Entity implements SkillReceivable {
         this.decreaseHP((int) actualDamage);
 
         // 3. Send health update for the target
-        SocketSender.sendHealthUpdate(ctx, (int) actualDamage);
+        // AnimationSender.sendHealthUpdate(ctx, (int) actualDamage);
     }
 
     @Override 

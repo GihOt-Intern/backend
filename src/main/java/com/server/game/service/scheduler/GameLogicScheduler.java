@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.HeartbeatMessage;
-import com.server.game.service.attack.AttackTargetingService;
+// import com.server.game.service.attack.AttackTargetingService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.goldGeneration.GoldGenerationService;
 import com.server.game.service.move.MoveService;
@@ -30,7 +30,7 @@ public class GameLogicScheduler {
 
     MoveService moveService;
     @Lazy
-    AttackTargetingService attackTargetingService;
+    // AttackTargetingService attackTargetingService;
     TroopManager troopManager;
     GoldGenerationService goldGenerationService;
     GameStateService gameStateService;
@@ -81,7 +81,7 @@ public class GameLogicScheduler {
                 troopManager.updateTroopMovements(gameId, 0.05f);
                 
                 // Process attack targeting and continuous combat
-                attackTargetingService.processAllAttackers(gameId);
+                // attackTargetingService.processAllAttackers(gameId);
 
                 
                 // TODO: Add other high-frequency game systems here

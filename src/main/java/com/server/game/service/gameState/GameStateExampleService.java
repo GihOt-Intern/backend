@@ -2,6 +2,7 @@ package com.server.game.service.gameState;
 
 import org.springframework.stereotype.Component;
 
+import com.server.game.factory.GameStateFactory;
 import com.server.game.model.game.GameState;
 import com.server.game.util.ChampionEnum;
 
@@ -26,7 +27,7 @@ public class GameStateExampleService {
     GameStateService gameStateService;
     GameStateManager gameStateManager;
     GameStateBroadcastService gameStateBroadcastService;
-    GameStateBuilder gameStateBuilder;
+    GameStateFactory gameStateBuilder;
 
     /**
      * Example: Initialize a game with multiple players
@@ -41,7 +42,7 @@ public class GameStateExampleService {
         slot2ChampionId.put((short) 2, ChampionEnum.MAGE_SCEPTER);
 
 
-        GameState gameState = gameStateBuilder.build(gameId, slot2ChampionId);
+        GameState gameState = gameStateBuilder.createGameState(gameId, slot2ChampionId);
 
         // Initialize the game
         boolean success = gameStateManager.initializeGame(gameState);

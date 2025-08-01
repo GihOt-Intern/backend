@@ -105,6 +105,8 @@ public class InitialPositionsSend implements TLVEncodable {
                 dos.writeFloat((float) position.y());
                 dos.writeFloat(rotate);
 
+                System.out.println(">>> [Log in InitialPositionData.encode] Champion " + championStringId + " position: " + position + ", rotate: " + rotate);
+
                 return baos.toByteArray();
 
             } catch (IOException e) {

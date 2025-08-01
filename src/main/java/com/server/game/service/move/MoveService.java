@@ -190,6 +190,7 @@ public class MoveService {
      * Được gọi mỗi lần trước khi broadcast vị trí
      */
     public void updatePositions(GameState gameState) {
+        // System.out.println(">>> [Log in MoveService.updatePositions] UPDATE POSITION FOR GAME: " + gameState.getGameId());
         for (Entity entity : gameState.getEntities()) {
             this.updatePositions(entity);
         }
@@ -197,13 +198,14 @@ public class MoveService {
 
 
     public void updatePositions(Entity entity) {
+        // System.out.println(">>> [Log in MoveService.updatePositions] UPDATE POSITION FOR ENTITY: " + entity.getStringId());
         MoveTarget target = moveTargets.get(entity);
         if (target == null) {
             log.debug("No move target found for entity {}", entity.getStringId());
             return; // No move target set, nothing to update
         }
 
-        // Function pointer
+        // Lambda function
         Function<GridCell, Vector2> toPosition = cell -> {
             return entity.getGameState().toPosition(cell);
         };
@@ -248,6 +250,10 @@ public class MoveService {
             targetSpeed,
             currentTime
         );
+
+        System.out.println(">>> [Log in MoveService.updatePositions] Updated pending position for entity: " + 
+            entity.getStringId() + ", new position: " + position + ", speed: " + targetSpeed +
+            " in gameId=" + entity.getGameId());
 
         if (reachedFinalDestination || !target.path.hasNext()) {
             moveTargets.remove(entity);
@@ -319,6 +325,7 @@ public class MoveService {
         }
         
         // If no pending position, get current entity position
+        System.out.println(">>> [Log in MoveService.getCurrentRealTimePosition] No optimize, get current pos: " + entity.getCurrentPosition());
         return entity.getCurrentPosition();
     }
 

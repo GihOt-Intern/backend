@@ -5,10 +5,8 @@ import java.util.Set;
 
 import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.GoldComponent;
-import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.handler.PlaygroundHandler;
-import com.server.game.resource.model.GameMap.PlayGround;
+import com.server.game.netty.sender.PlaygroundSender;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,7 +25,7 @@ public class SlotState {
     @Delegate
     private GoldComponent goldComponent;
 
-    private Set<TroopInstance2> troops;
+    private final Set<TroopInstance2> troops;
 
     public SlotState(Short slot, Champion champion, Vector2 initialPosition, Integer initialGold) {
         this.slot = slot;
@@ -36,27 +34,17 @@ public class SlotState {
         this.troops = new HashSet<>();
     }
 
-
-    @Deprecated
-    @SuppressWarnings("unused")
-    public void checkInPlayGround(String gameId, PlayGround playGround) {
-        boolean nextInPlayGround = this.champion.checkInPlayGround(playGround);
-        
-        System.out.println(">>> [Log in SlotState.checkInPlayGround] Slot " + slot + " nextInPlayGround: " + 
-            nextInPlayGround + ", current inPlayGround: " + this.champion.isInPlayground());
-
-        if (nextInPlayGround != this.champion.isInPlayground()) {
-            this.champion.toggleInPlaygroundFlag(); // Toggle the state
-            PlaygroundHandler playgroundHandler =
-                SpringContextHolder.getBean(PlaygroundHandler.class);
-            playgroundHandler.sendInPlaygroundUpdateMessage(gameId, this.slot, this.champion.isInPlayground());
+    public void addTroop(TroopInstance2 troop) {
+        if (troop == null) {
+            System.out.println(">>> [SlotState] Cannot add null troop");
+            return;
         }
+        this.troops.add(troop);
     }
 
     public boolean isChampionAlive(){
         return this.champion.isAlive();
     }
-
 
     public float getMoveSpeed() {
         return this.champion.getMoveSpeed();
@@ -86,9 +74,10 @@ public class SlotState {
         this.setCurrentHP(this.getMaxHP());
     }
 
+    // TODO: do not use SpringContextHolder 
     public void handleGoldChange(String gameId) {
-        PlaygroundHandler playGroundHandler = 
-            SpringContextHolder.getBean(PlaygroundHandler.class);
+        PlaygroundSender playGroundHandler = 
+            SpringContextHolder.getBean(PlaygroundSender.class);
         playGroundHandler.sendGoldChangeMessage(gameId, this.slot, this.getCurrentGold());
     }
 

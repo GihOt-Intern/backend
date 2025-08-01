@@ -3,7 +3,7 @@ package com.server.game.service.troop;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.service.TroopService;
-import com.server.game.service.attack.AttackTargetingService;
+// import com.server.game.service.attack.AttackTargetingService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.troop.TroopInstance.TroopAIState;
 import com.server.game.util.TroopEnum;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class TroopManager {
     private TroopService troopService;
     private GameStateService gameStateService;
-    private AttackTargetingService attackTargetingService;
+    // private AttackTargetingService attackTargetingService;
 
     // gameId -> Map<troopInstanceId, TroopInstance>
     private final Map<String, Map<String, TroopInstance>> gameTroops = new ConcurrentHashMap<>();
@@ -218,7 +218,7 @@ public class TroopManager {
         // If troop died, remove it
         if (!troop.isAlive()) {
             // Clear all attack targets that were targeting this dead troop
-            attackTargetingService.clearTargetsAttackingTarget(gameId, troopInstanceId);
+            // attackTargetingService.clearTargetsAttackingTarget(gameId, troopInstanceId);
             
             // Notify game state service about troop death
             broadcastTroopDeath(gameId, troopInstanceId, troop.getOwnerSlot());

@@ -47,6 +47,7 @@ public class PositionBroadcastService {
      */
     public void broadcastGamePositions(GameState gameState) {
 
+
         Map<Entity, PositionData> gameStatePendingPositions = 
             positionService.deepCopyPendingPositionsOf(gameState);
 
@@ -56,7 +57,7 @@ public class PositionBroadcastService {
             
             Vector2 oldPosition = entity.getCurrentPosition();
             Vector2 newPosition = entry.getValue().getPosition();
-            return hasPositionChanged(oldPosition, newPosition);
+            return !hasPositionChanged(oldPosition, newPosition);
         });
 
         if (gameStatePendingPositions.isEmpty()) {

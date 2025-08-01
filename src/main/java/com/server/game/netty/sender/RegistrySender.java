@@ -1,4 +1,4 @@
-package com.server.game.netty.handler;
+package com.server.game.netty.sender;
 
 
 import org.springframework.stereotype.Component;
@@ -22,7 +22,7 @@ import lombok.experimental.FieldDefaults;
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class RegistryHandler {
+public class RegistrySender {
 
     AuthenticationService authenticationService;
     UserService userService;

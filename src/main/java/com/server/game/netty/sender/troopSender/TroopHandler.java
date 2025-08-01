@@ -1,4 +1,4 @@
-package com.server.game.netty.handler.troopHandler;
+package com.server.game.netty.sender.troopSender;
 
 import org.springframework.stereotype.Component;
 
@@ -89,7 +89,7 @@ public class TroopHandler {
     private Vector2 determineSpawnPosition(GameState gameState, short ownerSlot) {
         // Logic to determine spawn position based on game state and owner slot
         // For simplicity, we can use a fixed spawn position or a position defined in the game state
-        return gameState.getSpawnPosition(ownerSlot);
+        return gameState.getSpawnPosition(gameState.getSlotState(ownerSlot));
     }
 
     private void broadcastTroopSpawn(String gameId, String troopId, short troopType, short ownerSlot, Vector2 position) {

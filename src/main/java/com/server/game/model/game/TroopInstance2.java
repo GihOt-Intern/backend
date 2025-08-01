@@ -1,17 +1,12 @@
 package com.server.game.model.game;
 
-import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.attackStrategy.TroopAttackStrategy;
 import com.server.game.model.game.component.HealthComponent;
-import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attributeComponent.TroopAttributeComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.handler.SocketSender;
 import com.server.game.resource.model.TroopDB;
-import com.server.game.resource.service.TroopService;
-import com.server.game.util.ChampionAnimationEnum;
 import com.server.game.util.TroopEnum;
 
 import lombok.AccessLevel;
@@ -71,16 +66,12 @@ public class TroopInstance2 extends Entity {
     private long lastAbilityUse = 0;
 
 
-    public TroopInstance2(TroopCreateContext ctx) {
+    public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot) {
         super("troop_" + UUID.randomUUID().toString(),
-            ctx.getOwnerSlot(), ctx.getGameState(),
-            ctx.getGameState().getSpawnPosition(ctx.getOwnerSlot()));
+            ownerSlot, gameState,
+            gameState.getSpawnPosition(ownerSlot));
 
-        this.troopEnum = ctx.getTroopEnum();
-
-        TroopDB troopDB = SpringContextHolder.getBean(TroopService.class)
-            .getTroopDBById(troopEnum);
-
+        this.troopEnum = TroopEnum.fromShort(troopDB.getId());
 
         this.attributeComponent = new TroopAttributeComponent(
             troopDB.getStats().getDefense(),
@@ -103,8 +94,6 @@ public class TroopInstance2 extends Entity {
         );
 
         this.addAllComponents();
-
-
 
         this.lastAIUpdate = System.currentTimeMillis();
         this.stateChangeTime = System.currentTimeMillis();

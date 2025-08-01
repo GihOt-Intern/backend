@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.position.PositionService;
-import com.server.game.service.pvp.PvPService;
+// import com.server.game.service.pvp.PvPService;
 import com.server.game.service.scheduler.BroadcastScheduler;
 import com.server.game.service.scheduler.GameLogicScheduler;
 
@@ -29,7 +29,7 @@ public class GameCoordinator {
     GameLogicScheduler gameLogicScheduler;
     PositionService positionService;
     GameStateService gameStateService;
-    PvPService pvpService;
+    // PvPService pvpService;
     
     // Store GameState (model) for game map/champion data access
     private final Map<String, GameState> gameStates = new ConcurrentHashMap<>();
@@ -58,7 +58,7 @@ public class GameCoordinator {
         broadcastScheduler.unregisterGame(gameId);
         gameLogicScheduler.unregisterGame(gameId);
         gameStateService.cleanupGameState(gameId);
-        pvpService.cleanupGameCooldowns(gameId); // Clean up attack cooldowns
+        // pvpService.cleanupGameCooldowns(gameId); // Clean up attack cooldowns
         gameStates.remove(gameId); // Remove GameState (model)
         log.info("Unregistered game from all schedulers and cleaned up game state: {}", gameId);
     }

@@ -3,7 +3,7 @@ package com.server.game.model.game.attackStrategy;
 import org.springframework.stereotype.Component;
 
 import com.server.game.model.game.context.AttackContext;
-import com.server.game.netty.handler.SocketSender;
+import com.server.game.netty.sender.AnimationSender;
 import com.server.game.util.ChampionAnimationEnum;
 
 import lombok.extern.slf4j.Slf4j;

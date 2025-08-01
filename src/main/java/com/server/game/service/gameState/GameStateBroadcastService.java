@@ -7,8 +7,8 @@ import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.netty.ChannelManager;
-import com.server.game.netty.handler.SocketSender;
 import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
+import com.server.game.netty.sender.AnimationSender;
 import com.server.game.util.ChampionAnimationEnum;
 
 import io.netty.channel.Channel;
@@ -32,7 +32,7 @@ public class GameStateBroadcastService {
      * Broadcast health update to all players in a game
      */
      /**
-     * @deprecated See {@link SocketSender#sendHealthUpdate(AttackContext, ChampionAnimationEnum)} instead
+     * @deprecated See {@link AnimationSender#sendHealthUpdate(AttackContext, ChampionAnimationEnum)} instead
      */
     @Deprecated
     public void broadcastHealthUpdate(String gameId, short targetSlot, int damage, long timestamp) {
