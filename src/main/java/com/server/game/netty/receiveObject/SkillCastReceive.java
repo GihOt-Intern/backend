@@ -1,4 +1,4 @@
-package com.server.game.netty.receiveObject.pvp;
+package com.server.game.netty.receiveObject;
 
 
 import org.springframework.stereotype.Component;

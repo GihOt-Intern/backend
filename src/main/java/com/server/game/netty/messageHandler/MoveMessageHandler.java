@@ -1,37 +1,97 @@
 package com.server.game.netty.messageHandler;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
-import com.server.game.netty.receiveObject.DistanceReceive;
-import com.server.game.netty.sendObject.DistanceSend;
+import com.server.game.model.game.Entity;
+import com.server.game.netty.ChannelManager;
+import com.server.game.netty.receiveObject.PositionReceive;
+import com.server.game.service.gameState.GameStateService;
+import com.server.game.service.move.MoveService;
 
+import io.netty.channel.Channel;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
+@AllArgsConstructor
 public class MoveMessageHandler {
+    private final MoveService moveService;
+    
+    private GameStateService gameStateService;
+    
+    // Rate limiting: minimum time between position updates (in milliseconds)
+    private static final long MIN_UPDATE_INTERVAL = 50; // 50ms = max 20 updates per second
+    private final Map<String, Long> lastUpdateTime = new ConcurrentHashMap<>();
+    
+    @MessageMapping(PositionReceive.class)
+    public void handleMoveMessage(PositionReceive receiveObject, Channel channel) {
 
-    // @MessageMapping(MoveRequest.class)
-    // public void handleMove(MoveRequest msg) {
-    //     // xử lý di chuyển
-    // }
+        String gameId = ChannelManager.getGameIdByChannel(channel);
+        
+        String entityStringId = receiveObject.getStringId();
 
-    @MessageMapping(DistanceReceive.class)
-    public DistanceSend handleDistance(DistanceReceive receiveObject) {
-        float x1 = receiveObject.getX1();
-        float y1 = receiveObject.getY1();
-        float x2 = receiveObject.getX2();
-        float y2 = receiveObject.getY2();
-        System.out.println("x1= " + x1 + ", y1= " + y1 + ", x2= " + x2 + ", y2= " + y2);
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-        float d = (float) Math.sqrt(dx*dx + dy*dy);
-        System.out.println("Distance: " + d);
-        return new DistanceSend(d); // return a sendObject
+        Entity entity = gameStateService.getEntityByStringId(gameId, entityStringId);
+        if (entity == null) {
+            log.debug("Entity not found for stringId: {}", entityStringId);
+            return;
+        }
+
+        // Short slot = ChannelManager.getSlotByChannel(channel);
+
+        long clientTimestamp = receiveObject.getTimestamp();
+        
+        if (gameId == null) {
+            log.debug("Invalid gameId for position update");
+            return;
+        }
+        
+        // Rate limiting check
+        String playerKey = gameId + ":" + entityStringId;
+        long currentTime = System.currentTimeMillis();
+        Long lastUpdate = lastUpdateTime.get(playerKey);
+        
+        if (lastUpdate != null && (currentTime - lastUpdate) < MIN_UPDATE_INTERVAL) {
+            log.debug("Rate limit exceeded for entity {}:{} - ignoring position update", gameId, entityStringId);
+            return;
+        }
+        
+        // Update the last update time
+        lastUpdateTime.put(playerKey, currentTime);
+
+        moveService.setMove(entity, receiveObject.getPosition());
+
+        System.out.println(">>> [Log in PositionHandler.handlePosition] Received position update for entity: " + entityStringId + ", position: " + receiveObject.getPosition() + ", timestamp: " + clientTimestamp);
     }
-
-    // @MessageMapping(AnnotherReceive.class)
-    // public AnnotherSend handleAnnother(AnnotherReceive receiveObject) {
-    //     // Handle the another receive object
-    // }
-}
+    
+    /**
+     * Clean up old entries from rate limiter cache to prevent memory leaks
+     * Runs every 5 minutes
+     */
+    @Scheduled(fixedDelay = 300000)
+    public void cleanupRateLimiterCache() {
+        long currentTime = System.currentTimeMillis();
+        long cleanupThreshold = currentTime - (MIN_UPDATE_INTERVAL * 1000); // Remove entries older than 50 seconds
+        
+        Iterator<Map.Entry<String, Long>> iterator = lastUpdateTime.entrySet().iterator();
+        int removed = 0;
+        
+        while (iterator.hasNext()) {
+            Map.Entry<String, Long> entry = iterator.next();
+            if (entry.getValue() < cleanupThreshold) {
+                iterator.remove();
+                removed++;
+            }
+        }
+        
+        if (removed > 0) {
+            log.debug("Cleaned up {} old rate limiter entries", removed);
+        }
+    }
+} 

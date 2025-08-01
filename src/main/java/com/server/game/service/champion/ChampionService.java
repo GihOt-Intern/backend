@@ -1,22 +1,13 @@
 package com.server.game.service.champion;
 
-import com.server.game.model.game.Champion;
-import com.server.game.model.game.GameState;
-import com.server.game.netty.ChannelManager;
-import com.server.game.netty.sendObject.initialGameState.ChampionInitialHPsSend.ChampionInitialHPData;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.resource.repository.ChampionDBRepository;
-import com.server.game.resource.service.GameMapService;
 import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -26,7 +17,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChampionService {
     
-    GameMapService gameMapService;
     ChampionDBRepository championRepository;
 
     public ChampionDB getChampionDBById(ChampionEnum championEnum) {
@@ -34,31 +24,5 @@ public class ChampionService {
             System.out.println(">>> [Log in ChampionService] Champion with id " + championEnum.getChampionId() + " not found.");
             return null;
         });
-    }
-
-    // public Integer getInitialHP(ChampionEnum championId) {
-    //     Champion champion = getChampionById(championId);
-    //     if (champion == null) {
-    //         System.out.println(">>> [Log in ChampionService] Champion with id " + championId + " not found.");
-    //         return null;
-    //     }
-    //     return champion.getInitialHP();
-    // }
-
-    @Deprecated
-    @SuppressWarnings("unused")
-    public List<ChampionInitialHPData> getChampionInitialHPsData(String gameId) {
-        Map<Short, ChampionEnum> slot2ChampionId = ChannelManager.getSlot2ChampionId(gameId);
-
-        List<ChampionInitialHPData> initialHPDataList = new ArrayList<>();
-        for(Map.Entry<Short, ChampionEnum> entry : slot2ChampionId.entrySet()) {
-            Short slot = entry.getKey();
-            ChampionEnum championId = entry.getValue();
-            Integer initialHP = 69696;
-            
-            // this.getInitialHP(championId);
-            initialHPDataList.add(new ChampionInitialHPData(slot, initialHP));
-        }
-        return initialHPDataList;
     }
 }

@@ -15,6 +15,7 @@ import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMapGrid;
+import com.server.game.service.attack.AttackService;
 import com.server.game.service.gameState.GameCoordinator;
 import com.server.game.service.move.MoveService.MoveTarget.PathComponent;
 import com.server.game.service.position.PositionService;
@@ -34,6 +35,9 @@ public class MoveService {
     @Autowired
     @Lazy
     private GameCoordinator gameCoordinator;
+
+    @Autowired @Lazy
+    private AttackService attackService;
 
 
     private final Map<GameState, Map<Entity, MoveTarget>> moveTargets = new ConcurrentHashMap<>();
@@ -213,6 +217,12 @@ public class MoveService {
             return;
         }
 
+        if (attackService.isAttacking(entity)) {
+            // Entity is currently attacking, so we stop the attack
+            log.debug("Entity {} is currently attacking, stopping attack before setting new move target", entity.getStringId());
+            attackService.stopAttack(entity);
+        }
+
         // If prechecks ok, update last move target time
         this.pushLastMoveTargetTimestamp(entity, currentTime);
 
@@ -319,12 +329,12 @@ public class MoveService {
      */
     public void updatePositions(GameState gameState) {
         for (Entity entity : gameState.getEntities()) {
-            this.updatePositions(entity);
+            this.updatePositionOf(entity);
         }
     }
 
 
-    private void updatePositions(Entity entity) {
+    private void updatePositionOf(Entity entity) {
         MoveTarget target = this.peekMoveTargetFromMap(entity);
         if (target == null) {
             log.debug("No move target found for entity {}", entity.getStringId());

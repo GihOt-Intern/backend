@@ -19,7 +19,7 @@ public class TroopAttributeComponent extends AttributeComponent {
         Float healingRange, 
         int cost
     ) {
-        super(defense, moveSpeed, attackRange);
+        super(defense, moveSpeed);
         this.detectionRange = detectionRange;
         this.healingPower = healingPower;
         this.healingRange = healingRange;

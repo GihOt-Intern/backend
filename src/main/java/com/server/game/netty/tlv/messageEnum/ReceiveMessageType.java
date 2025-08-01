@@ -20,19 +20,9 @@ public enum ReceiveMessageType {
     
     ATTACK_RECEIVE((short) 100),
 
-
-    @Deprecated
-    CHAMPION_ATTACK_CHAMPION_RECEIVE((short) 1000),
-    @Deprecated
-    CHAMPION_ATTACK_TARGET_RECEIVE((short) 101),
-    @Deprecated
-    TARGET_ATTACK_CHAMPION_RECEIVE((short) 102),
-    @Deprecated
-    TARGET_ATTACK_TARGET_RECEIVE((short) 103),
     
     
     TROOP_SPAWN_RECEIVE((short) 200),
-    DISTANCE_RECEIVE((short) 999),
     TEST_GAME_START_ANNOUNCE((short) 2025),
     ;
 

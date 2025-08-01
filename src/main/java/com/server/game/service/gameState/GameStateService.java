@@ -18,10 +18,13 @@ import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.component.attackComponent.SkillReceivable;
+import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.model.map.shape.Shape;
 import com.server.game.netty.ChannelManager;
+import com.server.game.netty.messageHandler.AnimationMessageHandler;
+import com.server.game.netty.messageHandler.GameStateMessageHandler;
 import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
 import com.server.game.netty.sendObject.respawn.ChampionDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnTimeSend;
@@ -31,44 +34,24 @@ import com.server.game.model.game.Entity;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@AllArgsConstructor
 public class GameStateService {
 
-    PlaygroundMessageHandler playgroundSender;
-    
+    private final GameCoordinator gameCoordinator;
+    private final PlaygroundMessageHandler playgroundMessageHandler;
+    private final AnimationMessageHandler animationMessageHandler;
+    private final GameStateMessageHandler gameStateMessageHandler;
+
     // Track active respawn schedulers to prevent duplicates: gameId:slot -> scheduler
     private final Map<String, ScheduledExecutorService> activeRespawnSchedulers = new ConcurrentHashMap<>();
 
-    private GameCoordinator gameCoordinator;
-    // private AttackTargetingService attackTargetingService;
-
-    public GameStateService(
-        @Lazy GameCoordinator gameCoordinator,
-        PlaygroundMessageHandler playgroundSender
-        // ,@Lazy AttackTargetingService attackTargetingService
-        ) {
-        this.gameCoordinator = gameCoordinator;
-        this.playgroundSender = playgroundSender;
-        // this.attackTargetingService = attackTargetingService;
-    }
-
-    /**
-     * Initialize game state for a specific game
-     */
-    // public void register(GameState gameState) {
-    //     gameStates.put(gameState.getGameId(), gameState);
-    //     log.info("Registered game state for gameId: {}", gameState.getGameId());
-    // }
-
     
-    /**
-     * Get a game state by gameId
-     */
     public GameState getGameStateById(String gameId) {
         GameState gameState = gameCoordinator.getGameState(gameId);
         if (gameState == null) {
@@ -707,6 +690,14 @@ public class GameStateService {
         }
         
         // Send the update message to all players in the game
-        this.playgroundSender.sendInPlaygroundUpdateMessage(gameState.getGameId(), slot.getSlot(), isInPlayground);
+        this.playgroundMessageHandler.sendInPlaygroundUpdateMessage(gameState.getGameId(), slot.getSlot(), isInPlayground);
+    }
+
+    public void sendAttackAnimation(AttackContext ctx) {
+        this.animationMessageHandler.sendAttackAnimation(ctx);
+    }
+
+    public void sendHealthUpdate(AttackContext ctx) {
+        this.gameStateMessageHandler.sendHealthUpdate(ctx);
     }
 }

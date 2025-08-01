@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.server.game.resource.model.GameMap;

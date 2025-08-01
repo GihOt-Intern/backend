@@ -10,18 +10,16 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class ChampionAttackStrategy implements AttackStrategy {
 
-
     @Override
-    public void performAttack(AttackContext ctx) {
+    public boolean performAttack(AttackContext ctx) {
 
         // 1. First send attack animation of the attacker
         System.out.println(">>> [Log in ChampionAttackStrategy] Sending attack animation for attacker");
-        // AnimationSender.sendAttackAnimation(ctx, ChampionAnimationEnum.ATTACK_ANIMATION);
-    
-    
+        ctx.getGameStateService().sendAttackAnimation(ctx);
+
         // 2. Then perform the attack logic
         System.out.println(">>> [Log in ChampionAttackStrategy] Performing attack logic");
-        ctx.getTarget().receiveAttack(ctx);
+        return ctx.getTarget().receiveAttack(ctx);
     }
 }
 

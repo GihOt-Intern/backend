@@ -7,13 +7,10 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.gameState.SlotStateService;
-import com.server.game.util.ChampionEnum;
 import com.server.game.util.TroopEnum;
-import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.TroopInstance2;
-import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.TroopDB;
 import com.server.game.resource.service.TroopService;
 

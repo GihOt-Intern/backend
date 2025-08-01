@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.netty.messageHandler.AnimationMessageHandler;
-import com.server.game.util.ChampionAnimationEnum;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TroopAttackStrategy implements AttackStrategy {
 
     @Override
-    public void performAttack(AttackContext ctx) {
+    public boolean performAttack(AttackContext ctx) {
 
         // TODO: please migrate handling troop attack any Entity to this method
 
@@ -26,6 +25,8 @@ public class TroopAttackStrategy implements AttackStrategy {
         // // 2. Then perform the attack logic
         // System.out.println(">>> [Log in ChampionAttackStrategy] Performing attack logic");
         // ctx.getTarget().receiveAttack(ctx);
+
+        return true;
     }
 }
 

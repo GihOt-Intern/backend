@@ -4,5 +4,7 @@ import com.server.game.model.game.context.AttackContext;
 
 public class TowerAttackStrategy implements AttackStrategy {
     @Override
-    public void performAttack(AttackContext ctx) {}
+    public boolean performAttack(AttackContext ctx) {
+        return true; // Placeholder for tower attack logic
+    }
 }

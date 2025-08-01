@@ -90,6 +90,7 @@ public class TroopInstance2 extends Entity {
             this,
             troopDB.getStats().getAttack(),
             troopDB.getStats().getAttackSpeed(),
+            troopDB.getStats().getAttackRange(),
             new TroopAttackStrategy()
         );
 
@@ -112,7 +113,7 @@ public class TroopInstance2 extends Entity {
    
 
     @Override // from Attackable implemented by Entity
-    public void receiveAttack(AttackContext ctx) {
+    public boolean receiveAttack(AttackContext ctx) {
 
         // TODO: handle attack animations, attack logic,... of troops here
 
@@ -124,6 +125,8 @@ public class TroopInstance2 extends Entity {
 
         // // 3. Send health update for the target
         // SocketSender.sendHealthUpdate(ctx, (int) actualDamage);
+
+        return true; // Indicate that the attack was received successfully
     }
 
     

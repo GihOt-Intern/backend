@@ -1,7 +1,5 @@
 package com.server.game.netty.messageHandler;
 
-
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -12,7 +10,6 @@ import com.server.game.factory.GameStateFactory;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.netty.ChannelManager;
-import com.server.game.netty.sendObject.initialGameState.ChampionInitialHPsSend;
 import com.server.game.netty.sendObject.initialGameState.ChampionInitialStatsSend;
 import com.server.game.netty.sendObject.initialGameState.InitialPositionsSend;
 import com.server.game.service.gameState.GameCoordinator;

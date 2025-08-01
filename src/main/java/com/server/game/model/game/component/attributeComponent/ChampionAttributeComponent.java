@@ -6,8 +6,8 @@ import lombok.Getter;
 public class ChampionAttributeComponent extends AttributeComponent {
     protected float resourceClaimingSpeed;
 
-    public ChampionAttributeComponent(int defense, float moveSpeed, float attackRange, float resourceClaimingSpeed) {
-        super(defense, moveSpeed, attackRange);
+    public ChampionAttributeComponent(int defense, float moveSpeed, float resourceClaimingSpeed) {
+        super(defense, moveSpeed);
         this.resourceClaimingSpeed = resourceClaimingSpeed;
     }
 }

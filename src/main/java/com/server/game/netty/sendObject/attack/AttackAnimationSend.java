@@ -1,14 +1,14 @@
-package com.server.game.netty.sendObject.pvp;
+package com.server.game.netty.sendObject.attack;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import com.server.game.model.game.context.AttackContext;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.messageEnum.SendMessageType;
-import com.server.game.util.Util;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
@@ -17,47 +17,44 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @Data
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class HealthUpdateSend implements TLVEncodable {
-    String targetId;
-    int currentHealth;
-    int maxHealth;
-    int damage;
+public class AttackAnimationSend implements TLVEncodable {
+    String attackerId; 
+    String targetId; 
+
+    float attackSpeed; // Attack speed of the attacker
     long timestamp;
 
-    // Constructor for champion health update
-    public HealthUpdateSend(String targetId, int currentHealth, int maxHealth, int damage, long timestamp) {
-        this.targetId = targetId;
-        this.currentHealth = currentHealth;
-        this.maxHealth = maxHealth;
-        this.damage = damage;
-        this.timestamp = timestamp;
-    }
 
+    public AttackAnimationSend(AttackContext ctx) {
+        this.attackerId = ctx.getAttacker().getStringId();
+        this.targetId = ctx.getTarget().getStringId();
+        this.attackSpeed = ctx.getAttacker().getAttackSpeed();
+        this.timestamp = ctx.getTimestamp();
+    }
 
     @Override
     public SendMessageType getType() {
-        return SendMessageType.HEALTH_UPDATE_SEND;
+        return SendMessageType.ATTACK_ANIMATION_SEND;
     }
 
     @Override
     public byte[] encode() {
-
-
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(baos);
 
+            dos.writeUTF(attackerId);
             dos.writeUTF(targetId);
-            dos.writeInt(currentHealth);
-            dos.writeInt(maxHealth);
-            dos.writeInt(damage);
-            dos.writeLong(timestamp);
 
+
+            dos.writeFloat(attackSpeed); 
+            dos.writeLong(timestamp);
 
             return baos.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException("Cannot encode HealthUpdateSend", e);
+            throw new RuntimeException("Cannot encode " + this.getClass().getSimpleName(), e);
         }
     }
 

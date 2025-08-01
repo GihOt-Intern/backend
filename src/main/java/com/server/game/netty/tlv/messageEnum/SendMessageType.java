@@ -25,7 +25,7 @@ public enum SendMessageType {
     IS_IN_PLAYGROUND_SEND((short) 22),
     GOLD_AMOUNT_SEND((short) 23),
 
-    ATTACK_ANIMATION_DISPLAY_SEND((short) 104),
+    ATTACK_ANIMATION_SEND((short) 104),
     HEALTH_UPDATE_SEND((short) 105),
     CHAMPION_DEATH_SEND((short) 106),
     CHAMPION_RESPAWN_TIME_SEND((short) 107),
@@ -35,7 +35,6 @@ public enum SendMessageType {
     TROOP_DEATH_SEND((short) 202), // Troop death message
 
     HEARTBEAT_SEND((short) 255), // Heartbeat message
-    DISTANCE_SEND((short) 998),
 
     TEST_GAME_START_RESPONSE((short) 2026),
     ;

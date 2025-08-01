@@ -13,7 +13,6 @@ import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.messageHandler.AnimationMessageHandler;
 import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.util.ChampionEnum;
@@ -58,10 +57,7 @@ public final class Champion extends Entity implements SkillReceivable {
         this.role = championDB.getRole();
         this.attributeComponent = new ChampionAttributeComponent(
             championDB.getStats().getDefense(),
-            // championDB.getStats().getAttack(),
             championDB.getStats().getMoveSpeed(),
-            // championDB.getStats().getAttackSpeed(),
-            championDB.getStats().getAttackRange(),
             championDB.getStats().getResourceClaimingSpeed()
         );
         this.healthComponent = new HealthComponent(
@@ -75,6 +71,7 @@ public final class Champion extends Entity implements SkillReceivable {
             this,
             championDB.getStats().getAttack(),
             championDB.getStats().getAttackSpeed(),
+            championDB.getStats().getAttackRange(),
             new ChampionAttackStrategy()
         );
 
@@ -122,16 +119,17 @@ public final class Champion extends Entity implements SkillReceivable {
 
 
     @Override // from Attackable implemented by Entity
-    public void receiveAttack(AttackContext ctx) {
+    public boolean receiveAttack(AttackContext ctx) {
 
         // 2. Process the attack and calculate damage
-        int attackerDamage = ctx.getAttacker().getDamage();
-        int myDefense = this.getDefense();
-        float actualDamage = attackerDamage * (100.0f / (100 * myDefense));
-        this.decreaseHP((int) actualDamage);
+        int actualDamage = (int) this.calculateActualDamage(ctx);
+        this.decreaseHP(actualDamage);
 
         // 3. Send health update for the target
-        // AnimationSender.sendHealthUpdate(ctx, (int) actualDamage);
+        ctx.addExtraData("actualDamage", actualDamage);
+        ctx.getGameStateService().sendHealthUpdate(ctx);
+
+        return true; 
     }
 
     @Override 

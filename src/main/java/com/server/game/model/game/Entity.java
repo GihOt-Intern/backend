@@ -3,19 +3,16 @@ package com.server.game.model.game;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
-import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
+import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.service.gameState.GameStateService;
 
 import lombok.experimental.Delegate;
 import lombok.Getter;
-import lombok.Setter;
 
 // abstract class to represent an entity in the game
 // (Champion, Troop, Tower, Burg)
@@ -100,6 +97,14 @@ public abstract class Entity implements Attackable {
         return 0; // Default value if no attack component is present
     }
 
+    public int getDefense() {
+        if (hasComponent(AttributeComponent.class)) {
+            return getComponent(AttributeComponent.class).getDefense();
+        }
+        System.out.println("Entity does not have AttributeComponent, returning default defense=0.");
+        return 0; // Default value if no attribute component is present
+    }
+
     public int getCurrentHP() {
         if (hasComponent(HealthComponent.class)) {
             return getComponent(HealthComponent.class).getCurrentHP();
@@ -152,5 +157,21 @@ public abstract class Entity implements Attackable {
     protected void afterUpdatePosition(Vector2 newPosition) {
         this.getGameStateService()
             .updateEntityGridCellMapping(this.gameState, this);
+    }
+
+    public boolean performAttack(AttackContext ctx) {
+        if (hasComponent(AttackComponent.class)) {
+            return getComponent(AttackComponent.class).performAttack(ctx);
+        } else {
+            throw new UnsupportedOperationException("Entity does not have AttackComponent");
+        }
+    }
+
+    public boolean isAlive() {
+        if (hasComponent(HealthComponent.class)) {
+            return getComponent(HealthComponent.class).isAlive();
+        }
+        System.out.println("Entity does not have HealthComponent, returning true as default.");
+        return true; // Default value if no health component is present
     }
 }

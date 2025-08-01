@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.server.game.model.game.GameState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.service.gameState.GameCoordinator;
 import com.server.game.service.troop.TroopManager;
@@ -31,7 +32,7 @@ public class GameCleanupScheduler {
     private TroopManager troopManager;
     
     // Track when games first become empty (no channels)
-    private final Map<String, Long> emptyGameTimestamps = new ConcurrentHashMap<>();
+    private final Map<GameState, Long> emptyGameTimestamps = new ConcurrentHashMap<>();
     
     // Timeout in milliseconds (30 seconds)
     private static final long CLEANUP_TIMEOUT_MS = 30_000;
@@ -48,30 +49,30 @@ public class GameCleanupScheduler {
         long currentTime = System.currentTimeMillis();
         
         // Get all games that are currently tracked by GameCoordinator
-        Set<String> activeGameIds = gameCoordinator.getAllGameIds();
-        
-        if (activeGameIds.isEmpty()) {
+        Set<GameState> activeGameStates = gameCoordinator.getAllActiveGameStates();
+
+        if (activeGameStates.isEmpty()) {
             return; // No games to check
         }
-        
-        log.debug("Checking {} games for empty channels", activeGameIds.size());
-        
-        for (String gameId : activeGameIds) {
-            Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
+
+        log.debug("Checking {} games for empty channels", activeGameStates.size());
+
+        for (GameState gameState : activeGameStates) {
+            Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameState.getGameId());
             
             if (gameChannels == null || gameChannels.isEmpty()) {
                 // Game has no channels
-                handleEmptyGame(gameId, currentTime);
+                handleEmptyGame(gameState, currentTime);
             } else {
                 // Game has channels, remove from empty tracking if it was there
-                if (emptyGameTimestamps.remove(gameId) != null) {
-                    log.debug("Game {} now has active channels, removed from cleanup tracking", gameId);
+                if (emptyGameTimestamps.remove(gameState) != null) {
+                    log.debug("Game {} now has active channels, removed from cleanup tracking", gameState.getGameId());
                 }
             }
         }
         
         // Clean up tracking for games that no longer exist
-        emptyGameTimestamps.keySet().removeIf(gameId -> {
+        emptyGameTimestamps.keySet().removeIf(gameState -> {
             if (!activeGameIds.contains(gameId)) {
                 log.debug("Game {} no longer exists, removing from cleanup tracking", gameId);
                 return true;

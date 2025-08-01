@@ -8,5 +8,4 @@ import lombok.Getter;
 public abstract class AttributeComponent {
     protected int defense;
     protected float moveSpeed;
-    protected float attackRange;
 }

@@ -5,26 +5,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.GameState;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GameCoordinator {
     
-    GameStateService gameStateService;
-    
+    private final GameStateService gameStateService;
+
     // Store all currently active GameStates
     private final Map<String, GameState> gameStates = new ConcurrentHashMap<>();
 
+
+    public GameCoordinator(@Lazy GameStateService gameStateService) {
+        this.gameStateService = gameStateService;
+    }
     
     /**
      * Đăng ký game với GameState (for legacy compatibility)
