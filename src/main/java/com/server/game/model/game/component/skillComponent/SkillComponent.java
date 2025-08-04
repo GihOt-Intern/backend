@@ -22,7 +22,7 @@ public abstract class SkillComponent {
     protected long cooldownTick;
     protected long lastUsedTick;
 
-    protected CastSkillContext castSkillContext;
+    protected CastSkillContext castSkillContext = null;
 
     public SkillComponent(Champion owner, ChampionAbility ability) {
         this.skillOwner = owner;

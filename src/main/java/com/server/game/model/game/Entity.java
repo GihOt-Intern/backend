@@ -159,9 +159,9 @@ public abstract class Entity implements Attackable {
             .updateEntityGridCellMapping(this.gameState, this);
     }
 
-    public boolean performAttack(AttackContext ctx) {
+    public boolean performAttack() {
         if (hasComponent(AttackComponent.class)) {
-            return getComponent(AttackComponent.class).performAttack(ctx);
+            return getComponent(AttackComponent.class).performAttack();
         } else {
             throw new UnsupportedOperationException("Entity does not have AttackComponent");
         }
@@ -173,5 +173,21 @@ public abstract class Entity implements Attackable {
         }
         System.out.println("Entity does not have HealthComponent, returning true as default.");
         return true; // Default value if no health component is present
+    }
+
+    public void setAttackContext(AttackContext ctx) {
+        if (hasComponent(AttackComponent.class)) {
+            getComponent(AttackComponent.class).setAttackContext(ctx);
+        } else {
+            throw new UnsupportedOperationException("Entity does not have AttackComponent");
+        }
+    }
+
+    public AttackContext getAttackContext() {
+        if (hasComponent(AttackComponent.class)) {
+            return getComponent(AttackComponent.class).getAttackContext();
+        } else {
+            throw new UnsupportedOperationException("Entity does not have AttackComponent");
+        }
     }
 }

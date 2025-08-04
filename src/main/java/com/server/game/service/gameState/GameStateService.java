@@ -495,7 +495,7 @@ public class GameStateService {
         }
 
         gameState.incrementTick();
-        log.debug("Incremented game tick for gameId: {}", gameId);
+        log.debug("Incremented game tick for gameId: {}, current tick: {}", gameId, gameState.getCurrentTick());
     }
 
 

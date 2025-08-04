@@ -18,6 +18,8 @@ public class AttackComponent {
     private int attackDelayTick;
     private long nextAttackTick;
 
+    private AttackContext attackContext = null;
+
     private final AttackStrategy strategy;
 
 
@@ -31,6 +33,10 @@ public class AttackComponent {
         this.nextAttackTick = 0;
     }
 
+    public void setAttackContext(AttackContext ctx) {
+        this.attackContext = ctx;
+    }
+
     private final boolean inAttackWindow(long currentTick) {
         return currentTick >= this.nextAttackTick;
     }
@@ -41,7 +47,14 @@ public class AttackComponent {
     }
 
 
-    public final boolean performAttack(AttackContext ctx) {
+    public final boolean performAttack() {
+        AttackContext ctx = this.attackContext;
+        if (ctx == null) {
+            System.out.println(">>> [Log in AttackComponent] No attack context set, nothing to perform attack");
+            return false;
+        }
+
+
         long currentTick = ctx.getCurrentTick();
 
         if (ctx.getTarget() == null) {
@@ -55,9 +68,16 @@ public class AttackComponent {
         }
 
 
-        System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + strategy.getClass().getSimpleName());
+        System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + 
+            strategy.getClass().getSimpleName());
+
         // Use the strategy to perform the attack
         boolean didAttack = strategy.performAttack(ctx);
+
+        if (ctx.getTarget() == null || !ctx.getTarget().isAlive()) {
+            System.out.println(">>> [Log in AttackComponent] After performing attack, target is null or dead");
+            this.setAttackContext(null);
+        }
 
         // After performing the attack, update the next attack tick
         this.nextAttackTick = currentTick + attackDelayTick;
