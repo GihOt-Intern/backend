@@ -7,7 +7,6 @@ import lombok.experimental.FieldDefaults;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.server.game.resource.model.GameMap;
@@ -44,7 +43,7 @@ public class GameStateFactory {
         Short gameMapId = numPlayers; // GameMap id is determined by the number of players
 
         String gameId = ChannelManager.getGameIdByChannel(channel);
-        Map<Short, ChampionEnum> slot2ChampionId = ChannelManager.getSlot2ChampionId(gameId);
+        Map<Short, ChampionEnum> slot2ChampionId = ChannelManager.getSlot2ChampionEnum(gameId);
 
 
         GameMap gameMap = gameMapService.getGameMapById(gameMapId);

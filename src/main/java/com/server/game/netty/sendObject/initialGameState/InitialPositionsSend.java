@@ -8,13 +8,16 @@ import java.util.stream.Collectors;
 
 import io.netty.channel.Channel;
 
+import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.Vector2;
+import com.server.game.netty.ChannelManager;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.messageEnum.SendMessageType;
 import com.server.game.resource.model.SlotInfo;
+import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -34,7 +37,8 @@ public class InitialPositionsSend implements TLVEncodable {
         List<SlotInfo> slotInfos = gameState.getSlotInfos();
         this.championPositionsData = slotInfos.stream()
             .map(slotInfo -> new InitialPositionData(slotInfo, 
-                gameState.getChampionBySlot(slotInfo.getSlot()).getStringId()))
+                gameState.getChampionBySlot(slotInfo.getSlot()),
+                ChannelManager.getUsernameBySlot(gameState.getGameId(), slotInfo.getSlot())))
             .collect(Collectors.toList());
     }
 
@@ -83,14 +87,19 @@ public class InitialPositionsSend implements TLVEncodable {
     public static class InitialPositionData {
         short slot;
         String championStringId;
+        ChampionEnum championEnum; 
+        String username;
         Vector2 position;
         float rotate;
 
-        public InitialPositionData(SlotInfo slotInfo, String championStringId) {
+        public InitialPositionData(SlotInfo slotInfo, Champion champion,
+            String username) {
             this.slot = slotInfo.getSlot();
+            this.championEnum = champion.getChampionEnum();
+            this.championStringId = champion.getStringId();
+            this.username = username;
             this.position = slotInfo.getSpawn().getPosition();
             this.rotate = slotInfo.getSpawn().getRotate();
-            this.championStringId = championStringId;
         }
 
         
@@ -101,6 +110,8 @@ public class InitialPositionsSend implements TLVEncodable {
 
                 dos.writeShort(slot);
                 dos.writeUTF(championStringId); // This method already add first two bytes for length
+                dos.writeShort(championEnum.getChampionId());
+                dos.writeUTF(username); // This method already add first two bytes for length
                 dos.writeFloat((float) position.x());
                 dos.writeFloat((float) position.y());
                 dos.writeFloat(rotate);
