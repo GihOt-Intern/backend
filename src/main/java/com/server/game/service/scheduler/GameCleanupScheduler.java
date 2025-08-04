@@ -119,7 +119,6 @@ public class GameCleanupScheduler {
 
             // Unregister the game from all schedulers and clean up resources
             gameCoordinator.unregisterGame(gameState.getGameId());
-            troopManager.cleanupGameTroops(gameState.getGameId());
             
 
             // Increment cleanup counter

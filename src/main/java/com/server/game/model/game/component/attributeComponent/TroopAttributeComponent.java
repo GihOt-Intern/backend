@@ -13,7 +13,6 @@ public class TroopAttributeComponent extends AttributeComponent {
     public TroopAttributeComponent(
         int defense, 
         float moveSpeed, 
-        float attackRange, 
         float detectionRange, 
         Integer healingPower, 
         Float healingRange, 

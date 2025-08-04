@@ -51,6 +51,8 @@ public class AttackComponent {
         if (!this.inAttackWindow(currentTick)) {  return false;  }
 
         if (!this.inAttackRange(ctx.getTarget().getCurrentPosition())) {
+            // If the target is out of range, we cannot perform the attack, set the current target position
+            this.owner.updateNewTargetPosition(ctx.getTarget().getCurrentPosition());
             return false;
         }
 
