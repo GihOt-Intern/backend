@@ -207,7 +207,7 @@ public class MoveService {
     /**
      * Đặt mục tiêu di chuyển mới cho người chơi
      */
-    public void setMove(Entity entity, Vector2 targetPosition) {
+    public void setMove(Entity entity, Vector2 targetPosition, boolean needStopAttack) {
         Long currentTime = System.currentTimeMillis();
 
         try {
@@ -217,11 +217,15 @@ public class MoveService {
             return;
         }
 
-        if (attackService.isAttacking(entity)) {
-            // Entity is currently attacking, so we stop the attack
-            log.debug("Entity {} is currently attacking, stopping attack before setting new move target", entity.getStringId());
+        if (needStopAttack) {
             attackService.stopAttack(entity);
         }
+
+        // if (attackService.isAttacking(entity)) {
+        //     // Entity is currently attacking, so we stop the attack
+        //     log.info("Entity {} is currently attacking, stopping attack before setting new move target", entity.getStringId());
+        //     // attackService.stopAttack(entity);
+        // }
 
         // If prechecks ok, update last move target time
         this.pushLastMoveTargetTimestamp(entity, currentTime);

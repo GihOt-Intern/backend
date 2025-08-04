@@ -1,11 +1,13 @@
 package com.server.game.model.game.component.attackComponent;
 
 
+import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.attackStrategy.AttackStrategy;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.util.Util;
 import com.server.game.model.map.component.Vector2;
+import com.server.game.service.attack.AttackService;
 
 import lombok.Getter;
 
@@ -29,12 +31,13 @@ public class AttackComponent {
         this.damage = damage;
         this.attackSpeed = attackSpeed;
         this.attackRange = attackRange;
-        this.attackDelayTick = (int) attackSpeed * Util.getGameTickIntervalMs();
+        this.attackDelayTick = Math.round(1000.0f / (attackSpeed * Util.getGameTickIntervalMs()));
         this.nextAttackTick = 0;
     }
 
     public void setAttackContext(AttackContext ctx) {
         this.attackContext = ctx;
+        System.out.println(">>> [Log in AttackComponent] Attack context set: " + ctx);
     }
 
     private final boolean inAttackWindow(long currentTick) {
@@ -50,7 +53,7 @@ public class AttackComponent {
     public final boolean performAttack() {
         AttackContext ctx = this.attackContext;
         if (ctx == null) {
-            System.out.println(">>> [Log in AttackComponent] No attack context set, nothing to perform attack");
+            // System.out.println(">>> [Log in AttackComponent] No attack context set, nothing to perform attack");
             return false;
         }
 
@@ -61,9 +64,14 @@ public class AttackComponent {
             throw new IllegalArgumentException("Target cannot be null");
         }
 
-        if (!this.inAttackWindow(currentTick)) {  return false;  }
+        if (!this.inAttackWindow(currentTick)) {  
+            System.out.println(">>> [Log in AttackComponent] Not in attack window, current tick: " + currentTick + ", next attack tick: " + this.nextAttackTick);
+            return false;  }
 
         if (!this.inAttackRange(ctx.getTarget().getCurrentPosition())) {
+            SpringContextHolder.getBean(AttackService.class)
+                .setStick2Target(this.owner, ctx.getTarget());
+            System.out.println(">>> [Log in AttackComponent] Target is out of attack range, sticking to target");
             return false;
         }
 

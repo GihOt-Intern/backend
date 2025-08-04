@@ -15,7 +15,7 @@ public class GlobalBroadcastTarget implements SendTarget {
 
     @Override
     public ChannelFuture send(ByteBuf message) {
-        System.out.println(">>> Sending Global Broadcast...");
+        // System.out.println(">>> Sending Global Broadcast...");
 
 
         Set<Channel> channels = ChannelManager.getAllChannels();
@@ -28,7 +28,7 @@ public class GlobalBroadcastTarget implements SendTarget {
         for (Channel channel : channels) {
             if (channel.isActive()) {
                 lastFuture = channel.writeAndFlush(message.retainedDuplicate());
-                System.out.println(">>> Server sent BinaryWebSocketFrame to user: " + ChannelManager.getUserIdByChannel(channel));
+                // System.out.println(">>> Server sent BinaryWebSocketFrame to user: " + ChannelManager.getUserIdByChannel(channel));
             }
         }
 

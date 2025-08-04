@@ -490,12 +490,12 @@ public class GameStateService {
     public void incrementTick(String gameId) {
         GameState gameState = this.getGameStateById(gameId);
         if (gameState == null) {
-            log.warn("Game state not found for gameId: {}", gameId);
+            log.info("Game state not found for gameId: {}", gameId);
             return;
         }
 
         gameState.incrementTick();
-        log.debug("Incremented game tick for gameId: {}, current tick: {}", gameId, gameState.getCurrentTick());
+        // log.info("Incremented game tick for gameId: {}, current tick: {}", gameId, gameState.getCurrentTick());
     }
 
 

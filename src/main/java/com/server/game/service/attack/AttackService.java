@@ -1,9 +1,7 @@
 package com.server.game.service.attack;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
@@ -69,8 +67,9 @@ public class AttackService {
         this.setStick2Target(attacker, ctx.getTarget());
     }
 
-    private void setStick2Target(Entity attacker, Entity target) {
-        moveService.setMove(attacker, target.getCurrentPosition());
+    // TODO
+    public void setStick2Target(Entity attacker, Entity target) {
+        moveService.setMove(attacker, target.getCurrentPosition(), false);
     }
 
 
@@ -84,7 +83,12 @@ public class AttackService {
     private void processAttackOf(Entity attacker) {
 
         // Perform the attack
-        attacker.performAttack();
+        boolean didAttack = attacker.performAttack();
+
+        if(!didAttack) { return; }
+        else {
+            this.setUnstickFromTarget(attacker);
+        }
 
         AttackContext ctx = attacker.getAttackContext();
         // After performing the attack, check if the target is still alive
@@ -107,7 +111,7 @@ public class AttackService {
     private void setUnstickFromTarget(Entity attacker) {
         // Unstick the entity from the target
         // Stop moving towards the target
-        moveService.setMove(attacker, attacker.getCurrentPosition());
+        moveService.setMove(attacker, attacker.getCurrentPosition(), true);
     }
 
     public void clearGameAttackContexts(GameState gameState) {

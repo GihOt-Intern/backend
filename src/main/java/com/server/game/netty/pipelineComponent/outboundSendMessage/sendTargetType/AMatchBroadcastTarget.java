@@ -25,8 +25,8 @@ public class AMatchBroadcastTarget implements SendTarget {
     @Override
     public ChannelFuture send(ByteBuf message) {
         Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
-        System.out.println(">>> [AMatchBroadcastTarget] Broadcasting to gameId: " + gameId);
-        System.out.println(">>> [AMatchBroadcastTarget] Found " + (channels != null ? channels.size() : 0) + " channels");
+        // System.out.println(">>> [AMatchBroadcastTarget] Broadcasting to gameId: " + gameId);
+        // System.out.println(">>> [AMatchBroadcastTarget] Found " + (channels != null ? channels.size() : 0) + " channels");
         
         if (channels == null || channels.isEmpty()) {
             System.out.println(">>> [AMatchBroadcastTarget] No active channels found for gameId: " + gameId);
@@ -39,13 +39,13 @@ public class AMatchBroadcastTarget implements SendTarget {
             if (channel.isActive()) {
                 lastFuture = channel.writeAndFlush(message.retainedDuplicate());
                 sentCount++;
-                System.out.println(">>> [AMatchBroadcastTarget] Sent message to channel " + sentCount);
+                // System.out.println(">>> [AMatchBroadcastTarget] Sent message to channel " + sentCount);
             } else {
                 System.out.println(">>> [AMatchBroadcastTarget] Skipped inactive channel");
             }
         }
         
-        System.out.println(">>> [AMatchBroadcastTarget] Total messages sent: " + sentCount);
+        // System.out.println(">>> [AMatchBroadcastTarget] Total messages sent: " + sentCount);
 
         return lastFuture != null 
             ? lastFuture 

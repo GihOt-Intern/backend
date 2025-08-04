@@ -55,5 +55,6 @@ public class AttackMessageHandler {
 
 
         attackService.setAttack(attackContext);
+        log.info(">>> [Log in AttackMessageHandler.handleAttackMessage] Attack context set for entity: {}", entityStringId);
     }
 } 

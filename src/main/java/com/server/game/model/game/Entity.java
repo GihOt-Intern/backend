@@ -178,6 +178,7 @@ public abstract class Entity implements Attackable {
     public void setAttackContext(AttackContext ctx) {
         if (hasComponent(AttackComponent.class)) {
             getComponent(AttackComponent.class).setAttackContext(ctx);
+            System.out.println(">>> [Log in Entity.setAttackContext] Attack context set: " + ctx);
         } else {
             throw new UnsupportedOperationException("Entity does not have AttackComponent");
         }
