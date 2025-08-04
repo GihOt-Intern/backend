@@ -3,6 +3,7 @@ package com.server.game.model.game;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
@@ -11,6 +12,7 @@ import com.server.game.model.game.component.attributeComponent.AttributeComponen
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.move.MoveService;
+import com.server.game.service.position.PositionService;
 
 import lombok.experimental.Delegate;
 import lombok.Getter;
@@ -83,22 +85,32 @@ public abstract class Entity implements Attackable {
         return 0; // Default value if no attribute component is present
     }
 
-    public void setStick2Target(Entity target) {
+    public void setMove2Target(Entity target) {
         if (hasComponent(PositionComponent.class)) {
             getComponent(PositionComponent.class).getMoveService()
-                .setMove(this, this.getCurrentPosition(),false);
+                .setMove(this, target.getCurrentPosition(),false);
         } else {
-            throw new UnsupportedOperationException("[setStick2Target] Entity does not have PositionComponent");
+            throw new UnsupportedOperationException("[setMove2Target] Entity does not have PositionComponent");
         }
     }
     
-    public void setUnstick2Target() {
+    public void setStopMoving() {
         if (hasComponent(PositionComponent.class)) {
             getComponent(PositionComponent.class).getMoveService()
                 .setMove(this, this.getCurrentPosition(),false);
+            // SpringContextHolder.getBean(PositionService.class) // TODO: try
+            //     .popPendingPosition(this);
         } else {
-            throw new UnsupportedOperationException("[setUnstick2Target] Entity does not have PositionComponent");
+            throw new UnsupportedOperationException("[setStopMoving] Entity does not have PositionComponent");
         }
+    }
+
+    public float getAttackRange() {
+        if (hasComponent(AttackComponent.class)) {
+            return getComponent(AttackComponent.class).getAttackRange();
+        }
+        System.out.println("Entity does not have AttackComponent, returning default attack range=0.");
+        return 0; // Default value if no attack component is present
     }
 
     public float getAttackSpeed() {

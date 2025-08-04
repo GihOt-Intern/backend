@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.OutboundSendMessage;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
+import com.server.game.netty.sendObject.PongSend;
 import com.server.game.netty.tlv.codec.TLVEncoder;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.util.Util;
@@ -29,18 +30,20 @@ public class TLVMessageEncoder extends ChannelOutboundHandlerAdapter {
         }
 
         TLVEncodable sendObject = (TLVEncodable) msg; // cast msg to TLVEncodable
-        System.out.println(">>> [TLVMessageEncoder] Server received TLVEncodable object: " + sendObject.getClass().getSimpleName());
-        System.out.println(">>> [TLVMessageEncoder] Message type: " + sendObject.getType());
-        
+        if (!(sendObject instanceof PongSend)) {
+            System.out.println(">>> [TLVMessageEncoder] Server received TLVEncodable object: " + sendObject.getClass().getSimpleName());
+            System.out.println(">>> [TLVMessageEncoder] Message type: " + sendObject.getType());
+        }
+
         try {
             //System.out.println(">>> Server Encoding TLVEncodable object to ByteBuf");
             byte[] encoded = TLVEncoder.object2Bytes(sendObject);
 
             ByteBuf encodedBuf = Unpooled.wrappedBuffer(encoded); // wrap the byte array into a ByteBuf
-            System.out.println(">>> Server Encoded TLVEncodable object (" + sendObject.getClass().getSimpleName() + ") to ByteBuf");
-            System.out.println(">>> Send byte: ");
-            ByteBuffer byteBuffer = encodedBuf.nioBuffer();
-            Util.printHex(byteBuffer, true);
+            // System.out.println(">>> Server Encoded TLVEncodable object (" + sendObject.getClass().getSimpleName() + ") to ByteBuf");
+            // System.out.println(">>> Send byte: ");
+            // ByteBuffer byteBuffer = encodedBuf.nioBuffer();
+            // Util.printHex(byteBuffer, true);
             // Get send target from the TLVEncodable object
             SendTarget sendTarget = sendObject.getSendTarget(ctx.channel());
 

@@ -46,7 +46,7 @@ public class MoveService {
     private static final float MIN_MOVE_DISTANCE = 0.5f;
     
     // Service-level rate limiting - Reduced to allow more responsive movement
-    private static final long MIN_MOVE_TARGET_INTERVAL = 50; // 50ms = max 20 updates per second
+    private static final long MIN_MOVE_TARGET_INTERVAL = 75; // 50ms = max 20 updates per second
     private final Map<GameState, Map<String, Long>> lastMoveTargetTimestamp = new ConcurrentHashMap<>();
 
     // Track failed pathfinding attempts to prevent repeated invalid requests
@@ -210,22 +210,16 @@ public class MoveService {
     public void setMove(Entity entity, Vector2 targetPosition, boolean needStopAttack) {
         Long currentTime = System.currentTimeMillis();
 
-        try {
-            this.preCheckConditions(entity, currentTime);
-        } catch (Exception e) {
-            log.error("Pre-check conditions failed for entity {}: {}", entity.getStringId(), e.getMessage());
+        boolean preCheckPassed = this.preCheckConditions(entity, currentTime);
+        if (!preCheckPassed) {
             return;
         }
+
+        System.out.println(">>> [Log in MoveService.setMove] preCheckPassed");
 
         if (needStopAttack) {
             attackService.stopAttack(entity);
         }
-
-        // if (attackService.isAttacking(entity)) {
-        //     // Entity is currently attacking, so we stop the attack
-        //     log.info("Entity {} is currently attacking, stopping attack before setting new move target", entity.getStringId());
-        //     // attackService.stopAttack(entity);
-        // }
 
         // If prechecks ok, update last move target time
         this.pushLastMoveTargetTimestamp(entity, currentTime);
@@ -239,11 +233,11 @@ public class MoveService {
         Vector2 startPosition = getCurrentRealTimePosition(entity);
     
         // Check if the move distance is too small to avoid unnecessary calculations
-        float moveDistance = startPosition.distance(targetPosition);
-        if (moveDistance < MIN_MOVE_DISTANCE) {
-            log.debug("Move distance {} is too small for entity {}, ignoring", moveDistance, entity.getStringId());
-            return;
-        }
+        // float moveDistance = startPosition.distance(targetPosition);
+        // if (moveDistance < MIN_MOVE_DISTANCE) {
+        //     log.info("Move distance {} is too small for entity {}, ignoring", moveDistance, entity.getStringId());
+        //     return;
+        // }
 
         GameMapGrid gameMapGrid = entity.getGameMapGrid();
 
@@ -284,35 +278,39 @@ public class MoveService {
         this.pushMoveTarget2Map(entity, target);
     }
 
-    private void preCheckConditions(Entity entity, Long currentTime) {
-        this.checkInRateLimit(entity, currentTime);
+    private boolean preCheckConditions(Entity entity, Long currentTime) {
+        return this.checkInRateLimit(entity, currentTime) &&
         this.checkRepeatedFailedPathfindingAttempts(entity, currentTime);
     }
 
 
-    private void checkInRateLimit(Entity entity, long currentTime) {
+    private boolean checkInRateLimit(Entity entity, long currentTime) {
         // Service-level rate limiting
         Long lastTime = this.peekLastMoveTargetTimestamp(entity);
 
         if (lastTime != null && (currentTime - lastTime) < MIN_MOVE_TARGET_INTERVAL) {
-            log.debug("Service-level rate limit exceeded for entity {} - ignoring move request", entity.getStringId());
-            throw new IllegalStateException("Service-level rate limit exceeded for entity " + entity.getStringId());
+            log.info("Service-level rate limit exceeded for entity {} - ignoring move request", entity.getStringId());
+            return false; // Ignore move request if rate limit exceeded
         }
+        return true;
     }
 
-    private void checkRepeatedFailedPathfindingAttempts(Entity entity, long currentTime) {
+    private boolean checkRepeatedFailedPathfindingAttempts(Entity entity, long currentTime) {
         // Check for repeated failed pathfinding attempts
         Integer failCount = this.peekFailedPathfindingCount(entity);
         if (failCount != null && failCount >= MAX_FAILED_ATTEMPTS) {
             Long lastFailTime = this.peekFailedLastMoveTargetTime(entity);
             if (lastFailTime != null && (currentTime - lastFailTime) < FAILED_ATTEMPT_COOLDOWN) {
-                log.debug("Entity {} in cooldown due to repeated failed pathfinding attempts", entity.getStringId());
-                throw new IllegalStateException("Entity " + entity.getStringId() + " is in cooldown due to repeated failed pathfinding attempts");
+                log.info("Entity {} in cooldown due to repeated failed pathfinding attempts", entity.getStringId());
+                return false; 
+                // throw new IllegalStateException("Entity " + entity.getStringId() + " is in cooldown due to repeated failed pathfinding attempts");
             } else {
                 // Reset failure count after cooldown (by removing it)
                 this.removeFailedPathfindingCount(entity);
+                return true;
             }
         }
+        return true;
     }
 
     private void trackFailedPathfinding(Entity entity, long currentTime) {
@@ -359,6 +357,18 @@ public class MoveService {
         Vector2 position = target.getCurrentPosition();
         float totalDistanceCovered = targetSpeed * elapsedTime;
         float remainingDistance = totalDistanceCovered;
+
+        // TODO: need refactor
+        // if (entity.getAttackContext() != null) {
+        //     float attackRange = entity.getAttackRange();
+        //     float distanceToTarget = entity.getCurrentPosition()
+        //         .distance(entity.getAttackContext().getTarget().getCurrentPosition());
+        //     if (distanceToTarget > attackRange) {
+        //         remainingDistance = Math.min(remainingDistance, distanceToTarget - attackRange);
+        //     } else {
+        //         remainingDistance = 0; 
+        //     }
+        // }
 
         boolean reachedFinalDestination = false;
         while (target.path.hasNext() && !reachedFinalDestination) {

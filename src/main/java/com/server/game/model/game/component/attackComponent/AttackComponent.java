@@ -6,6 +6,7 @@ import com.server.game.model.game.Entity;
 import com.server.game.model.game.attackStrategy.AttackStrategy;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.util.Util;
+import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.attack.AttackService;
 
@@ -46,14 +47,28 @@ public class AttackComponent {
 
     private final boolean inAttackRange(Vector2 targetPosition) {
         float distance = this.owner.getCurrentPosition().distance(targetPosition);
-        return distance <= this.attackRange;
+        System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
+            "distance=" + distance + ", attackRange=" + this.attackRange);
+        return distance-1 <= this.attackRange;
+        // GridCell ownerCell = this.getAttackContext().getGameStateService()
+        //     .getGridCellByEntity(this.getAttackContext().getGameState(), this.owner);
+        // GridCell targetCell = this.getAttackContext().getGameStateService()
+        //     .getGridCellByEntity(this.getAttackContext().getGameState(), 
+        //         this.getAttackContext().getTarget());
+        // if (ownerCell == null || targetCell == null) {
+        //     System.out.println(">>> [Log in AttackComponent] Owner or target cell is null, returning false");
+        //     return false;
+        // }
+        // System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
+        //     "ownerCell=" + ownerCell + ", targetCell=" + targetCell + 
+        //     ", attackRange=" + this.attackRange);
+        // return false;
     }
 
 
     public final boolean performAttack() {
         AttackContext ctx = this.attackContext;
         if (ctx == null) {
-            // System.out.println(">>> [Log in AttackComponent] No attack context set, nothing to perform attack");
             return false;
         }
 
@@ -63,23 +78,28 @@ public class AttackComponent {
             throw new IllegalArgumentException("Target cannot be null");
         }
 
+
+        if (!this.inAttackRange(ctx.getTarget().getCurrentPosition())) {
+            System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to stick to target");
+            System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
+                ", Target position: " + ctx.getTarget().getCurrentPosition() + 
+                ", Attack range: " + this.attackRange);
+            owner.setMove2Target(ctx.getTarget());
+            return false;
+        }
+
         if (!this.inAttackWindow(currentTick)) {  
             System.out.println(">>> [Log in AttackComponent] Not in attack window, current tick: " + currentTick + ", next attack tick: " + this.nextAttackTick);
             return false;  
-        }
-
-        if (!this.inAttackRange(ctx.getTarget().getCurrentPosition())) {
-            owner.setStick2Target(ctx.getTarget());
-            System.out.println(">>> [Log in AttackComponent] Target is out of attack range, sticking to target");
-            return false;
         }
 
 
         System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + 
             strategy.getClass().getSimpleName());
 
-        // Unstick to target before performing the attack
-        owner.setUnstick2Target();
+        // Stop moving before performing the attack
+        owner.setStopMoving();
+        System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
         
         // Use the strategy to perform the attack
         boolean didAttack = strategy.performAttack(ctx);

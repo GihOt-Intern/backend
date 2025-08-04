@@ -64,7 +64,7 @@ public class AttackService {
 
         log.debug("Set attack context for entity {}: {}", attacker.getStringId(), ctx);
 
-        attacker.setStick2Target(ctx.getTarget());
+        attacker.setMove2Target(ctx.getTarget());
     }
 
 
@@ -87,7 +87,7 @@ public class AttackService {
         if (!ctx.getTarget().isAlive()) {
             log.debug("Target {} is dead, removing attack context for entity {}", ctx.getTarget().getStringId(), attacker.getStringId());
 
-            this.setUnstickFromTarget(attacker);
+            attacker.setStopMoving();
         }
     }
 
@@ -100,11 +100,6 @@ public class AttackService {
         log.debug("Stopping attack for entity {}", entity.getStringId());
     }
 
-    private void setUnstickFromTarget(Entity attacker) {
-        // Unstick the entity from the target
-        // Stop moving towards the target
-        moveService.setMove(attacker, attacker.getCurrentPosition(), true);
-    }
 
     public void clearGameAttackContexts(GameState gameState) {
         Set<Entity> entities = new HashSet<>(gameState.getEntities());

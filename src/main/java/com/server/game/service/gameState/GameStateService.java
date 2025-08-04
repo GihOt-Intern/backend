@@ -499,7 +499,7 @@ public class GameStateService {
     }
 
 
-    private GridCell getGridCellByEntity(GameState gameState, Entity entity) {
+    public GridCell getGridCellByEntity(GameState gameState, Entity entity) {
         if (gameState == null || entity == null) {
             log.warn("Invalid parameters for getting grid cell by entity");
             return null;

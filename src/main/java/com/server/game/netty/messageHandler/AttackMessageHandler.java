@@ -50,6 +50,10 @@ public class AttackMessageHandler {
         // Update the last update time
         lastUpdateTime.put(playerKey, currentTime);
 
+        if (entityStringId.equals(receiveObject.getTargetId())) {
+            return;
+        }
+
         AttackContext attackContext = attackContextFactory.createAttackContext(
             gameId, entityStringId, receiveObject.getTargetId(), clientTimestamp);
 
