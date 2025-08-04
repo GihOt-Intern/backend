@@ -57,7 +57,6 @@ public class AttackComponent {
             return false;
         }
 
-
         long currentTick = ctx.getCurrentTick();
 
         if (ctx.getTarget() == null) {
@@ -66,11 +65,11 @@ public class AttackComponent {
 
         if (!this.inAttackWindow(currentTick)) {  
             System.out.println(">>> [Log in AttackComponent] Not in attack window, current tick: " + currentTick + ", next attack tick: " + this.nextAttackTick);
-            return false;  }
+            return false;  
+        }
 
         if (!this.inAttackRange(ctx.getTarget().getCurrentPosition())) {
-            SpringContextHolder.getBean(AttackService.class)
-                .setStick2Target(this.owner, ctx.getTarget());
+            owner.setStick2Target(ctx.getTarget());
             System.out.println(">>> [Log in AttackComponent] Target is out of attack range, sticking to target");
             return false;
         }
@@ -79,6 +78,9 @@ public class AttackComponent {
         System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + 
             strategy.getClass().getSimpleName());
 
+        // Unstick to target before performing the attack
+        owner.setUnstick2Target();
+        
         // Use the strategy to perform the attack
         boolean didAttack = strategy.performAttack(ctx);
 

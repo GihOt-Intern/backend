@@ -10,6 +10,7 @@ import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.map.component.Vector2;
+import com.server.game.service.move.MoveService;
 
 import lombok.experimental.Delegate;
 import lombok.Getter;
@@ -30,11 +31,12 @@ public abstract class Entity implements Attackable {
 
     private final Map<Class<?>, Object> components = new HashMap<>();
 
-    public Entity(String stringId, SlotState ownerSlot, GameState gameState, Vector2 initPosition) {
+    public Entity(String stringId, SlotState ownerSlot, GameState gameState, Vector2 initPosition,
+        MoveService moveService) {
         this.stringId = stringId;
         this.ownerSlot = ownerSlot;
         this.gameState = gameState;
-        this.positionComponent = new PositionComponent(initPosition);
+        this.positionComponent = new PositionComponent(initPosition, moveService);
 
 
         this.addComponent(PositionComponent.class, positionComponent);
@@ -79,6 +81,24 @@ public abstract class Entity implements Attackable {
         
         System.out.println("Entity does not have AttributeComponent, returning default speed=0.");
         return 0; // Default value if no attribute component is present
+    }
+
+    public void setStick2Target(Entity target) {
+        if (hasComponent(PositionComponent.class)) {
+            getComponent(PositionComponent.class).getMoveService()
+                .setMove(this, this.getCurrentPosition(),false);
+        } else {
+            throw new UnsupportedOperationException("[setStick2Target] Entity does not have PositionComponent");
+        }
+    }
+    
+    public void setUnstick2Target() {
+        if (hasComponent(PositionComponent.class)) {
+            getComponent(PositionComponent.class).getMoveService()
+                .setMove(this, this.getCurrentPosition(),false);
+        } else {
+            throw new UnsupportedOperationException("[setUnstick2Target] Entity does not have PositionComponent");
+        }
     }
 
     public float getAttackSpeed() {

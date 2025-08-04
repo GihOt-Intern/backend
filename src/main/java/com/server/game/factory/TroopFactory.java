@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.gameState.SlotStateService;
+import com.server.game.service.move.MoveService;
 import com.server.game.util.TroopEnum;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
@@ -27,6 +28,7 @@ public class TroopFactory {
     ChampionFactory championFactory;
     TroopService troopService;
     SlotStateService slotStateService;
+    MoveService moveService;
 
     public TroopInstance2 createTroop(GameState gameState, SlotState ownerSlot, TroopEnum troopEnum) {
         if (gameState == null || ownerSlot == null || troopEnum == null) {
@@ -35,7 +37,7 @@ public class TroopFactory {
         }
 
         TroopDB troopDB = troopService.getTroopDBById(troopEnum);
-        TroopInstance2 troopInstance = new TroopInstance2(troopDB, gameState, ownerSlot);
+        TroopInstance2 troopInstance = new TroopInstance2(troopDB, gameState, ownerSlot, moveService);
 
         gameStateService.addEntityTo(gameState, troopInstance);
         slotStateService.addTroop(ownerSlot, troopInstance);

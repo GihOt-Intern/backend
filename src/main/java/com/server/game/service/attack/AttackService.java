@@ -64,12 +64,7 @@ public class AttackService {
 
         log.debug("Set attack context for entity {}: {}", attacker.getStringId(), ctx);
 
-        this.setStick2Target(attacker, ctx.getTarget());
-    }
-
-    // TODO
-    public void setStick2Target(Entity attacker, Entity target) {
-        moveService.setMove(attacker, target.getCurrentPosition(), false);
+        attacker.setStick2Target(ctx.getTarget());
     }
 
 
@@ -86,10 +81,7 @@ public class AttackService {
         boolean didAttack = attacker.performAttack();
 
         if(!didAttack) { return; }
-        else {
-            this.setUnstickFromTarget(attacker);
-        }
-
+        
         AttackContext ctx = attacker.getAttackContext();
         // After performing the attack, check if the target is still alive
         if (!ctx.getTarget().isAlive()) {

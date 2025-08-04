@@ -13,8 +13,8 @@ import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
 import com.server.game.resource.model.ChampionDB;
+import com.server.game.service.move.MoveService;
 import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
@@ -44,10 +44,11 @@ public final class Champion extends Entity implements SkillReceivable {
 
 
     public Champion(ChampionDB championDB, SlotState ownerSlot, GameState gameState,
-        SkillFactory skillFactory) {
+        SkillFactory skillFactory, MoveService moveService) {
         super("champion_" + UUID.randomUUID().toString(),
-            ownerSlot, gameState, 
-            gameState.getSpawnPosition(ownerSlot)
+            ownerSlot, gameState,
+            gameState.getSpawnPosition(ownerSlot),
+            moveService
         );
 
         this.championEnum = ChampionEnum.fromShort(championDB.getId());
