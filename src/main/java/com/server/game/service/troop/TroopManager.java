@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import com.server.game.netty.ChannelManager;
-import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
+import com.server.game.netty.sendObject.attack.HealthUpdateSend;
 import com.server.game.netty.sendObject.troop.TroopDeathSend;
 
 import io.netty.channel.Channel;
@@ -226,7 +226,7 @@ public class TroopManager {
             removeTroop(gameId, troopInstanceId);
             log.info("Troop {} died and was removed from game {}", troopInstanceId, gameId);
         } else {
-            com.server.game.netty.sendObject.pvp.HealthUpdateSend healthUpdate = new HealthUpdateSend(
+            com.server.game.netty.sendObject.attack.HealthUpdateSend healthUpdate = new HealthUpdateSend(
                 troopInstanceId,
                 troop.getCurrentHP(),
                 troop.getMaxHP(),

@@ -42,11 +42,9 @@ public final class Champion extends Entity implements SkillReceivable {
     @Delegate
     AttackComponent attackComponent;
 
-    final PlaygroundMessageHandler playgroundHandler;
 
-
-    public Champion(ChampionDB championDB, SlotState ownerSlot, GameState gameState, 
-        PlaygroundMessageHandler playgroundHandler) {
+    public Champion(ChampionDB championDB, SlotState ownerSlot, GameState gameState,
+        SkillFactory skillFactory) {
         super("champion_" + UUID.randomUUID().toString(),
             ownerSlot, gameState, 
             gameState.getSpawnPosition(ownerSlot)
@@ -63,7 +61,7 @@ public final class Champion extends Entity implements SkillReceivable {
         this.healthComponent = new HealthComponent(
             championDB.getStats().getInitHP()
         );
-        this.skillComponent = SkillFactory.createSkillFor(
+        this.skillComponent = skillFactory.createSkillFor(
             this,
             championDB.getAbility()
         );
@@ -74,8 +72,6 @@ public final class Champion extends Entity implements SkillReceivable {
             championDB.getStats().getAttackRange(),
             new ChampionAttackStrategy()
         );
-
-        this.playgroundHandler = playgroundHandler;
 
         this.addAllComponents();
     }
@@ -126,14 +122,27 @@ public final class Champion extends Entity implements SkillReceivable {
         this.decreaseHP(actualDamage);
 
         // 3. Send health update for the target
-        ctx.addExtraData("actualDamage", actualDamage);
-        ctx.getGameStateService().sendHealthUpdate(ctx);
+        ctx.addActualDamage(actualDamage);
+        ctx.getGameStateService().sendHealthUpdate(
+            ctx.getGameId(), this, actualDamage, ctx.getTimestamp());
 
         return true; 
     }
 
-    @Override 
+
+    @Override // from SkillReceivable interface
     public void receiveSkillDamage(CastSkillContext ctx) {
+        // 2. Process the skill damage and calculate actual damage
+        Integer actualDamage = (int) this.calculateActualDamage(ctx);
+        this.decreaseHP(actualDamage);
         
+        // 3. Send health update for the target
+        ctx.addActualDamage(actualDamage);
+        ctx.getGameStateService().sendHealthUpdate(
+            ctx.getGameId(), this, actualDamage, ctx.getTimestamp());
+    }
+
+    public void updateCastSkill() {
+        this.skillComponent.update();
     }
 }

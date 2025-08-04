@@ -1,12 +1,15 @@
 package com.server.game.model.game.component.skillComponent;
 
+import org.springframework.stereotype.Component;
+
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.championSkill.*;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 import com.server.game.util.ChampionEnum;
 
+@Component
 public class SkillFactory {
-    public static SkillComponent createSkillFor(Champion owner, ChampionAbility ability) {
+    public SkillComponent createSkillFor(Champion owner, ChampionAbility ability) {
         ChampionEnum championEnum = owner.getChampionEnum();
         return switch (championEnum) {
             case MELEE_AXE                  -> new MeleeSkill(owner, ability);

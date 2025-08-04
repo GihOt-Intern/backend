@@ -15,14 +15,14 @@ public class MageSkill extends SkillComponent {
 
 
     @Override
-    protected void doUse(CastSkillContext context) {
+    protected void doUse() {
         // Implement the specific logic for using a Mage skill
         // This could involve dealing damage, applying effects, etc.
     }
 
     @Override
-    public void update(CastSkillContext context) {
-        // Implement any periodic updates needed for the Assassin skill
+    public void update() {
+        // Implement any periodic updates needed for the Mage skill
         // For example, if the skill has a duration or needs to check conditions over time
     }
 }

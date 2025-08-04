@@ -1,4 +1,4 @@
-package com.server.game.netty.sendObject.pvp;
+package com.server.game.netty.sendObject.attack;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

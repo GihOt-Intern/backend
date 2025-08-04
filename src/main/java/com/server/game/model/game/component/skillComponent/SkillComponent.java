@@ -22,6 +22,8 @@ public abstract class SkillComponent {
     protected long cooldownTick;
     protected long lastUsedTick;
 
+    protected CastSkillContext castSkillContext;
+
     public SkillComponent(Champion owner, ChampionAbility ability) {
         this.skillOwner = owner;
         this.name = ability.getName();
@@ -50,6 +52,14 @@ public abstract class SkillComponent {
         return remainingTicks * Util.getGameTickIntervalMs() / 1000.0f;
     }
 
+    public final void setCastSkillContext(CastSkillContext ctx) {
+        if (castSkillContext != null) {
+            System.out.println(">>> [Log in SkillComponent] Skill is using, cannot overwrite another context");
+            return;
+        }
+        this.castSkillContext = ctx;
+    }
+
     public final boolean isReady(long currentTick) {
         return currentTick - this.lastUsedTick >= this.cooldownTick;
     }
@@ -57,17 +67,21 @@ public abstract class SkillComponent {
     // Template method pattern
     // Wrapper method to ensure cooldown is checked before using the skill
     // Concrete subclasses must only implement the doUse method below
-    public final void use(CastSkillContext context) {
-        long currentTick = context.getCurrentTick();
+    public final void use(CastSkillContext ctx) {
+        long currentTick = ctx.getCurrentTick();
         if (!isReady(currentTick)) return;
 
-        doUse(context);
+        // 1. Broadcast skill usage to the game state
+        ctx.getGameStateService().sendCastSkillAnimation(ctx);
+
+        doUse();
 
         lastUsedTick = currentTick;
     }
 
     // Protected access modifier to allow subclasses to implement their specific skill logic
     // but not to be called directly
-    protected abstract void doUse(CastSkillContext context);
-    public abstract void update(CastSkillContext context); // Nếu có skill cần xử lý theo thời gian
+    protected abstract void doUse();
+    public abstract void update(); // Nếu có skill cần xử lý theo thời gian
+
 }

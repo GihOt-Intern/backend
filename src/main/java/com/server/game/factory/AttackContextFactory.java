@@ -5,23 +5,18 @@ import com.server.game.model.game.GameState;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.service.gameState.GameStateService;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.experimental.FieldDefaults;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Data
 @Component
+@AllArgsConstructor
 public class AttackContextFactory {
     
-    private GameStateService gameStateService;
+    private final GameStateService gameStateService;
 
-    public AttackContextFactory(GameStateService gameStateService) {
-        this.gameStateService = gameStateService;
-    }
 
     public AttackContext createAttackContext(
         String gameId, String attackerStringId, String targetStringId, long timestamp) {

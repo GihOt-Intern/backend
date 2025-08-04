@@ -61,7 +61,7 @@ public class GameInititalLoadingMessageHandler {
         Set<Channel> playersInRoom = ChannelManager.getGameChannelsByInnerChannel(channel);
         
         // Get champions' initial HPs
-        Map<Short, Integer> allInitHPs = gameState.getChampions()
+        Map<Short, Integer> allInitHPs = gameState.getSlot2Champions()
             .entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, 
                     entry -> entry.getValue().getInitialHP()));

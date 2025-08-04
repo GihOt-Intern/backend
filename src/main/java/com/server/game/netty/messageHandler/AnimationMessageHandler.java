@@ -4,7 +4,9 @@ package com.server.game.netty.messageHandler;
 import org.springframework.stereotype.Component;
 
 import com.server.game.model.game.context.AttackContext;
+import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.netty.ChannelManager;
+import com.server.game.netty.sendObject.CastSkillSend;
 import com.server.game.netty.sendObject.attack.AttackAnimationSend;
 
 import io.netty.channel.Channel;
@@ -26,6 +28,25 @@ public class AnimationMessageHandler {
             System.out.println("[Log in SocketSender#sendAttackAnimation] Sent AttackAnimationDisplaySend: " + attackAnimation);
         } catch (Exception e) {
             System.err.println("[Log in SocketSender#sendAttackAnimation] Exception in broadcastAttackerAnimation: " + e.getMessage());
+        }
+    }
+
+    public void sendCastSkillAnimation(CastSkillContext ctx) {
+        try {
+            // Create skill cast message
+            CastSkillSend skillCastSend = new CastSkillSend(
+                ctx.getCaster().getStringId(),
+                ctx.getTargetPoint(),
+                ctx.getSkillLength(),
+                ctx.getTimestamp()
+            );
+
+            // Get any channel from the game to broadcast the skill cast
+            Channel channel = ChannelManager.getAnyChannelByGameId(ctx.getGameState().getGameId());
+            channel.writeAndFlush(skillCastSend);
+            System.out.println("[Log in SocketSender#sendSkillCast] Sent SkillCastSend: " + skillCastSend);
+        } catch (Exception e) {
+            System.err.println("[Log in SocketSender#sendSkillCast] Exception in sendSkillCast: " + e.getMessage());
         }
     }
 }

@@ -3,7 +3,6 @@ package com.server.game.model.game.context;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
 
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
@@ -40,6 +39,13 @@ public class AttackContext { // only normal attacks, not skills
             throw new IllegalArgumentException("Key and value must not be null");
         }
         this.extraData.put(key, value);
+    }
+
+    public void addActualDamage(Integer actualDamage) {
+        if (actualDamage == null) {
+            throw new IllegalArgumentException("Actual damage must not be null");
+        }
+        this.extraData.put("actualDamage", actualDamage);
     }
 
     public Integer getActualDamage() {

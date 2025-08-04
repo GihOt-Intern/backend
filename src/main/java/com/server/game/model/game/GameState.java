@@ -78,6 +78,18 @@ public class GameState {
             .stream()
             .collect(Collectors.toSet());
     }
+    
+    public Set<Champion> getChampions() {
+        return slotStates.values().stream()
+            .map(SlotState::getChampion)
+            .collect(Collectors.toSet());
+    }
+
+    public Map<Short, Champion> getSlot2Champions() {
+        return slotStates.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, 
+                    entry -> entry.getValue().getChampion()));
+    }
 
     public Float getSpeed(Short slot) {
         SlotState slotState = slotStates.get(slot);
@@ -186,12 +198,6 @@ public class GameState {
             return;
         }
         System.err.println(">>> [Log in GameState.setGold] Slot " + slot + " not found in game state for gameId: " + gameId);
-    }
-
-    public Map<Short, Champion> getChampions() {
-        return slotStates.values().stream()
-            .filter(slotState -> slotState.getChampion() != null)
-            .collect(Collectors.toMap(SlotState::getSlot, SlotState::getChampion));
     }
 
     public SlotState getSlotState(short slot) {
