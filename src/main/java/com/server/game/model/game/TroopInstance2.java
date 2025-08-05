@@ -7,7 +7,7 @@ import com.server.game.model.game.component.attributeComponent.TroopAttributeCom
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.TroopDB;
-import com.server.game.service.move.MoveService;
+import com.server.game.service.move.MoveService2;
 import com.server.game.util.TroopEnum;
 
 import lombok.AccessLevel;
@@ -63,17 +63,16 @@ public class TroopInstance2 extends Entity {
     private long lastAbilityUse = 0;
 
 
-    public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot,
-        MoveService moveService) {
+    public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot, MoveService2 moveService) {
         super("troop_" + UUID.randomUUID().toString(),
             ownerSlot, gameState,
-            gameState.getSpawnPosition(ownerSlot), moveService);
+            gameState.getSpawnPosition(ownerSlot),
+            troopDB.getStats().getMoveSpeed());
 
         this.troopEnum = TroopEnum.fromShort(troopDB.getId());
 
         this.attributeComponent = new TroopAttributeComponent(
             troopDB.getStats().getDefense(),
-            troopDB.getStats().getMoveSpeed(),
             troopDB.getStats().getDetectionRange(),
             troopDB.getStats().getHealingPower(),
             troopDB.getStats().getHealingRange(),
@@ -88,7 +87,8 @@ public class TroopInstance2 extends Entity {
             troopDB.getStats().getAttack(),
             troopDB.getStats().getAttackSpeed(),
             troopDB.getStats().getAttackRange(),
-            new TroopAttackStrategy()
+            new TroopAttackStrategy(),
+            moveService
         );
 
         this.addAllComponents();

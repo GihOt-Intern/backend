@@ -96,7 +96,7 @@ public class GameState {
         if (slotState != null) {
             Champion champion = slotState.getChampion();
             if (champion != null) {
-                return champion.getSpeed();
+                return champion.getMoveSpeed();
             }
         }
         return null;
@@ -216,6 +216,7 @@ public class GameState {
 
     public void incrementTick() {
         this.currentTick++;
+        // System.out.println(">>> [Log in GameState.incrementTick] Current tick of game: " + this.getGameId() + " incremented to: " + this.currentTick);
     }
 
     public boolean isValidGridCell(GridCell cell) {

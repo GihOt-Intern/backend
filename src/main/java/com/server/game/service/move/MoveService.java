@@ -25,6 +25,8 @@ import lombok.Data;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 
+@Deprecated
+@SuppressWarnings("unused")
 @Service
 @Slf4j
 public class MoveService {
@@ -205,6 +207,8 @@ public class MoveService {
      * Đặt mục tiêu di chuyển mới cho người chơi
      */
     public void setMove(Entity entity, Vector2 targetPosition, boolean needStopAttack) {
+        
+        
         Long currentTime = System.currentTimeMillis();
 
         boolean preCheckPassed = this.preCheckConditions(entity, currentTime);
@@ -215,14 +219,14 @@ public class MoveService {
         System.out.println(">>> [Log in MoveService.setMove] preCheckPassed");
 
         if (needStopAttack) {
-            attackService.stopAttack(entity);
+            attackService.setStopAttacking(entity);
         }
 
         // If prechecks ok, update last move target time
         this.pushLastMoveTargetTimestamp(entity, currentTime);
 
 
-        float entitySpeed = entity.getSpeed();
+        float entitySpeed = entity.getMoveSpeed();
         
         // Try to optimize the target position retrieval by
         // getting the most up-to-date position using the existing method
@@ -245,7 +249,7 @@ public class MoveService {
         log.info("Setting move target for entity {}: from {} to {}", entity.getStringId(), startPosition, targetPosition);
         log.info("Calculating path for entity {} from cell {} to cell {}", entity.getStringId(), startCell, targetCell);
 
-        List<GridCell> path = ThetaStarPathfinder.findPath(gameMapGrid.getGrid(), startCell, targetCell);
+        List<GridCell> path = ThetaStarPathfinder.findPath(gameMapGrid, startCell, targetCell);
         
         // Check if pathfinding failed or returned empty path
         if (path == null || path.isEmpty()) {
@@ -354,18 +358,6 @@ public class MoveService {
         Vector2 position = target.getCurrentPosition();
         float totalDistanceCovered = targetSpeed * elapsedTime;
         float remainingDistance = totalDistanceCovered;
-
-        // TODO: need refactor
-        // if (entity.getAttackContext() != null) {
-        //     float attackRange = entity.getAttackRange();
-        //     float distanceToTarget = entity.getCurrentPosition()
-        //         .distance(entity.getAttackContext().getTarget().getCurrentPosition());
-        //     if (distanceToTarget > attackRange) {
-        //         remainingDistance = Math.min(remainingDistance, distanceToTarget - attackRange);
-        //     } else {
-        //         remainingDistance = 0; 
-        //     }
-        // }
 
         boolean reachedFinalDestination = false;
         while (target.path.hasNext() && !reachedFinalDestination) {
