@@ -118,7 +118,7 @@ public class TroopInstance2 extends Entity {
             " with actual damage: " + actualDamage);
 
         ctx.addExtraData("actualDamage", actualDamage);
-        ctx.getGameStateService().sendHealthUpdate(ctx);
+        ctx.getGameStateService().sendHealthUpdate(ctx.getGameId(), ctx.getTarget(), ctx.getActualDamage(), System.currentTimeMillis());
 
         return true; // Indicate that the attack was received successfully
     }
