@@ -80,26 +80,16 @@ public class AttackComponent {
 
 
         if (!this.inAttackRange(ctx.getTarget().getCurrentPosition())) {
-            System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to stick to target");
-            System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
-                ", Target position: " + ctx.getTarget().getCurrentPosition() + 
-                ", Attack range: " + this.attackRange);
             owner.setMove2Target(ctx.getTarget());
             return false;
         }
 
         if (!this.inAttackWindow(currentTick)) {  
-            System.out.println(">>> [Log in AttackComponent] Not in attack window, current tick: " + currentTick + ", next attack tick: " + this.nextAttackTick);
             return false;  
         }
 
-
-        System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + 
-            strategy.getClass().getSimpleName());
-
         // Stop moving before performing the attack
         owner.setStopMoving();
-        System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
         
         // Use the strategy to perform the attack
         boolean didAttack = strategy.performAttack(ctx);
