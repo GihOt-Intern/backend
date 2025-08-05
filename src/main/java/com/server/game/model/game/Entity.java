@@ -3,7 +3,6 @@ package com.server.game.model.game;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
@@ -12,7 +11,6 @@ import com.server.game.model.game.component.attributeComponent.AttributeComponen
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.move.MoveService;
-import com.server.game.service.position.PositionService;
 
 import lombok.experimental.Delegate;
 import lombok.Getter;

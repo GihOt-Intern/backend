@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.model.game.Entity;
+import com.server.game.model.game.TroopInstance2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.PositionReceive;
 import com.server.game.service.gameState.GameStateService;
@@ -60,6 +61,11 @@ public class MoveMessageHandler {
         if (lastUpdate != null && (currentTime - lastUpdate) < MIN_UPDATE_INTERVAL) {
             log.debug("Rate limit exceeded for entity {}:{} - ignoring position update", gameId, entityStringId);
             return;
+        }
+
+        // If the entity is a troop then remove the stick entity
+        if (entity instanceof TroopInstance2 troop) {
+            troop.setStickEntity(null);
         }
         
         // Update the last update time

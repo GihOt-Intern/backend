@@ -3,7 +3,6 @@ package com.server.game.netty.sendObject.initialGameState;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Map;
 
 import io.netty.channel.Channel;
 

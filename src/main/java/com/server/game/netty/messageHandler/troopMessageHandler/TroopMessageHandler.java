@@ -24,7 +24,6 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -93,7 +92,7 @@ public class TroopMessageHandler {
             log.info("Spawning attack troop of type {} for owner slot {}", troopType, request.getOwnerSlot());
             SlotState slotState = gameState.getSlotState(request.getOwnerSlot());
             if (slotState != null && slotState.getChampion() != null) {
-                troopInstance.setMove2Target(slotState.getChampion());
+                troopInstance.setStickEntity(slotState.getChampion());
             }
         } else {
             var minionPosition = getMinionPositionForSlot(gameState, request.getOwnerSlot());

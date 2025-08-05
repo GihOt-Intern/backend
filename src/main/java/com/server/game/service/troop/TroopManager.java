@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import com.server.game.netty.ChannelManager;
-import com.server.game.netty.sendObject.attack.HealthUpdateSend;
 import com.server.game.netty.sendObject.troop.TroopDeathSend;
 
 import io.netty.channel.Channel;
@@ -119,7 +118,21 @@ public class TroopManager {
         log.info("Removed troop {} from game {}", troopInstanceId, gameId);
         return true;
     }
-    
+
+    /**
+     * Set new position of stick target for all troops in a game
+     */
+    public boolean setStickTargetPosition(String gameId) {
+        Collection<TroopInstance2> troops = getGameTroops(gameId);
+        for (TroopInstance2 troop : troops) {
+            if (troop.getStickEntity() != null) {
+                Vector2 targetPosition = troop.getStickEntity().getCurrentPosition();
+                moveService.setMove(troop, targetPosition, true);
+            }
+        }
+        return true;
+    }
+
     /**
      * Get all troops in a game
      */

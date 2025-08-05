@@ -29,7 +29,7 @@ public class GameLogicScheduler {
 
     MoveService moveService;
     AttackService attackService;
-    // TroopManager troopManager;
+    TroopManager troopManager;
     CastSkillService castSkillService;
     GoldGenerationService goldGenerationService;
     GameStateService gameStateService;
@@ -47,6 +47,8 @@ public class GameLogicScheduler {
                 gameStateService.incrementTick(gameState.getGameId());
 
 
+                // Update troop stick entities position
+                troopManager.setStickTargetPosition(gameState.getGameId());
                 // Update movement positions
                 moveService.updatePositions(gameState);
                 // troopManager.updateTroopMovements(gameState.getGameId(), 0.05f);

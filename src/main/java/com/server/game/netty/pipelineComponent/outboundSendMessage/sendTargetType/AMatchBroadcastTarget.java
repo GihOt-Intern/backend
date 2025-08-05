@@ -34,11 +34,9 @@ public class AMatchBroadcastTarget implements SendTarget {
         }
 
         ChannelFuture lastFuture = null;
-        int sentCount = 0;
         for (Channel channel : channels) {
             if (channel.isActive()) {
                 lastFuture = channel.writeAndFlush(message.retainedDuplicate());
-                sentCount++;
                 // System.out.println(">>> [AMatchBroadcastTarget] Sent message to channel " + sentCount);
             } else {
                 System.out.println(">>> [AMatchBroadcastTarget] Skipped inactive channel");

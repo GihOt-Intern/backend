@@ -1,12 +1,8 @@
 package com.server.game.service.move;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -21,11 +17,9 @@ import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMapGrid;
 import com.server.game.service.attack.AttackService;
 import com.server.game.service.gameState.GameCoordinator;
-import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.move.MoveService.MoveTarget.PathComponent;
 import com.server.game.service.position.PositionService;
 import com.server.game.util.ThetaStarPathfinder;
-import com.server.game.util.Util;
 
 import lombok.Data;
 import lombok.experimental.Delegate;
@@ -39,9 +33,6 @@ public class MoveService {
     private PositionService positionService;
 
     @Autowired
-    private GameStateService gameStateService;
-
-    @Autowired
     @Lazy
     private GameCoordinator gameCoordinator;
 
@@ -50,9 +41,6 @@ public class MoveService {
 
 
     private final Map<GameState, Map<Entity, MoveTarget>> moveTargets = new ConcurrentHashMap<>();
-
-    // Minimum distance threshold to avoid unnecessary pathfinding
-    private static final float MIN_MOVE_DISTANCE = 0.5f;
     
     // Service-level rate limiting - Reduced to allow more responsive movement
     private static final long MIN_MOVE_TARGET_INTERVAL = 75; // 50ms = max 20 updates per second
@@ -257,23 +245,6 @@ public class MoveService {
         log.info("Setting move target for entity {}: from {} to {}", entity.getStringId(), startPosition, targetPosition);
         log.info("Calculating path for entity {} from cell {} to cell {}", entity.getStringId(), startCell, targetCell);
 
-        // Check if the target cell is occupied
-        Set<Entity> entitiesInTargetCell = gameStateService.getEntitiesByGridCell(gameState, targetCell);
-        boolean isOccupied = entitiesInTargetCell != null && !entitiesInTargetCell.isEmpty() && (entitiesInTargetCell.size() > 1 || !entitiesInTargetCell.contains(entity));
-
-        if (isOccupied) {
-            log.info("Target cell {} is occupied. Finding nearest available cell.", targetCell);
-            GridCell newTargetCell = findNearestAvailableCell(gameState, targetCell, gameMapGrid);
-            if (newTargetCell != null) {
-                log.info("Found new available target cell: {}. Recalculating target position.", newTargetCell);
-                targetCell = newTargetCell;
-                targetPosition = gameState.toPosition(targetCell); // Update targetPosition as well
-            } else {
-                log.warn("Could not find an available cell near the target for entity {}. Aborting move.", entity.getStringId());
-                return; // No available cell found, stop the move.
-            }
-        }
-
         List<GridCell> path = ThetaStarPathfinder.findPath(gameMapGrid.getGrid(), startCell, targetCell);
         
         // Check if pathfinding failed or returned empty path
@@ -303,37 +274,6 @@ public class MoveService {
         // Save and overwrite new target (if any)
         this.pushMoveTarget2Map(entity, target);
     }
-
-    private GridCell findNearestAvailableCell(GameState gameState, GridCell startCell, GameMapGrid gameMapGrid) {
-        Queue<GridCell> queue = new LinkedList<>();
-        Set<GridCell> visited = new HashSet<>();
-
-        queue.add(startCell);
-        visited.add(startCell);
-
-        while (!queue.isEmpty()) {
-            GridCell currentCell = queue.poll();
-
-            // Check if the current cell is walkable and not occupied
-            if (gameMapGrid.getGrid()[currentCell.r()][currentCell.c()]) {
-                Set<Entity> entitiesInCell = gameStateService.getEntitiesByGridCell(gameState, currentCell);
-                if (entitiesInCell == null || entitiesInCell.isEmpty()) {
-                    return currentCell; // Found an available cell
-                }
-            }
-
-            // Add neighbors to the queue
-            for (int[] dir : Util.EIGHT_DIRECTIONS) {
-                GridCell neighbor = new GridCell(currentCell.r() + dir[0], currentCell.c() + dir[1]);
-                if (gameState.isValidGridCell(neighbor) && !visited.contains(neighbor)) {
-                    visited.add(neighbor);
-                    queue.add(neighbor);
-                }
-            }
-        }
-
-        return null; // No available cell found
-    }   
 
     private boolean preCheckConditions(Entity entity, Long currentTime) {
         return this.checkInRateLimit(entity, currentTime) &&
