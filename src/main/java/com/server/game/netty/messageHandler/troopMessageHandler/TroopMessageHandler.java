@@ -14,6 +14,7 @@ import com.server.game.netty.receiveObject.troop.TroopSpawnReceive;
 import com.server.game.netty.sendObject.troop.TroopSpawnSend;
 import com.server.game.service.troop.TroopManager;
 import com.server.game.service.gameState.GameCoordinator;
+import com.server.game.service.move.MoveService;
 import com.server.game.util.TroopEnum;
 
 import io.netty.channel.Channel;
@@ -34,6 +35,7 @@ import java.util.Set;
 public class TroopMessageHandler {
     TroopManager troopManager;
     GameCoordinator gameCoordinator;
+    MoveService moveService;
 
     /**
      * xử lý việc người chơi spawn quân đội
@@ -96,7 +98,9 @@ public class TroopMessageHandler {
         } else {
             var minionPosition = getMinionPositionForSlot(gameState, request.getOwnerSlot());
             if (minionPosition != null) {
-                troopInstance.updateNewTargetPosition(minionPosition);
+                log.info("Spawning minion troop of type {} for owner slot {}", troopType, request.getOwnerSlot());
+                log.info("Minion position: {}", minionPosition);
+                moveService.setMove(troopInstance, minionPosition, true);
             }
         }
 
@@ -126,20 +130,22 @@ public class TroopMessageHandler {
             }
 
             // Assuming the points define a rectangle, find the min/max X and Y
-            float minX = Float.MAX_VALUE;
-            float maxX = Float.MIN_VALUE;
-            float minY = Float.MAX_VALUE;
-            float maxY = Float.MIN_VALUE;
+            float minX = Float.MAX_VALUE, maxX = -1000.f;
+            float minY = Float.MAX_VALUE, maxY = -1000.f;
 
+            // Calculate the min and max for both X and Y coordinates
             for (Vector2 pos : minionPositions) {
+                log.info("Minion position: {}", pos);
                 minX = Math.min(minX, pos.x());
                 maxX = Math.max(maxX, pos.x());
                 minY = Math.min(minY, pos.y());
                 maxY = Math.max(maxY, pos.y());
             }
 
+            log.info("Minion position bounds: minX={}, maxX={}, minY={}, maxY={}", minX, maxX, minY, maxY);
             float randomX = minX + (float) (Math.random() * (maxX - minX));
             float randomY = minY + (float) (Math.random() * (maxY - minY));
+            log.info("Random minion position: ({}, {})", randomX, randomY);
 
             return new Vector2(randomX, randomY);
         } catch (Exception e) {

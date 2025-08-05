@@ -537,7 +537,7 @@ public class GameStateService {
             entities.remove(entity);
             log.debug("Removed entity {} from grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
         } else {
-            log.warn("No entities found in grid cell {} for gameId: {}", gridCell, gameState.getGameId());
+            // log.warn("No entities found in grid cell {} for gameId: {}", gridCell, gameState.getGameId());
         }
         if (entities == null || entities.isEmpty()) {
             gameState.getGrid2Entity().remove(gridCell);

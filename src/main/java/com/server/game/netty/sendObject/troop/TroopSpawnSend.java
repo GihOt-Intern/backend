@@ -37,8 +37,8 @@ public class TroopSpawnSend implements TLVEncodable {
 
         try {
             byte[] troopIdBytes = troopId != null ? troopId.getBytes("UTF-8") : new byte[0];
-            int troopIdLength = troopIdBytes.length;
-            dos.writeInt(troopIdLength);
+            short troopIdLength = (short) troopIdBytes.length;
+            dos.writeShort(troopIdLength);
             if (troopIdLength > 0) {
                 dos.write(troopIdBytes);
             }

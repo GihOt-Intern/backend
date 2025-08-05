@@ -97,7 +97,7 @@ public class PositionSend implements TLVEncodable {
                 dos.writeFloat(position.y());
                 dos.writeFloat(speed);
 
-                System.out.println(">>> [Log in EntityPositionData.encode] " + stringId + " position: " + position + ", speed: " + speed);
+                // System.out.println(">>> [Log in EntityPositionData.encode] " + stringId + " position: " + position + ", speed: " + speed);
 
                 return baos.toByteArray();
             } catch (IOException e) {

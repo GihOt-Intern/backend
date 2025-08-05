@@ -31,8 +31,8 @@ public class TLVMessageEncoder extends ChannelOutboundHandlerAdapter {
 
         TLVEncodable sendObject = (TLVEncodable) msg; // cast msg to TLVEncodable
         if (!(sendObject instanceof PongSend)) {
-            System.out.println(">>> [TLVMessageEncoder] Server received TLVEncodable object: " + sendObject.getClass().getSimpleName());
-            System.out.println(">>> [TLVMessageEncoder] Message type: " + sendObject.getType());
+            //System.out.println(">>> [TLVMessageEncoder] Server received TLVEncodable object: " + sendObject.getClass().getSimpleName());
+            //System.out.println(">>> [TLVMessageEncoder] Message type: " + sendObject.getType());
         }
 
         try {

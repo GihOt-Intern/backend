@@ -16,7 +16,7 @@ public class TLVEncoder {
         int length = valueBytes.length;
 
         if (!(sendObj instanceof PongSend)) {
-            System.out.println(">>> [TLVEncoder] Encoding message with type: " + type + " (value: " + type.getType() + "), length: " + length);
+            //System.out.println(">>> [TLVEncoder] Encoding message with type: " + type + " (value: " + type.getType() + "), length: " + length);
         }
 
         ByteBuffer buffer = ByteBuffer.allocate(Util.SHORT_SIZE + Util.INT_SIZE + length).order(ByteOrder.BIG_ENDIAN);

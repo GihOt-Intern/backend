@@ -401,9 +401,9 @@ public class MoveService {
             currentTime
         );
 
-        System.out.println(">>> [Log in MoveService.updatePositions] Updated pending position for entity: " + 
-            entity.getStringId() + ", new position: " + position + ", speed: " + targetSpeed +
-            " in gameId=" + entity.getGameId());
+        // System.out.println(">>> [Log in MoveService.updatePositions] Updated pending position for entity: " + 
+        //     entity.getStringId() + ", new position: " + position + ", speed: " + targetSpeed +
+        //     " in gameId=" + entity.getGameId());
 
         if (reachedFinalDestination || !target.path.hasNext()) {
             this.removeMoveTargetFromMap(entity);
