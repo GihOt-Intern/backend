@@ -22,6 +22,7 @@ import lombok.experimental.FieldDefaults;
 public class TroopSpawnReceive implements TLVDecodable {
     short troopId;
     short ownerSlot;
+    boolean isAttack;
     long timestamp;
 
     @Override
@@ -31,6 +32,7 @@ public class TroopSpawnReceive implements TLVDecodable {
             DataInputStream dis = new DataInputStream(bais);
             this.troopId = dis.readShort();
             this.ownerSlot = dis.readShort();
+            this.isAttack = dis.readBoolean();
             this.timestamp = dis.readLong();
         } catch (Exception e) {
             throw new  RuntimeException("Cannot decode " + this.getClass().getSimpleName(), e);

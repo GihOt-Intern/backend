@@ -28,6 +28,8 @@ public class SlotInfo {
     Spawn spawn;
     Burg burg;
     List<Tower> towers;
+    @JsonProperty("minion_positions")
+    List<Vector2> minionPositions;
 
     @Data
     @AllArgsConstructor

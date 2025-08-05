@@ -1,15 +1,11 @@
 package com.server.game.model.game.component.attackComponent;
 
 
-import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.attackStrategy.AttackStrategy;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.util.Util;
-import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.service.attack.AttackService;
-
 import lombok.Getter;
 
 @Getter

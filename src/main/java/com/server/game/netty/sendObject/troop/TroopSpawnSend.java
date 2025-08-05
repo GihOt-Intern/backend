@@ -22,7 +22,7 @@ public class TroopSpawnSend implements TLVEncodable {
     String troopId; // Unique identifier for the troop
     short troopType;
     short ownerSlot;
-    float x, y;
+    float x, y, rotate;
     long timestamp;
 
     @Override
@@ -46,6 +46,7 @@ public class TroopSpawnSend implements TLVEncodable {
             dos.writeShort(ownerSlot);
             dos.writeFloat(x);
             dos.writeFloat(y);
+            dos.writeFloat(rotate);
             dos.writeLong(timestamp);
         } catch (IOException e) {
             e.printStackTrace();

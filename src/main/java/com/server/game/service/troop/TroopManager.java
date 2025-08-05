@@ -250,45 +250,8 @@ public class TroopManager {
         if (troop == null || !troop.isAlive()) {
             return false;
         }
-        
-        // Create attack context for damage calculation
-        // For now, using a simplified damage application
-        int currentHP = troop.getCurrentHP();
-        int newHP = Math.max(0, currentHP - damage);
-        
-        // Since TroopInstance2 doesn't have takeDamage method like the old one,
-        // we need to use the attack system properly
-        // For now, we'll handle this through the health component if available
-        // TODO: Implement proper attack context handling
-        
-        // If troop died, remove it
-        if (newHP <= 0) {
-            // Notify game state service about troop death
-            broadcastTroopDeath(gameId, troopInstanceId, troop.getOwnerSlot().getSlot());
-
-            removeTroop(gameId, troopInstanceId);
-            log.info("Troop {} died and was removed from game {}", troopInstanceId, gameId);
-        } else {
-            HealthUpdateSend healthUpdate = new HealthUpdateSend(
-                troopInstanceId,
-                newHP,
-                troop.getMaxHP(),
-                damage,
-                System.currentTimeMillis()
-            );
-
-            Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
-            if (gameChannels != null && !gameChannels.isEmpty()) {
-                for (Channel channel : gameChannels) {
-                    if (channel.isActive()) {
-                        channel.writeAndFlush(healthUpdate);
-                    }
-                }
-            } else {
-                log.warn("No active channels found for game ID: {}", gameId);
-            }
-        }
-        
+        // TODO: Implement proper damage application logic
+        log.info("Applying {} damage to troop {}", damage, troopInstanceId);
         return true;
     }
 
@@ -322,50 +285,6 @@ public class TroopManager {
         // TODO: Implement proper healing through health component
         // For now, this is a placeholder
         log.info("Healing troop {} by {} HP", troopInstanceId, healAmount);
-        return true;
-    }
-    
-    /**
-     * Move troops for a player (using the MoveService)
-     */
-    public void moveTroops(String gameId, short playerSlot, List<String> troopIds, Vector2 targetPosition) {
-        log.info("Move command received for player {} troops {} to position ({}, {})", 
-                playerSlot, troopIds, targetPosition.x(), targetPosition.y());
-        
-        for (String troopId : troopIds) {
-            TroopInstance2 troop = getTroop(gameId, troopId);
-            if (troop != null && troop.getOwnerSlot().getSlot() == playerSlot && troop.isAlive()) {
-                // Use the move service to set movement target
-                troop.updateNewTargetPosition(targetPosition);
-                log.debug("Set movement target for troop {} to ({}, {})", troopId, targetPosition.x(), targetPosition.y());
-            }
-        }
-    }
-
-    /**
-     * Move troop to attack a specific target
-     */
-    public boolean moveToAttackTarget(String gameId, String attackerTroopId, String targetTroopId) {
-        TroopInstance2 attacker = getTroop(gameId, attackerTroopId);
-        TroopInstance2 target = getTroop(gameId, targetTroopId);
-
-        if (attacker == null || target == null || !attacker.isAlive() || !target.isAlive()) {
-            log.debug("Cannot move to attack - troops not found or not alive");
-            return false;
-        }
-
-        boolean isEnemy = !attacker.getOwnerSlot().getSlot().equals(target.getOwnerSlot().getSlot());
-        boolean isHealer = attacker.getTroopEnum() == TroopEnum.HEALER;
-
-        if (!isEnemy && !isHealer) {
-            log.warn("Troop {} cannot attack target {} - not an enemy or healer", attackerTroopId, targetTroopId);
-            return false;
-        }
-
-        // Move towards the target using the move service
-        attacker.setMove2Target(target);
-        
-        log.debug("Troop {} moving to attack/heal {}", attackerTroopId, targetTroopId);
         return true;
     }
 

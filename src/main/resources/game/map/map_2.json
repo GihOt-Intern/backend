@@ -2,7 +2,7 @@
   "id": 2,
   "map_name": "map_2",
 
-  "initial_gold_each_slot": 300,
+  "initial_gold_each_slot": 10000,
   "gold_generated_per_second": 1,
 
 
@@ -40,6 +40,13 @@
           "position": { "x": -56, "y": -12.5 },
           "size": { "width": 5, "length": 5 }
         }
+      ],
+
+      "minion_positions": [
+        { "x": -50, "y": 14 },
+        { "x": -38, "y": 14 },
+        { "x": -50, "y": -14 },
+        { "x": -38, "y": -14 }
       ]
     },
 
@@ -74,6 +81,13 @@
           "position": { "x": 56, "y": -12.5 },
           "size": { "width": 5, "length": 5 }
         }
+      ],
+
+      "minion_positions": [
+        { "x": 50, "y": 14 },
+        { "x": 38, "y": 14 },
+        { "x": 50, "y": -14 },
+        { "x": 38, "y": -14 }
       ]
     }
   ]

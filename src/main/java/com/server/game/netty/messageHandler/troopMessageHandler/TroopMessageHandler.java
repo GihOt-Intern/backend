@@ -1,9 +1,12 @@
 package com.server.game.netty.messageHandler.troopMessageHandler;
 
+import com.server.game.resource.model.GameMap;
+import com.server.game.resource.model.SlotInfo;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.model.game.GameState;
+import com.server.game.model.game.SlotState;
 import com.server.game.model.game.TroopInstance2;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
@@ -20,6 +23,8 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -63,7 +68,7 @@ public class TroopMessageHandler {
             log.warn("No game state found for game ID: {}", gameId);
             return;
         }
-
+        
         Vector2 spawnPosition = determineSpawnPosition(gameState, request.getOwnerSlot());
         if (spawnPosition == null) {
             log.warn("Could not determine spawn position for troop type: {}", troopType);
@@ -81,9 +86,67 @@ public class TroopMessageHandler {
             return;
         }
 
+        boolean isAttack = request.isAttack();
+        if (isAttack) {
+            log.info("Spawning attack troop of type {} for owner slot {}", troopType, request.getOwnerSlot());
+            SlotState slotState = gameState.getSlotState(request.getOwnerSlot());
+            if (slotState != null && slotState.getChampion() != null) {
+                troopInstance.setMove2Target(slotState.getChampion());
+            }
+        } else {
+            var minionPosition = getMinionPositionForSlot(gameState, request.getOwnerSlot());
+            if (minionPosition != null) {
+                troopInstance.updateNewTargetPosition(minionPosition);
+            }
+        }
+
         broadcastTroopSpawn(gameId, troopInstance.getStringId(), request.getTroopId(), request.getOwnerSlot(), spawnPosition);
 
         log.info("Troop spawned successfully: {} at position {}", troopType, spawnPosition);
+    }
+
+    private Vector2 getMinionPositionForSlot(GameState gameState, short ownerSlot) {
+        try {
+            GameMap gameMap = gameState.getGameMap();
+            if (gameMap == null) {
+                log.warn("GameMap not found in GameState");
+                return null;
+            }
+
+            SlotInfo slotInfo = gameMap.getSlot2SlotInfo().get(ownerSlot);
+            if (slotInfo == null) {
+                log.warn("SlotInfo not found for slot: {}", ownerSlot);
+                return null;
+            }
+
+            List<Vector2> minionPositions = slotInfo.getMinionPositions();
+            if (minionPositions == null || minionPositions.size() < 4) {
+                log.warn("minion_positions requires at least 4 points to define the rectangle.");
+                return null;
+            }
+
+            // Assuming the points define a rectangle, find the min/max X and Y
+            float minX = Float.MAX_VALUE;
+            float maxX = Float.MIN_VALUE;
+            float minY = Float.MAX_VALUE;
+            float maxY = Float.MIN_VALUE;
+
+            for (Vector2 pos : minionPositions) {
+                minX = Math.min(minX, pos.x());
+                maxX = Math.max(maxX, pos.x());
+                minY = Math.min(minY, pos.y());
+                maxY = Math.max(maxY, pos.y());
+            }
+
+            float randomX = minX + (float) (Math.random() * (maxX - minX));
+            float randomY = minY + (float) (Math.random() * (maxY - minY));
+
+            return new Vector2(randomX, randomY);
+        } catch (Exception e) {
+            log.error("Error getting minion positions for slot {}: {}", ownerSlot, e.getMessage(), e);
+        }
+        
+        return null;
     }
 
     private Vector2 determineSpawnPosition(GameState gameState, short ownerSlot) {
@@ -99,12 +162,17 @@ public class TroopMessageHandler {
             return;
         }
 
+        // Calculate rotation based on position to the center point (0,0)
+        float rotate = (float) Math.atan2(position.y(), position.x());
+
+        // Create the TroopSpawnSend object
         TroopSpawnSend troopSpawnSend = new TroopSpawnSend(
             troopId,
             troopType,
             ownerSlot,
             position.x(),
             position.y(),
+            rotate,
             System.currentTimeMillis()
         );
 
