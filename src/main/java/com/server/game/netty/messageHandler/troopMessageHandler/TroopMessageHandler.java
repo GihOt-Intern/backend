@@ -104,7 +104,7 @@ public class TroopMessageHandler {
             }
         }
 
-        broadcastTroopSpawn(gameId, troopInstance.getStringId(), request.getTroopId(), request.getOwnerSlot(), spawnPosition);
+        broadcastTroopSpawn(gameId, troopInstance.getStringId(), request.getTroopId(), request.getOwnerSlot(), spawnPosition, troopInstance.getMaxHP());
 
         log.info("Troop spawned successfully: {} at position {}", troopType, spawnPosition);
     }
@@ -161,7 +161,7 @@ public class TroopMessageHandler {
         return gameState.getSpawnPosition(gameState.getSlotState(ownerSlot));
     }
 
-    private void broadcastTroopSpawn(String gameId, String troopId, short troopType, short ownerSlot, Vector2 position) {
+    private void broadcastTroopSpawn(String gameId, String troopId, short troopType, short ownerSlot, Vector2 position, int maxHP) {
         Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
         if (gameChannels == null || gameChannels.isEmpty()) {
             log.warn("No active channels found for game ID: {}", gameId);
@@ -179,6 +179,7 @@ public class TroopMessageHandler {
             position.x(),
             position.y(),
             rotate,
+            maxHP,
             System.currentTimeMillis()
         );
 

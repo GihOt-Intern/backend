@@ -508,7 +508,7 @@ public class GameStateService {
         return gameState.getEntity2Grid().get(entity);
     }
 
-    private Set<Entity> getEntitiesByGridCell(GameState gameState, GridCell gridCell) {
+    public Set<Entity> getEntitiesByGridCell(GameState gameState, GridCell gridCell) {
         if (gameState == null || gridCell == null) {
             log.warn("Invalid parameters for getting entities by grid cell");
             return null;
