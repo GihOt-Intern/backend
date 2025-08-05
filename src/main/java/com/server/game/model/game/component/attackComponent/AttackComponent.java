@@ -1,14 +1,12 @@
 package com.server.game.model.game.component.attackComponent;
 
 
-import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.attackStrategy.AttackStrategy;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.util.Util;
-import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.service.attack.AttackService;
+import com.server.game.service.move.MoveService2;
 
 import lombok.Getter;
 
@@ -25,8 +23,12 @@ public class AttackComponent {
 
     private final AttackStrategy strategy;
 
+    private final MoveService2 moveService;
 
-    public AttackComponent(Entity owner, int damage, float attackSpeed, float attackRange, AttackStrategy strategy) {
+
+    public AttackComponent(Entity owner, int damage, float attackSpeed, float attackRange, 
+        AttackStrategy strategy, MoveService2 moveService) {
+
         this.owner = owner;
         this.strategy = strategy;
         this.damage = damage;
@@ -34,6 +36,8 @@ public class AttackComponent {
         this.attackRange = attackRange;
         this.attackDelayTick = Math.round(1000.0f / (attackSpeed * Util.getGameTickIntervalMs()));
         this.nextAttackTick = 0;
+    
+        this.moveService = moveService;
     }
 
     public void setAttackContext(AttackContext ctx) {
@@ -50,19 +54,6 @@ public class AttackComponent {
         System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
             "distance=" + distance + ", attackRange=" + this.attackRange);
         return distance-1 <= this.attackRange;
-        // GridCell ownerCell = this.getAttackContext().getGameStateService()
-        //     .getGridCellByEntity(this.getAttackContext().getGameState(), this.owner);
-        // GridCell targetCell = this.getAttackContext().getGameStateService()
-        //     .getGridCellByEntity(this.getAttackContext().getGameState(), 
-        //         this.getAttackContext().getTarget());
-        // if (ownerCell == null || targetCell == null) {
-        //     System.out.println(">>> [Log in AttackComponent] Owner or target cell is null, returning false");
-        //     return false;
-        // }
-        // System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
-        //     "ownerCell=" + ownerCell + ", targetCell=" + targetCell + 
-        //     ", attackRange=" + this.attackRange);
-        // return false;
     }
 
 
@@ -78,27 +69,26 @@ public class AttackComponent {
             throw new IllegalArgumentException("Target cannot be null");
         }
 
-
-        if (!this.inAttackRange(ctx.getTarget().getCurrentPosition())) {
-            System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to stick to target");
-            System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
-                ", Target position: " + ctx.getTarget().getCurrentPosition() + 
-                ", Attack range: " + this.attackRange);
-            owner.setMove2Target(ctx.getTarget());
-            return false;
-        }
-
         if (!this.inAttackWindow(currentTick)) {  
             System.out.println(">>> [Log in AttackComponent] Not in attack window, current tick: " + currentTick + ", next attack tick: " + this.nextAttackTick);
             return false;  
         }
 
 
+        if (!this.inAttackRange(ctx.getTarget().getCurrentPosition())) {
+            System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to stick to target");
+            System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
+                ", Target position: " + ctx.getTarget().getCurrentPosition() + 
+                ", Attack range: " + this.attackRange);
+            moveService.setMove(this.owner, ctx.getTarget().getCurrentPosition(), false);
+            return false;
+        }
+
         System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + 
             strategy.getClass().getSimpleName());
 
         // Stop moving before performing the attack
-        owner.setStopMoving();
+        moveService.setStopMoving(this.owner);
         System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
         
         // Use the strategy to perform the attack
@@ -106,7 +96,8 @@ public class AttackComponent {
 
         if (ctx.getTarget() == null || !ctx.getTarget().isAlive()) {
             System.out.println(">>> [Log in AttackComponent] After performing attack, target is null or dead");
-            this.setAttackContext(null);
+            moveService.setStopMoving(this.owner);
+            this.attackContext = null; // Clear the attack context if target is dead
         }
 
         // After performing the attack, update the next attack tick

@@ -7,5 +7,4 @@ import lombok.Getter;
 @AllArgsConstructor
 public abstract class AttributeComponent {
     protected int defense;
-    protected float moveSpeed;
 }

@@ -7,7 +7,7 @@ import com.server.game.model.game.component.attributeComponent.TroopAttributeCom
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.TroopDB;
-import com.server.game.service.move.MoveService;
+import com.server.game.service.move.MoveService2;
 import com.server.game.util.TroopEnum;
 
 import lombok.AccessLevel;
@@ -67,17 +67,16 @@ public class TroopInstance2 extends Entity {
     private long lastAbilityUse = 0;
 
 
-    public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot,
-        MoveService moveService) {
+    public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot, MoveService2 moveService) {
         super("troop_" + UUID.randomUUID().toString(),
             ownerSlot, gameState,
-            gameState.getSpawnPosition(ownerSlot), moveService);
+            gameState.getSpawnPosition(ownerSlot),
+            troopDB.getStats().getMoveSpeed());
 
         this.troopEnum = TroopEnum.fromShort(troopDB.getId());
 
         this.attributeComponent = new TroopAttributeComponent(
             troopDB.getStats().getDefense(),
-            troopDB.getStats().getMoveSpeed(),
             troopDB.getStats().getAttackRange(),
             troopDB.getStats().getDetectionRange(),
             troopDB.getStats().getHealingPower(),
@@ -93,7 +92,8 @@ public class TroopInstance2 extends Entity {
             troopDB.getStats().getAttack(),
             troopDB.getStats().getAttackSpeed(),
             troopDB.getStats().getAttackRange(),
-            new TroopAttackStrategy()
+            new TroopAttackStrategy(),
+            moveService
         );
 
         this.addAllComponents();
@@ -329,7 +329,7 @@ public class TroopInstance2 extends Entity {
 
             Vector2 newPosition = currentPosition.add(dPosition.multiply(ratio));
             this.setCurrentPosition(newPosition);
-            this.setMove();
+            // this.setMove();
         }
     }
     
@@ -338,7 +338,7 @@ public class TroopInstance2 extends Entity {
      */
     public void setMoveTarget(Vector2 target) {
         this.targetPosition = target;
-        this.setMoving(target != null);
+        // this.setMoving(target != null);
     }
     
     // AI and target management

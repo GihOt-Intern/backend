@@ -15,6 +15,7 @@ import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.service.move.MoveService;
+import com.server.game.service.move.MoveService2;
 import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
@@ -44,11 +45,12 @@ public final class Champion extends Entity implements SkillReceivable {
 
 
     public Champion(ChampionDB championDB, SlotState ownerSlot, GameState gameState,
-        SkillFactory skillFactory, MoveService moveService) {
+        SkillFactory skillFactory, MoveService2 moveService) {
+
         super("champion_" + UUID.randomUUID().toString(),
             ownerSlot, gameState,
             gameState.getSpawnPosition(ownerSlot),
-            moveService
+            championDB.getStats().getMoveSpeed()
         );
 
         this.championEnum = ChampionEnum.fromShort(championDB.getId());
@@ -56,7 +58,6 @@ public final class Champion extends Entity implements SkillReceivable {
         this.role = championDB.getRole();
         this.attributeComponent = new ChampionAttributeComponent(
             championDB.getStats().getDefense(),
-            championDB.getStats().getMoveSpeed(),
             championDB.getStats().getResourceClaimingSpeed()
         );
         this.healthComponent = new HealthComponent(
@@ -71,7 +72,8 @@ public final class Champion extends Entity implements SkillReceivable {
             championDB.getStats().getAttack(),
             championDB.getStats().getAttackSpeed(),
             championDB.getStats().getAttackRange(),
-            new ChampionAttackStrategy()
+            new ChampionAttackStrategy(),
+            moveService
         );
 
         this.addAllComponents();

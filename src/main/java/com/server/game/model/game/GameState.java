@@ -96,7 +96,7 @@ public class GameState {
         if (slotState != null) {
             Champion champion = slotState.getChampion();
             if (champion != null) {
-                return champion.getSpeed();
+                return champion.getMoveSpeed();
             }
         }
         return null;

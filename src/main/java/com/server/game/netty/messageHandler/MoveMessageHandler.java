@@ -8,11 +8,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
+import com.server.game.factory.MoveContextFactory;
 import com.server.game.model.game.Entity;
+import com.server.game.model.game.GameState;
+import com.server.game.model.game.context.MoveContext;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.PositionReceive;
 import com.server.game.service.gameState.GameStateService;
-import com.server.game.service.move.MoveService;
 
 import io.netty.channel.Channel;
 import lombok.AllArgsConstructor;
@@ -22,76 +24,27 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @AllArgsConstructor
 public class MoveMessageHandler {
-    private final MoveService moveService;
     
+    private final MoveContextFactory moveContextFactory;
+
     private GameStateService gameStateService;
-    
-    // Rate limiting: minimum time between position updates (in milliseconds)
-    private static final long MIN_UPDATE_INTERVAL = 50; // 50ms = max 20 updates per second
-    private final Map<String, Long> lastUpdateTime = new ConcurrentHashMap<>();
     
     @MessageMapping(PositionReceive.class)
     public void handleMoveMessage(PositionReceive receiveObject, Channel channel) {
-
+        
         String gameId = ChannelManager.getGameIdByChannel(channel);
+        GameState gameState = gameStateService.getGameStateById(gameId);
         
-        String entityStringId = receiveObject.getStringId();
-
-        Entity entity = gameStateService.getEntityByStringId(gameId, entityStringId);
-        if (entity == null) {
-            log.debug("Entity not found for stringId: {}", entityStringId);
-            return;
-        }
-
-        // Short slot = ChannelManager.getSlotByChannel(channel);
-
-        long clientTimestamp = receiveObject.getTimestamp();
+        Entity mover = gameStateService.getEntityByStringId(gameState, receiveObject.getStringId());
         
-        if (gameId == null) {
-            log.debug("Invalid gameId for position update");
-            return;
-        }
-        
-        // Rate limiting check
-        String playerKey = gameId + ":" + entityStringId;
-        long currentTime = System.currentTimeMillis();
-        Long lastUpdate = lastUpdateTime.get(playerKey);
-        
-        if (lastUpdate != null && (currentTime - lastUpdate) < MIN_UPDATE_INTERVAL) {
-            log.debug("Rate limit exceeded for entity {}:{} - ignoring position update", gameId, entityStringId);
-            return;
-        }
-        
-        // Update the last update time
-        lastUpdateTime.put(playerKey, currentTime);
+        MoveContext ctx = moveContextFactory.createMoveContext(
+            gameState,
+            mover,
+            receiveObject.getPosition(),
+            receiveObject.getTimestamp()
+        );
 
-        moveService.setMove(entity, receiveObject.getPosition(), true);
-
-        System.out.println(">>> [Log in PositionHandler.handlePosition] Received position update for entity: " + entityStringId + ", position: " + receiveObject.getPosition() + ", timestamp: " + clientTimestamp);
+        mover.setMoveContext(ctx);
     }
     
-    /**
-     * Clean up old entries from rate limiter cache to prevent memory leaks
-     * Runs every 5 minutes
-     */
-    @Scheduled(fixedDelay = 300000)
-    public void cleanupRateLimiterCache() {
-        long currentTime = System.currentTimeMillis();
-        long cleanupThreshold = currentTime - (MIN_UPDATE_INTERVAL * 1000); // Remove entries older than 50 seconds
-        
-        Iterator<Map.Entry<String, Long>> iterator = lastUpdateTime.entrySet().iterator();
-        int removed = 0;
-        
-        while (iterator.hasNext()) {
-            Map.Entry<String, Long> entry = iterator.next();
-            if (entry.getValue() < cleanupThreshold) {
-                iterator.remove();
-                removed++;
-            }
-        }
-        
-        if (removed > 0) {
-            log.debug("Cleaned up {} old rate limiter entries", removed);
-        }
-    }
 } 

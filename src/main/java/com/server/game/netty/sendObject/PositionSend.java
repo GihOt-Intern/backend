@@ -3,9 +3,8 @@ package com.server.game.netty.sendObject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import io.netty.channel.Channel;
 
@@ -15,7 +14,6 @@ import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.messageEnum.SendMessageType;
-import com.server.game.service.move.MoveService.PositionData;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -28,14 +26,9 @@ public class PositionSend implements TLVEncodable {
     List<EntityPositionData> entities;
     long timestamp;
 
-    public PositionSend(Map<Entity, PositionData> gameStatePendingPositions, long timestamp) {
-        this.entities = gameStatePendingPositions.entrySet().stream()
-            .map(entry -> {
-                Entity entity = entry.getKey();
-                PositionData positionData = entry.getValue();
-                return new EntityPositionData(entity, positionData);
-            })
-            .collect(Collectors.toList());
+    public PositionSend(String entityId, Vector2 position, float speed, long timestamp) {
+        this.entities = new ArrayList<>();
+        this.entities.add(new EntityPositionData(entityId, position, speed));
         this.timestamp = timestamp;
     }
 
@@ -51,7 +44,7 @@ public class PositionSend implements TLVEncodable {
             DataOutputStream dos = new DataOutputStream(baos);
 
             // Write number of players
-            dos.writeShort(entities.size());
+            dos.writeShort((short) entities.size());
 
             // Write each entity's data
             for (EntityPositionData entity : entities) {
@@ -80,10 +73,10 @@ public class PositionSend implements TLVEncodable {
         Vector2 position;
         float speed;
 
-        public EntityPositionData(Entity entity, PositionData positionData) {
+        public EntityPositionData(Entity entity, Vector2 position, float speed) {
             this.stringId = entity.getStringId();
-            this.position = positionData.getPosition();
-            this.speed = positionData.getSpeed();
+            this.position = position;
+            this.speed = speed;
         }
 
 
@@ -96,8 +89,6 @@ public class PositionSend implements TLVEncodable {
                 dos.writeFloat(position.x());
                 dos.writeFloat(position.y());
                 dos.writeFloat(speed);
-
-                System.out.println(">>> [Log in EntityPositionData.encode] " + stringId + " position: " + position + ", speed: " + speed);
 
                 return baos.toByteArray();
             } catch (IOException e) {

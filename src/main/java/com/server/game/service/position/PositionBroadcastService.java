@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+@Deprecated
+@SuppressWarnings("unused")
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -62,7 +64,8 @@ public class PositionBroadcastService {
 
         // Tạo message để broadcast
         long currentTime = System.currentTimeMillis();
-        PositionSend positionSend = new PositionSend(gameStatePendingPositions, currentTime);
+        PositionSend positionSend =  null;
+        // new PositionSend(gameStatePendingPositions, currentTime);
         
         String gameId = gameState.getGameId();
         log.debug("Broadcasting positions for game {}: {}", gameId, positionSend);

@@ -12,7 +12,7 @@ import com.server.game.service.attack.AttackService;
 import com.server.game.service.castSkill.CastSkillService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.goldGeneration.GoldGenerationService;
-import com.server.game.service.move.MoveService;
+import com.server.game.service.move.MoveService2;
 import com.server.game.service.troop.TroopManager;
 
 import io.netty.channel.Channel;
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class GameLogicScheduler {
 
-    MoveService moveService;
+    MoveService2 moveService;
     AttackService attackService;
     // TroopManager troopManager;
     CastSkillService castSkillService;
@@ -56,12 +56,6 @@ public class GameLogicScheduler {
 
                 castSkillService.updateCastSkills(gameState);
 
-                
-                // TODO: Add other high-frequency game systems here
-                // - Spell/ability cooldowns
-                // - Game state validation
-                // - Collision detection
-                
             } catch (Exception e) {
                 log.error("Error in game logic loop for game: {}", gameState.getGameId(), e);
             }
@@ -84,9 +78,6 @@ public class GameLogicScheduler {
             }
         }
     }
-
-
-
 
     
     /**

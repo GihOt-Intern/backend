@@ -34,9 +34,7 @@ import com.server.game.util.Util;
 import com.server.game.model.game.Entity;
 
 import io.netty.channel.Channel;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -87,6 +85,14 @@ public class GameStateService {
         Entity entity = gameState.getEntityByStringId(entityId);
         if (entity == null) {
             log.warn("Entity not found for gameId: {}, entityId: {}", gameId, entityId);
+        }
+        return entity;
+    }
+    
+    public Entity getEntityByStringId(GameState gameState, String entityId) {
+        Entity entity = gameState.getEntityByStringId(entityId);
+        if (entity == null) {
+            log.warn("Entity not found for gameId: {}, entityId: {}", gameState.getGameId(), entityId);
         }
         return entity;
     }
@@ -682,6 +688,10 @@ public class GameStateService {
             .filter(entity -> entity instanceof SkillReceivable)
             .map(SkillReceivable.class::cast)
             .collect(Collectors.toSet());
+    }
+
+    public void sendPositionUpdate(GameState gameState, Entity mover) {
+        this.gameStateMessageHandler.sendPositionUpdate(gameState, mover);
     }
 
     public void sendInPlaygroundUpdateMessage(GameState gameState, SlotState slot, boolean isInPlayground) {

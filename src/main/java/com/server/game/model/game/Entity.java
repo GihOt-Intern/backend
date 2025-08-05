@@ -3,16 +3,14 @@ package com.server.game.model.game;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.HealthComponent;
-import com.server.game.model.game.component.PositionComponent;
+import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
 import com.server.game.model.game.context.AttackContext;
+import com.server.game.model.game.context.MoveContext;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.service.move.MoveService;
-import com.server.game.service.position.PositionService;
 
 import lombok.experimental.Delegate;
 import lombok.Getter;
@@ -28,20 +26,19 @@ public abstract class Entity implements Attackable {
     protected GameState gameState;
 
     @Delegate
-    private PositionComponent positionComponent;
-
+    private MovingComponent movingComponent;
 
     private final Map<Class<?>, Object> components = new HashMap<>();
 
-    public Entity(String stringId, SlotState ownerSlot, GameState gameState, Vector2 initPosition,
-        MoveService moveService) {
+    public Entity(String stringId, SlotState ownerSlot, GameState gameState,
+        Vector2 initPosition, float ownerSpeed) {
         this.stringId = stringId;
         this.ownerSlot = ownerSlot;
         this.gameState = gameState;
-        this.positionComponent = new PositionComponent(initPosition, moveService);
+        this.movingComponent = new MovingComponent(this, initPosition, ownerSpeed);
 
 
-        this.addComponent(PositionComponent.class, positionComponent);
+        this.addComponent(MovingComponent.class, movingComponent);
     }
 
     // Concrete classes have to implement this method to add all their components
@@ -72,38 +69,50 @@ public abstract class Entity implements Attackable {
         return components.containsKey(clazz);
     }
 
-
-    public float getSpeed() {
-        if (hasComponent(AttributeComponent.class)) {
-            return getComponent(AttributeComponent.class).getMoveSpeed();
+    public void setMoveContext(MoveContext ctx) {
+        if (hasComponent(MovingComponent.class)) {
+            getComponent(MovingComponent.class).setMoveContext(ctx);
+            System.out.println(">>> [Log in Entity.setMoveContext] Move context set: " + ctx);
+        } else {
+            throw new UnsupportedOperationException("Entity does not have MovingComponent");
         }
-        // if (hasComponent(ChampionAttributeComponent.class)) { 
-        //     return getComponent(ChampionAttributeComponent.class).getMoveSpeed();
-        // }
-        
-        System.out.println("Entity does not have AttributeComponent, returning default speed=0.");
-        return 0; // Default value if no attribute component is present
     }
 
-    public void setMove2Target(Entity target) {
-        if (hasComponent(PositionComponent.class)) {
-            getComponent(PositionComponent.class).getMoveService()
-                .setMove(this, target.getCurrentPosition(),false);
+    public float getMoveSpeed() {
+        if (hasComponent(MovingComponent.class)) {
+            return getComponent(MovingComponent.class).getOwnerSpeed();
+        }
+
+        System.out.println("Entity does not have MovingComponent, returning default speed=0.");
+        return 0; // Default value if no attribute component is present
+    }
+    
+    public void setMoveTargetPoint(Vector2 targetPoint) {
+        if (hasComponent(MovingComponent.class)) {
+            getComponent(MovingComponent.class).setMoveTargetPoint(targetPoint);
+            System.out.println(">>> [Log in Entity.setMoveTargetPoint] Move target point set: " + targetPoint);
         } else {
-            throw new UnsupportedOperationException("[setMove2Target] Entity does not have PositionComponent");
+            throw new UnsupportedOperationException("Entity does not have MovingComponent");
+        }
+    }
+
+    public void setStopMoving() {
+        if (hasComponent(MovingComponent.class)) {
+            getComponent(MovingComponent.class).setMoveContext(null);
+            System.out.println(">>> [Log in Entity.setStopMoving] Stopped moving.");
+        } else {
+            throw new UnsupportedOperationException("Entity does not have MovingComponent");
+        }
+    }
+
+    public void performMoveAndBroadcast() {
+        if (hasComponent(MovingComponent.class)) {
+            getComponent(MovingComponent.class).performMoveAndBroadcast();
+        } else {
+            throw new UnsupportedOperationException("Entity does not have MovingComponent");
         }
     }
     
-    public void setStopMoving() {
-        if (hasComponent(PositionComponent.class)) {
-            getComponent(PositionComponent.class).getMoveService()
-                .setMove(this, this.getCurrentPosition(),false);
-            // SpringContextHolder.getBean(PositionService.class) // TODO: try
-            //     .popPendingPosition(this);
-        } else {
-            throw new UnsupportedOperationException("[setStopMoving] Entity does not have PositionComponent");
-        }
-    }
 
     public float getAttackRange() {
         if (hasComponent(AttackComponent.class)) {
@@ -155,34 +164,26 @@ public abstract class Entity implements Attackable {
 
 
     public Vector2 getCurrentPosition() {
-        if (hasComponent(PositionComponent.class)) {
-            return getComponent(PositionComponent.class).getCurrentPosition();
+        if (hasComponent(MovingComponent.class)) {
+            return getComponent(MovingComponent.class).getCurrentPosition();
         }
-        System.out.println("Entity does not have PositionComponent, returning null");
+        System.out.println("Entity does not have MovingComponent, returning null");
         return null;
     }
 
     public final float distanceTo(Entity other) {
-        return this.getComponent(PositionComponent.class)
+        return this.getComponent(MovingComponent.class)
             .distanceTo(other.getCurrentPosition());
-    }
-
-    public void updateNewTargetPosition(Vector2 position) {
-        if (hasComponent(PositionComponent.class)) {
-            getComponent(PositionComponent.class).setTargetPosition(position);
-        } else {
-            throw new UnsupportedOperationException("Entity does not have PositionComponent");
-        }
     }
 
 
     public void updatePosition(Vector2 newPosition) {
-        if (hasComponent(PositionComponent.class)) {
-            getComponent(PositionComponent.class).setCurrentPosition(newPosition);
+        if (hasComponent(MovingComponent.class)) {
+            getComponent(MovingComponent.class).setCurrentPosition(newPosition);
 
             this.afterUpdatePosition(newPosition);
         } else {
-            throw new UnsupportedOperationException("Entity does not have PositionComponent");
+            throw new UnsupportedOperationException("Entity does not have MovingComponent");
         }
     }
 
