@@ -1,37 +1,23 @@
 package com.server.game.service.move;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.context.MoveContext;
-import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.resource.model.GameMapGrid;
 import com.server.game.service.attack.AttackService;
-import com.server.game.service.gameState.GameCoordinator;
-import com.server.game.service.position.PositionService;
-import com.server.game.util.ThetaStarPathfinder;
 
-import lombok.Data;
-import lombok.experimental.Delegate;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class MoveService2 {
 
-    AttackService attackService;
+    private final AttackService attackService;
     
-
     /**
      * Đặt mục tiêu di chuyển mới cho người chơi
      */

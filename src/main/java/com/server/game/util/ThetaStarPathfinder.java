@@ -4,24 +4,38 @@ package com.server.game.util;
 import java.util.*;
 
 import com.server.game.model.map.component.GridCell;
+import com.server.game.resource.model.GameMapGrid;
 
 public class ThetaStarPathfinder {
 
     // 4 directions or 8 directions ???
     private static final int[][] DIRECTIONS = Util.EIGHT_DIRECTIONS;
 
-    public static List<GridCell> findPath(boolean[][] grid, GridCell start, GridCell end) {
+    public static List<GridCell> findPath(GameMapGrid gameMapGrid, GridCell start, GridCell end) {
+        boolean[][] grid = gameMapGrid.getGrid();
         int rows = grid.length;
         int cols = grid[0].length;
 
 
         // Nếu điểm bắt đầu hoặc kết thúc không đi được
-        if (!isValid(start.r(), start.c(), grid) || !isValid(end.r(), end.c(), grid) || !grid[start.r()][start.c()]) {
+        if (!gameMapGrid.isValid(start) || !gameMapGrid.isValid(end)) {
             return Collections.emptyList();
         }
 
+        // Nếu điểm bắt đầu không đi được
+        if (!gameMapGrid.isWalkable(start)) {
+            System.out.println(">>> Start point is not walkable");
+            GridCell closestWalkable = findClosestWalkablePosition(grid, start);
+            if (closestWalkable == null) {
+                System.out.println(">>> No walkable position found near start point");
+                return Collections.emptyList();
+            }
+            System.out.println(">>> Using closest walkable position: " + closestWalkable);
+            start = closestWalkable;
+        }
+
         // Nếu điểm kết thúc không đi được
-        if (!grid[end.r()][end.c()]) {
+        if (!gameMapGrid.isWalkable(end)) {
             System.out.println(">>> End point is not walkable");
             GridCell closestWalkable = findClosestWalkablePosition(grid, end);
             if (closestWalkable == null) {

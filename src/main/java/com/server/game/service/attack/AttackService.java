@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.context.AttackContext;
-import com.server.game.service.move.MoveService2;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +39,7 @@ public class AttackService {
     private void processAttackOf(Entity attacker) {
 
         // Perform the attack
-        boolean didAttack = attacker.performAttack();
+        attacker.performAttack();
 
         // if(!didAttack) { return; }
         

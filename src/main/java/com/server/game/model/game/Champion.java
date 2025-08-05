@@ -14,7 +14,6 @@ import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.ChampionDB;
-import com.server.game.service.move.MoveService;
 import com.server.game.service.move.MoveService2;
 import com.server.game.util.ChampionEnum;
 
@@ -89,11 +88,11 @@ public final class Champion extends Entity implements SkillReceivable {
 
 
     @Override
-    protected void afterUpdatePosition(Vector2 newPosition) {
+    public void afterUpdatePosition() {
         
         this.checkInPlayGround();
 
-        super.afterUpdatePosition(newPosition);
+        super.afterUpdatePosition();
     }
 
     private void checkInPlayGround() {

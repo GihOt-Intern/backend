@@ -1,10 +1,5 @@
 package com.server.game.netty.messageHandler;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
@@ -15,6 +10,7 @@ import com.server.game.model.game.context.MoveContext;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.PositionReceive;
 import com.server.game.service.gameState.GameStateService;
+import com.server.game.service.move.MoveService2;
 
 import io.netty.channel.Channel;
 import lombok.AllArgsConstructor;
@@ -27,8 +23,9 @@ public class MoveMessageHandler {
     
     private final MoveContextFactory moveContextFactory;
 
-    private GameStateService gameStateService;
-    
+    private final GameStateService gameStateService;
+    private final MoveService2 moveService;
+
     @MessageMapping(PositionReceive.class)
     public void handleMoveMessage(PositionReceive receiveObject, Channel channel) {
         
@@ -44,7 +41,8 @@ public class MoveMessageHandler {
             receiveObject.getTimestamp()
         );
 
-        mover.setMoveContext(ctx);
+        moveService.setMove(ctx, true);
+        
     }
     
 } 

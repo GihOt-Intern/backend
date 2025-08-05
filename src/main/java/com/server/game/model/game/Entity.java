@@ -122,6 +122,35 @@ public abstract class Entity implements Attackable {
         return 0; // Default value if no attack component is present
     }
 
+    public boolean isAttacking() {
+        if (hasComponent(AttackComponent.class)) {
+            return getComponent(AttackComponent.class).isAttacking();
+        }
+        System.out.println("Entity does not have AttackComponent, returning false for isAttacking.");
+        return false; // Default value if no attack component is present
+    }
+
+    public boolean inAttackRange() {
+        if (hasComponent(AttackComponent.class)) {
+            return getComponent(AttackComponent.class).inAttackRange();
+        }
+        System.out.println("Entity does not have AttackComponent, returning false for isInAttackRange.");
+        return false; // Default value if no attack component is present
+    }
+
+    public float getDistanceNeededToReachAttackRange() {
+        if (hasComponent(AttackComponent.class)) {
+            AttackComponent attackComponent = getComponent(AttackComponent.class);
+            if (attackComponent.getAttackContext() != null && 
+                attackComponent.getAttackContext().getTarget() != null) {
+                Vector2 targetPosition = attackComponent.getAttackContext().getTarget().getCurrentPosition();
+                return this.getCurrentPosition().distance(targetPosition) - attackComponent.getAttackRange();
+            }
+        }
+        System.out.println("Entity does not have AttackComponent or target, returning default distance=999999f.");
+        return 999999f; // Default value if no attack component or target is present
+    }
+
     public float getAttackSpeed() {
         if (hasComponent(AttackComponent.class)) {
             return getComponent(AttackComponent.class).getAttackSpeed();
@@ -180,14 +209,17 @@ public abstract class Entity implements Attackable {
     public void updatePosition(Vector2 newPosition) {
         if (hasComponent(MovingComponent.class)) {
             getComponent(MovingComponent.class).setCurrentPosition(newPosition);
-
-            this.afterUpdatePosition(newPosition);
         } else {
             throw new UnsupportedOperationException("Entity does not have MovingComponent");
         }
     }
 
-    protected void afterUpdatePosition(Vector2 newPosition) {
+    /**
+     * MUST be overridden by subclass.
+     * If subclass has nothing to do after updating position,
+     * it can just call super.afterUpdatePosition().
+     */
+    public void afterUpdatePosition() {
         this.getGameStateService()
             .updateEntityGridCellMapping(this.gameState, this);
     }

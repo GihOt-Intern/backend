@@ -222,7 +222,7 @@ public class MoveService {
         System.out.println(">>> [Log in MoveService.setMove] preCheckPassed");
 
         if (needStopAttack) {
-            attackService.stopAttack(entity);
+            attackService.setStopAttacking(entity);
         }
 
         // If prechecks ok, update last move target time
@@ -252,7 +252,7 @@ public class MoveService {
         log.info("Setting move target for entity {}: from {} to {}", entity.getStringId(), startPosition, targetPosition);
         log.info("Calculating path for entity {} from cell {} to cell {}", entity.getStringId(), startCell, targetCell);
 
-        List<GridCell> path = ThetaStarPathfinder.findPath(gameMapGrid.getGrid(), startCell, targetCell);
+        List<GridCell> path = ThetaStarPathfinder.findPath(gameMapGrid, startCell, targetCell);
         
         // Check if pathfinding failed or returned empty path
         if (path == null || path.isEmpty()) {

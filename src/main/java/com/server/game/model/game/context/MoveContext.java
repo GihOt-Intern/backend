@@ -1,10 +1,11 @@
 package com.server.game.model.game.context;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+import com.mongodb.lang.Nullable;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.GridCell;
@@ -30,7 +31,7 @@ public class MoveContext {
     private Vector2 targetPoint;
     @NotNull
     private long timestamp;
-    @Delegate
+    @Delegate @Nullable
     private PathComponent path = null;
 
     @NotNull
@@ -46,10 +47,10 @@ public class MoveContext {
     }
 
     public void setPath(List<GridCell> path) {
-        if (path == null || path.isEmpty()) {
-            throw new IllegalArgumentException("Path must not be null or empty");
-        }
         this.path = new PathComponent(path);
+
+        // TODO: try pop out the first cell
+        if (this.path.hasNext()) { this.path.popCurrentCell(); }
     }
 
     public void addExtraData(Object key, Object value) {
@@ -67,24 +68,27 @@ public class MoveContext {
     }
 
     
-    public void findPath() {
+    public boolean findPath() {
         GridCell startCell = gameState.toGridCell(mover.getCurrentPosition());
         GridCell targetCell = gameState.toGridCell(targetPoint);
         GameMapGrid gameMapGrid = gameState.getGameMapGrid();
         log.info("Setting move target for entity {}: from {} to {}", mover.getStringId(), mover.getCurrentPosition(), targetPoint);
         log.info("Calculating path for entity {} from cell {} to cell {}", mover.getStringId(), startCell, targetCell);
 
-        List<GridCell> path = ThetaStarPathfinder.findPath(gameMapGrid.getGrid(), startCell, targetCell);
+        List<GridCell> path = ThetaStarPathfinder.findPath(gameMapGrid, startCell, targetCell);
         if (path == null || path.isEmpty()) {
             log.warn("Pathfinding failed for entity {}:{} from {} to {}", 
                 gameState.getGameId(), mover.getStringId(), startCell, targetCell);
 
             // Return early to prevent further processing
-            return;
+            this.setPath(new ArrayList<>());
+            return false;
         }
         
         this.setPath(path);
+        return true;
     }
+    
 
 
     //****** INNER CLASS *****//
@@ -95,6 +99,18 @@ public class MoveContext {
         public PathComponent(List<GridCell> path) {
             this.path = path;
             this.index = 0;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public int size() {
+            return path.size();
+        }
+
+        public void clear() {
+            this.index = this.path.size();
         }
 
         public boolean hasNext() {

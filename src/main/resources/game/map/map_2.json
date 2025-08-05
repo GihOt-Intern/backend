@@ -19,7 +19,7 @@
 
       "spawn_position": {
         "id": "spawn_point_01",
-        "position": { "x": -80, "y": 0 },
+        "position": { "x": -25, "y": 0 },
         "rotate": 90.0
       },
 
@@ -49,7 +49,7 @@
       
       "spawn_position": {
         "id": "spawn_point_11",
-        "position": { "x": -80, "y": 10 },
+        "position": { "x": -25, "y": 10 },
         "rotate": 270.0
       },
       
