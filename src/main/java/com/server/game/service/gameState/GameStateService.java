@@ -19,6 +19,7 @@ import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.component.attackComponent.SkillReceivable;
 import com.server.game.model.game.context.AttackContext;
+import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.model.map.shape.Shape;
@@ -489,16 +490,16 @@ public class GameStateService {
     public void incrementTick(String gameId) {
         GameState gameState = this.getGameStateById(gameId);
         if (gameState == null) {
-            log.warn("Game state not found for gameId: {}", gameId);
+            log.info("Game state not found for gameId: {}", gameId);
             return;
         }
 
         gameState.incrementTick();
-        log.debug("Incremented game tick for gameId: {}", gameId);
+        // log.info("Incremented game tick for gameId: {}, current tick: {}", gameId, gameState.getCurrentTick());
     }
 
 
-    private GridCell getGridCellByEntity(GameState gameState, Entity entity) {
+    public GridCell getGridCellByEntity(GameState gameState, Entity entity) {
         if (gameState == null || entity == null) {
             log.warn("Invalid parameters for getting grid cell by entity");
             return null;
@@ -697,7 +698,11 @@ public class GameStateService {
         this.animationMessageHandler.sendAttackAnimation(ctx);
     }
 
-    public void sendHealthUpdate(AttackContext ctx) {
-        this.gameStateMessageHandler.sendHealthUpdate(ctx);
+    public void sendCastSkillAnimation(CastSkillContext ctx) {
+        this.animationMessageHandler.sendCastSkillAnimation(ctx);
+    }
+
+    public void sendHealthUpdate(String gameId, Entity target, int actualDamage, long timestamp) {
+        this.gameStateMessageHandler.sendHealthUpdate(gameId, target, actualDamage, timestamp);
     }
 }

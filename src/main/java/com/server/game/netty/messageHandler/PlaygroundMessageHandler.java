@@ -27,7 +27,7 @@ public class PlaygroundMessageHandler {
         if (channel != null) {
             GoldAmountSend goldAmountSend = new GoldAmountSend(currentGold);
             channel.writeAndFlush(goldAmountSend);
-            log.info("Sending gold change message for gameId: {}, slot: {}, currentGold: {}", gameId, slot, currentGold);
+            // log.info("Sending gold change message for gameId: {}, slot: {}, currentGold: {}", gameId, slot, currentGold);
         }
     }
 } 

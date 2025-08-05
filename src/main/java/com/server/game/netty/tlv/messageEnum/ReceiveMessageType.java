@@ -16,7 +16,8 @@ public enum ReceiveMessageType {
     CHOOSE_CHAMPION_RECEIVE((short) 6),
     PLAYER_READY_RECEIVE((short) 8),
     POSITION_UPDATE_RECEIVE((short) 19),
-    CHAMPION_SKILL_CAST_RECEIVE((short) 24),
+
+    CAST_SKILL_RECEIVE((short) 24),
     
     ATTACK_RECEIVE((short) 100),
 

@@ -2,16 +2,10 @@ package com.server.game.model.game.championSkill;
 
 import java.util.Set;
 
-import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.Champion;
-import com.server.game.model.game.Entity;
-import com.server.game.model.game.GameState;
 import com.server.game.model.game.component.attackComponent.SkillReceivable;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
-import com.server.game.model.game.context.AttackContext;
-import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
-import com.server.game.service.gameState.GameStateService;
 import com.server.game.util.Util;
 import com.server.game.model.map.shape.CircleShape;
 
@@ -38,9 +32,9 @@ public class MeleeSkill extends SkillComponent {
     }
 
     @Override
-    protected void doUse(CastSkillContext context) {
-        long currentTick = context.getCurrentTick();
-        
+    protected void doUse() {
+        long currentTick = this.getCastSkillContext().getCurrentTick();
+
         this.startTick = currentTick;
         this.endTick = startTick + Util.seconds2GameTick(DURATION_SECONDS);
         this.nextDamageTick = this.startTick; // Get damage immediately
@@ -48,37 +42,38 @@ public class MeleeSkill extends SkillComponent {
     }
 
     @Override
-    public void update(CastSkillContext context) {
+    public void update() {
         if (!this.active) return;
 
-        long currentTick = context.getCurrentTick();
+        long currentTick = this.getCastSkillContext().getCurrentTick();
 
         // Kết thúc skill
         if (currentTick >= endTick) {
             this.active = false;
+            this.setCastSkillContext(null);
             return;
         }
 
         if (currentTick >= nextDamageTick) {
-            this.performAOEDamage(context);
+            this.performAOEDamage();
             this.nextDamageTick += Util.seconds2GameTick(DAMAGE_INTERVAL_SECONDS);
         }
     }
 
-    private void performAOEDamage(CastSkillContext ctx) {
+    private void performAOEDamage() {
         CircleShape hitBox = new CircleShape(
             this.getSkillOwner().getCurrentPosition(),
             DAMAGE_RADIUS
         );
 
-        ctx.addExtraData("damage", this.getDamagePerSecond());
+        this.getCastSkillContext().addExtraData("damage", this.getDamagePerSecond());
 
-        Set<SkillReceivable> hitEntities = SpringContextHolder.getBean(GameStateService.class)
-            .getSkillReceivableEnemiesInScope(ctx.getGameState(), hitBox, this.getSkillOwner().getOwnerSlot());
+        Set<SkillReceivable> hitEntities = this.getCastSkillContext().getGameStateService()
+            .getSkillReceivableEnemiesInScope(
+                this.getCastSkillContext().getGameState(), 
+                hitBox, this.getSkillOwner().getOwnerSlot());
 
         hitEntities.stream()
-            .forEach(entity -> entity.receiveSkillDamage(ctx));
-
-
+            .forEach(entity -> entity.receiveSkillDamage(this.getCastSkillContext()));
     }
 }

@@ -192,6 +192,23 @@ public class ChannelManager {
         return null;
     }
 
+    public static String getUsernameBySlot(String gameId, short slot) {
+        Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
+        if (channels == null || channels.isEmpty()) {
+            System.out.println(">>> No channels found for gameId: " + gameId);
+            return null;
+        }
+
+        for (Channel channel : channels) {
+            Short channelSlot = getSlotByChannel(channel);
+            if (channelSlot != null && channelSlot.equals(slot)) {
+                return getUsernameByChannel(channel); // Return the username of the matching channel
+            }
+        }
+        System.out.println(">>> No channel found for gameId: " + gameId + " and slot: " + slot);
+        return null; // No matching channel found
+    }
+
     public static String getGameIdByChannel(Channel channel) {
         String gameId = channel.attr(GAME_ID).get();
         if (gameId != null) { return gameId; }
@@ -214,17 +231,20 @@ public class ChannelManager {
         return slot;
     }
 
-    public static ChampionEnum getChampionIdByChannel(Channel channel) {
-        ChampionEnum championId = channel.attr(CHAMPION_ID).get();
-        if (championId == null) {
-            System.out.println(">>> [Log in ChannelManager.getChampionIdByChannel()] Cannot get championId, it is not set for the channel.");
+    public static ChampionEnum getChampionEnumByChannel(Channel channel) {
+        ChampionEnum championEnum = channel.attr(CHAMPION_ID).get();
+        if (championEnum == null) {
+            System.out.println(">>> [Log in ChannelManager.getChampionEnumByChannel()] Cannot get championEnum, it is not set for the channel.");
             return null;
         }
-        return championId;
+        return championEnum;
     }
     
+    public static ChampionEnum getChampionEnumBySlot(String gameId, short slot) {
+        return getSlot2ChampionEnum(gameId).get(slot);
+    }
 
-    public static Map<Short, ChampionEnum> getSlot2ChampionId(String gameId) {
+    public static Map<Short, ChampionEnum> getSlot2ChampionEnum(String gameId) {
         Set<Channel> channels = gameChannels.get(gameId);
         if (channels == null || channels.isEmpty()) {
             System.out.println(">>> No channels found for gameId: " + gameId);
@@ -234,7 +254,7 @@ public class ChannelManager {
         Map<Short, ChampionEnum> slot2ChampionId = new HashMap<>();
         for (Channel channel : channels) {
             Short slot = getSlotByChannel(channel);
-            ChampionEnum championId = getChampionIdByChannel(channel);
+            ChampionEnum championId = getChampionEnumByChannel(channel);
             if (slot != null && championId != null) {
                 slot2ChampionId.put(slot, championId);
             }

@@ -33,11 +33,11 @@ public class LobbyMessageHandler {
         List<CurrentLobbyStateSend.PlayerLobbyStateData> lobbyPlayerStates = 
             playersInRoom.stream().map(ch -> {
                 short slot = ChannelManager.getSlotByChannel(ch);
-                ChampionEnum championId = ChannelManager.getChampionIdByChannel(ch);
+                ChampionEnum championEnum = ChannelManager.getChampionEnumByChannel(ch);
                 boolean isReady = ChannelManager.isUserReady(ch);
                 return new CurrentLobbyStateSend.PlayerLobbyStateData(
                     slot,
-                    championId != null ? championId.getChampionId() : -1, // -1 if not chosen
+                    championEnum != null ? championEnum.getChampionId() : -1, // -1 if not chosen
                     isReady
                 );
             })

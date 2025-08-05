@@ -65,7 +65,7 @@ public class MoveMessageHandler {
         // Update the last update time
         lastUpdateTime.put(playerKey, currentTime);
 
-        moveService.setMove(entity, receiveObject.getPosition());
+        moveService.setMove(entity, receiveObject.getPosition(), true);
 
         System.out.println(">>> [Log in PositionHandler.handlePosition] Received position update for entity: " + entityStringId + ", position: " + receiveObject.getPosition() + ", timestamp: " + clientTimestamp);
     }

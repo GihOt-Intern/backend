@@ -9,6 +9,7 @@ import com.server.game.model.game.GameState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.HeartbeatMessage;
 import com.server.game.service.attack.AttackService;
+import com.server.game.service.castSkill.CastSkillService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.goldGeneration.GoldGenerationService;
 import com.server.game.service.move.MoveService;
@@ -29,6 +30,7 @@ public class GameLogicScheduler {
     MoveService moveService;
     AttackService attackService;
     // TroopManager troopManager;
+    CastSkillService castSkillService;
     GoldGenerationService goldGenerationService;
     GameStateService gameStateService;
     
@@ -51,6 +53,8 @@ public class GameLogicScheduler {
                 
                 // Process attack targeting and continuous combat
                 attackService.processAttacks(gameState);
+
+                castSkillService.updateCastSkills(gameState);
 
                 
                 // TODO: Add other high-frequency game systems here

@@ -3,6 +3,7 @@ package com.server.game.model.game;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.PositionComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
@@ -10,6 +11,8 @@ import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.map.component.Vector2;
+import com.server.game.service.move.MoveService;
+import com.server.game.service.position.PositionService;
 
 import lombok.experimental.Delegate;
 import lombok.Getter;
@@ -30,11 +33,12 @@ public abstract class Entity implements Attackable {
 
     private final Map<Class<?>, Object> components = new HashMap<>();
 
-    public Entity(String stringId, SlotState ownerSlot, GameState gameState, Vector2 initPosition) {
+    public Entity(String stringId, SlotState ownerSlot, GameState gameState, Vector2 initPosition,
+        MoveService moveService) {
         this.stringId = stringId;
         this.ownerSlot = ownerSlot;
         this.gameState = gameState;
-        this.positionComponent = new PositionComponent(initPosition);
+        this.positionComponent = new PositionComponent(initPosition, moveService);
 
 
         this.addComponent(PositionComponent.class, positionComponent);
@@ -79,6 +83,34 @@ public abstract class Entity implements Attackable {
         
         System.out.println("Entity does not have AttributeComponent, returning default speed=0.");
         return 0; // Default value if no attribute component is present
+    }
+
+    public void setMove2Target(Entity target) {
+        if (hasComponent(PositionComponent.class)) {
+            getComponent(PositionComponent.class).getMoveService()
+                .setMove(this, target.getCurrentPosition(),false);
+        } else {
+            throw new UnsupportedOperationException("[setMove2Target] Entity does not have PositionComponent");
+        }
+    }
+    
+    public void setStopMoving() {
+        if (hasComponent(PositionComponent.class)) {
+            getComponent(PositionComponent.class).getMoveService()
+                .setMove(this, this.getCurrentPosition(),false);
+            // SpringContextHolder.getBean(PositionService.class) // TODO: try
+            //     .popPendingPosition(this);
+        } else {
+            throw new UnsupportedOperationException("[setStopMoving] Entity does not have PositionComponent");
+        }
+    }
+
+    public float getAttackRange() {
+        if (hasComponent(AttackComponent.class)) {
+            return getComponent(AttackComponent.class).getAttackRange();
+        }
+        System.out.println("Entity does not have AttackComponent, returning default attack range=0.");
+        return 0; // Default value if no attack component is present
     }
 
     public float getAttackSpeed() {
@@ -159,9 +191,9 @@ public abstract class Entity implements Attackable {
             .updateEntityGridCellMapping(this.gameState, this);
     }
 
-    public boolean performAttack(AttackContext ctx) {
+    public boolean performAttack() {
         if (hasComponent(AttackComponent.class)) {
-            return getComponent(AttackComponent.class).performAttack(ctx);
+            return getComponent(AttackComponent.class).performAttack();
         } else {
             throw new UnsupportedOperationException("Entity does not have AttackComponent");
         }
@@ -173,5 +205,22 @@ public abstract class Entity implements Attackable {
         }
         System.out.println("Entity does not have HealthComponent, returning true as default.");
         return true; // Default value if no health component is present
+    }
+
+    public void setAttackContext(AttackContext ctx) {
+        if (hasComponent(AttackComponent.class)) {
+            getComponent(AttackComponent.class).setAttackContext(ctx);
+            System.out.println(">>> [Log in Entity.setAttackContext] Attack context set: " + ctx);
+        } else {
+            throw new UnsupportedOperationException("Entity does not have AttackComponent");
+        }
+    }
+
+    public AttackContext getAttackContext() {
+        if (hasComponent(AttackComponent.class)) {
+            return getComponent(AttackComponent.class).getAttackContext();
+        } else {
+            throw new UnsupportedOperationException("Entity does not have AttackComponent");
+        }
     }
 }

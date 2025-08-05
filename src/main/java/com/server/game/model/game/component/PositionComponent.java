@@ -2,6 +2,7 @@ package com.server.game.model.game.component;
 
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMap.PlayGround;
+import com.server.game.service.move.MoveService;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,10 +15,15 @@ public class PositionComponent {
     private boolean isMoving;
     private boolean inPlayground;
 
-    public PositionComponent(Vector2 initPosition){
+    private final MoveService moveService;
+
+    public PositionComponent(Vector2 initPosition, MoveService moveService) {
         this.currentPosition = initPosition;
+        this.targetPosition = initPosition;
         this.inPlayground = false;
         this.isMoving = false;
+
+        this.moveService = moveService;
     }
 
     public void toggleInPlaygroundFlag(){

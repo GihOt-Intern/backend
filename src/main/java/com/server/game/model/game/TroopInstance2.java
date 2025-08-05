@@ -7,6 +7,7 @@ import com.server.game.model.game.component.attributeComponent.TroopAttributeCom
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.TroopDB;
+import com.server.game.service.move.MoveService;
 import com.server.game.util.TroopEnum;
 
 import lombok.AccessLevel;
@@ -62,10 +63,11 @@ public class TroopInstance2 extends Entity {
     private long lastAbilityUse = 0;
 
 
-    public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot) {
+    public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot,
+        MoveService moveService) {
         super("troop_" + UUID.randomUUID().toString(),
             ownerSlot, gameState,
-            gameState.getSpawnPosition(ownerSlot));
+            gameState.getSpawnPosition(ownerSlot), moveService);
 
         this.troopEnum = TroopEnum.fromShort(troopDB.getId());
 
