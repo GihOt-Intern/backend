@@ -91,6 +91,7 @@ public class InitialPositionsSend implements TLVEncodable {
         String username;
         Vector2 position;
         float rotate;
+        int maxHP;
 
         public InitialPositionData(SlotInfo slotInfo, Champion champion,
             String username) {
@@ -100,6 +101,7 @@ public class InitialPositionsSend implements TLVEncodable {
             this.username = username;
             this.position = slotInfo.getSpawn().getPosition();
             this.rotate = slotInfo.getSpawn().getRotate();
+            this.maxHP = champion.getMaxHP();
         }
 
         
@@ -115,6 +117,7 @@ public class InitialPositionsSend implements TLVEncodable {
                 dos.writeFloat((float) position.x());
                 dos.writeFloat((float) position.y());
                 dos.writeFloat(rotate);
+                dos.writeInt(maxHP);
 
                 System.out.println(">>> [Log in InitialPositionData.encode] Champion " + championStringId + " position: " + position + ", rotate: " + rotate);
 

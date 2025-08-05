@@ -59,11 +59,6 @@ public class GameInititalLoadingMessageHandler {
     private ChannelFuture sendChampionInitialStats(Channel channel, GameState gameState) {
         // Send message is unicast, need to get all channels in room and send one by one
         Set<Channel> playersInRoom = ChannelManager.getGameChannelsByInnerChannel(channel);
-        
-        // Get champions' initial HPs
-        Map<String, Integer> allInitHPs = gameState.getChampions()
-            .stream().collect(
-                Collectors.toMap(Champion::getStringId, Champion::getInitialHP));
 
         ChannelFuture lastFuture = null;
         for (Channel playerChannel : playersInRoom) {
@@ -77,7 +72,7 @@ public class GameInititalLoadingMessageHandler {
 
 
             ChampionInitialStatsSend championInitialStatsSend = 
-                new ChampionInitialStatsSend(champion, initGold, allInitHPs);
+                new ChampionInitialStatsSend(champion, initGold);
 
             lastFuture = playerChannel.writeAndFlush(championInitialStatsSend);
         }

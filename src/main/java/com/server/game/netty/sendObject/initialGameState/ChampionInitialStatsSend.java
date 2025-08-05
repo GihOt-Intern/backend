@@ -32,10 +32,8 @@ public class ChampionInitialStatsSend implements TLVEncodable {
     Float skillCooldown;
     Integer initGold;
 
-    Map<String, Integer> allInitHPs;
 
-
-    public ChampionInitialStatsSend(Champion champion, Integer initGold, Map<String, Integer> allInitHPs) {
+    public ChampionInitialStatsSend(Champion champion, Integer initGold) {
         this.defense = champion.getDefense();
         this.attack = champion.getDamage();
         this.moveSpeed = champion.getMoveSpeed();
@@ -44,7 +42,6 @@ public class ChampionInitialStatsSend implements TLVEncodable {
         this.resourceClaimingSpeed = champion.getResourceClaimingSpeed();
         this.skillCooldown = champion.getCooldown();
         this.initGold = initGold;
-        this.allInitHPs = allInitHPs;
     }
 
 
@@ -68,12 +65,6 @@ public class ChampionInitialStatsSend implements TLVEncodable {
             dos.writeFloat(resourceClaimingSpeed);
             dos.writeFloat(skillCooldown);
             dos.writeInt(initGold);
-            
-            dos.writeShort((short) allInitHPs.size());
-            for (Map.Entry<String, Integer> entry : allInitHPs.entrySet()) {
-                dos.writeUTF(entry.getKey());
-                dos.writeInt(entry.getValue());
-            }
 
 
             return baos.toByteArray();
