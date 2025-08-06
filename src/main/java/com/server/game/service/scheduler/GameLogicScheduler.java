@@ -13,7 +13,6 @@ import com.server.game.service.castSkill.CastSkillService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.goldGeneration.GoldGenerationService;
 import com.server.game.service.move.MoveService2;
-import com.server.game.service.troop.TroopManager;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
@@ -29,7 +28,6 @@ public class GameLogicScheduler {
 
     MoveService2 moveService;
     AttackService attackService;
-    TroopManager troopManager;
     CastSkillService castSkillService;
     GoldGenerationService goldGenerationService;
     GameStateService gameStateService;
@@ -48,7 +46,9 @@ public class GameLogicScheduler {
 
 
                 // troopManager.updateTroopMovements(gameState.getGameId(), 0.05f);
-                
+                // Set new positions for all troops
+                //troopManager.updateTroopMovements(gameState.getGameId(), 0.05f);
+
                 // Process attack targeting and continuous combat
                 attackService.processAttacks(gameState);
 

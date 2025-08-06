@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.server.game.model.game.GameState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.service.gameState.GameCoordinator;
-import com.server.game.service.troop.TroopManager;
 
 
 import io.netty.channel.Channel;
@@ -27,9 +26,6 @@ public class GameCleanupScheduler {
     
     @Autowired
     private GameCoordinator gameCoordinator;
-
-    @Autowired
-    private TroopManager troopManager;
     
     // Track when games first become empty (no channels)
     private final Map<GameState, Long> emptyGameTimestamps = new ConcurrentHashMap<>();

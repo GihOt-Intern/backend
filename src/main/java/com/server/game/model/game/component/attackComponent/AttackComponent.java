@@ -93,14 +93,14 @@ public class AttackComponent {
                 ", Target position: " + ctx.getTarget().getCurrentPosition() + 
                 ", Attack range: " + this.attackRange);
 
-            // Vector2 ownerPosition = this.owner.getCurrentPosition();
-            // Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
+            Vector2 ownerPosition = this.owner.getCurrentPosition();
+            Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
             
-            // Vector2 direction = targetPosition.subtract(ownerPosition).normalize();
-            // Vector2 newPosition = ownerPosition.add(direction.multiply(this.attackRange));
+            Vector2 direction = targetPosition.subtract(ownerPosition).normalize();
+            Vector2 newPosition = ownerPosition.add(direction.multiply(this.attackRange));
 
-            // moveService.setMove(this.owner, newPosition, false);
-            moveService.setMove(this.owner, ctx.getTarget().getCurrentPosition(), false);
+            moveService.setMove(this.owner, newPosition, false);
+            // moveService.setMove(this.owner, ctx.getTarget().getCurrentPosition(), false);
             return false;
         }
 

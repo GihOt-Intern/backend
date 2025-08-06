@@ -5,6 +5,7 @@ import com.server.game.resource.model.SlotInfo;
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
+import com.server.game.factory.TroopFactory;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.TroopInstance2;
@@ -12,9 +13,8 @@ import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.troop.TroopSpawnReceive;
 import com.server.game.netty.sendObject.troop.TroopSpawnSend;
-import com.server.game.service.troop.TroopManager;
 import com.server.game.service.gameState.GameCoordinator;
-import com.server.game.service.move.MoveService;
+import com.server.game.service.move.MoveService2;
 import com.server.game.util.TroopEnum;
 
 import io.netty.channel.Channel;
@@ -32,9 +32,9 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TroopMessageHandler {
-    TroopManager troopManager;
+    TroopFactory troopFactory;
     GameCoordinator gameCoordinator;
-    MoveService moveService;
+    MoveService2 moveService;
 
     /**
      * xử lý việc người chơi spawn quân đội
@@ -76,7 +76,7 @@ public class TroopMessageHandler {
             return;
         }
 
-        TroopInstance2 troopInstance = troopManager.createTroop(
+        TroopInstance2 troopInstance = troopFactory.createTroop(
             gameId,
             request.getOwnerSlot(),
             troopType,

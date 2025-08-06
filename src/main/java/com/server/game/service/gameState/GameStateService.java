@@ -27,6 +27,7 @@ import com.server.game.netty.messageHandler.AnimationMessageHandler;
 import com.server.game.netty.messageHandler.GameStateMessageHandler;
 import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
 import com.server.game.netty.sendObject.respawn.ChampionDeathSend;
+import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnTimeSend;
 import com.server.game.util.Util;
 import com.server.game.model.game.Entity;
@@ -72,6 +73,18 @@ public class GameStateService {
         log.debug("Added entity {} to game state {}", entity.getStringId(), gameState.getGameId());
     }
     
+    /** 
+     * Remove an entity from the game state
+     */
+    public void removeEntity(GameState gameState, Entity entity) {
+        if (entity == null || entity.getStringId() == null) {
+            log.warn("Invalid entity or stringId for gameId: {}", gameState.getGameId());
+            return;
+        }
+
+        gameState.removeEntity(entity);
+    }
+    
 
     public Entity getEntityByStringId(String gameId, String entityId) {
         GameState gameState = gameCoordinator.getGameState(gameId);
@@ -111,8 +124,6 @@ public class GameStateService {
         return champion.getStringId();
     }
     
-
-    
     /**
      * Update champion health
      */
@@ -132,81 +143,7 @@ public class GameStateService {
                 gameState.getGameId(), slot, oldHP, newCurrentHP);
         return true;
     }
-    
-    /**
-     * Apply damage to a player
-     */
-    public boolean applyDamage(String gameId, short slot, int damage) {
-        GameState gameState = this.getGameStateById(gameId);
-        if (gameState == null) {
-            log.warn("Game state not found for gameId: {}", gameId);
-            return false;
-        }
 
-        boolean success = this.applyDamage(gameState, slot, damage);
-
-        if (success) {
-            // Check if champion died and handle death/respawn logic
-            boolean championDied = checkAndHandleChampionDeath(gameId, slot);
-            if (championDied) {
-                // Don't send health update if champion died - death message already sent
-                // Note: Attack target clearing will be handled by the PvPService when it detects death
-                return true; // Return early to prevent health update broadcast
-            }
-        }
-        
-        return success;
-    }
-    
-    private boolean applyDamage(GameState gameState, short slot, int damage) {
-        Champion champion = gameState.getChampionBySlot(slot);
-        if (champion == null) {
-            log.warn("Champion not found for gameId: {}, slot: {}", gameState.getGameId(), slot);
-            return false;
-        }
-
-        int oldHP = champion.getCurrentHP();
-        champion.takeDamage(damage);
-        int newHP = champion.getCurrentHP();
-        
-        log.info("Applied {} damage to gameId: {}, slot: {} - HP: {} -> {}", 
-                damage, gameState.getGameId(), slot, oldHP, newHP);
-
-        if (!champion.isAlive()) {
-            log.info("Champion in gameId: {}, slot: {} has died", gameState.getGameId(), slot);
-        }
-        
-        return true;
-    }
-    
-    /**
-     * Heal a champion
-     */
-    public boolean healPlayer(String gameId, short slot, int healAmount) {
-        GameState gameState = this.getGameStateById(gameId);
-        if (gameState == null) {
-            log.warn("Game state not found for gameId: {}", gameId);
-            return false;
-        }
-        
-        return this.healChampion(gameState, slot, healAmount);
-    }
-    private boolean healChampion(GameState gameState, short slot, int healAmount) {
-        Champion champion = gameState.getChampionBySlot(slot);
-
-        if (champion == null) {
-            log.warn("Champion not found for gameId: {}, slot: {}", gameState.getGameId(), slot);
-            return false;
-        }
-        
-        int oldHP = champion.getCurrentHP();
-        champion.setCurrentHP(oldHP + healAmount);
-        int newHP = champion.getCurrentHP();
-
-        log.info("Healed champion in gameId: {}, slot: {} for {} HP - HP: {} -> {}", 
-                gameState.getGameId(), slot, healAmount, oldHP, newHP);
-        return true;
-    }
     /**
      * Check if a champion has died after taking damage and handle death/respawn logic
      * @return true if champion died, false otherwise
@@ -289,52 +226,41 @@ public class GameStateService {
      * Respawn a champion after death
      */
     private void respawnChampion(String gameId, short slot) {
-        // GameState gameState = this.getGameStateById(gameId);
-        // if (gameState == null) {
-        //     log.warn("Cannot respawn champion, game state is null for gameId {}", gameId);
-        //     return;
-        // }
+        GameState gameState = this.getGameStateById(gameId);
+        if (gameState == null) {
+            log.warn("Cannot respawn champion, game state is null for gameId {}", gameId);
+            return;
+        }
 
-        // SlotState slotState = gameState.getSlotState(slot);
-        // if (slotState == null) {
-        //     log.warn("Cannot respawn champion, slot state is null for gameId {}", gameId);
-        //     return;
-        // }
+        SlotState slotState = gameState.getSlotState(slot);
+        if (slotState == null) {
+            log.warn("Cannot respawn champion, slot state is null for gameId {}", gameId);
+            return;
+        }
 
-        // Vector2 initialPosition = gameState.getSpawnPosition(slot);
-        // Champion champion = gameState.getChampionBySlot(slot);
-        // int maxHealth = champion.getMaxHP();
-        // float rotateAngle = gameState.getSpawnRotate(slot);
+        Vector2 initialPosition = gameState.getSpawnPosition(slot);
+        Champion champion = gameState.getChampionBySlot(slot);
+        int maxHealth = champion.getMaxHP();
+        float rotateAngle = gameState.getSpawnRotate(slotState);
 
-        // // Reset the state
-        // slotState.setChampionRevive();
-        // slotState.setCurrentHP(maxHealth);
+        // Reset the state
+        slotState.setChampionRevive();
+        slotState.setCurrentHP(maxHealth);
 
-        // gameCoordinator.updatePosition(gameId, slot, initialPosition, slot, maxHealth);
+        // TODO: reset position state
 
-        // log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
 
-        // //Send message
-        // ChampionRespawnSend respawnSend = new ChampionRespawnSend(slot, initialPosition, rotateAngle, maxHealth);
-        // Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
-        // if (channel != null) {
-        //     channel.writeAndFlush(respawnSend);
-        // }
+        log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
+
+        //Send message
+        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slot, initialPosition, rotateAngle, maxHealth);
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null) {
+            channel.writeAndFlush(respawnSend);
+        }
 
         // TODO
     }
-    
-    /**
-     * Get player's current health percentage
-     */
-    public float getPlayerHealthPercentage(GameState gameState, short slot) {
-        Champion champion = gameState.getChampionBySlot(slot);
-        if (champion == null) {
-            return 0.0f;
-        }
-        return (float) champion.getCurrentHP() / champion.getMaxHP();
-    }
-
 
     public boolean updateSlotGold(GameState gameState, short slot, int newGold) {
         gameState.setGold(slot, newGold);

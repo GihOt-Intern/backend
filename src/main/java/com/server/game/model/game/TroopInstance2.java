@@ -124,7 +124,7 @@ public class TroopInstance2 extends Entity {
     }
 
     @Override
-    protected void afterUpdatePosition(Vector2 newPosition) {
-        super.afterUpdatePosition(newPosition);
+    public void afterUpdatePosition() {
+        super.afterUpdatePosition();
     }
 }

@@ -73,6 +73,26 @@ public class GameState {
         entity2Grid.put(entity, gridCell);
     }
 
+    public void removeEntity(Entity entity) {
+        if (entity == null || entity.getStringId() == null) {
+            System.err.println(">>> [Log in GameState.removeEntity] Invalid entity or stringId");
+            return;
+        }
+
+        stringId2Entity.remove(entity.getStringId());
+        GridCell gridCell = entity2Grid.remove(entity);
+        if (gridCell != null) {
+            Set<Entity> entitiesAtCell = grid2Entity.get(gridCell);
+            if (entitiesAtCell != null) {
+                entitiesAtCell.remove(entity);
+                if (entitiesAtCell.isEmpty()) {
+                    grid2Entity.remove(gridCell);
+                }
+            }
+        }
+        entity2Grid.remove(entity);
+    }
+
     public Set<Entity> getEntities() {
         return stringId2Entity.values()
             .stream()
