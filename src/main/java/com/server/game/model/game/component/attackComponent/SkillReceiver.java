@@ -4,13 +4,11 @@ import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.context.CastSkillContext;
-import com.server.game.model.map.component.Vector2;
 
 public abstract class SkillReceiver extends Entity {
 
-    public SkillReceiver(String id, SlotState ownerSlot, GameState gameState,
-        Vector2 position, float moveSpeed) {
-        super(id, ownerSlot, gameState, position, moveSpeed);
+    public SkillReceiver(String id, SlotState ownerSlot, GameState gameState) {
+        super(id, ownerSlot, gameState);
     }
 
     public abstract void receiveSkillDamage(CastSkillContext ctx);

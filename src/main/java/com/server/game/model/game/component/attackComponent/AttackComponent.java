@@ -1,6 +1,8 @@
 package com.server.game.model.game.component.attackComponent;
 
 
+import org.springframework.lang.Nullable;
+
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.attackStrategy.AttackStrategy;
 import com.server.game.model.game.context.AttackContext;
@@ -23,6 +25,7 @@ public class AttackComponent {
 
     private final AttackStrategy strategy;
 
+    @Nullable
     private final MoveService2 moveService;
 
 
