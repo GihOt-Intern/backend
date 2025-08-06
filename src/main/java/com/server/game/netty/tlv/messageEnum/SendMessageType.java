@@ -13,6 +13,7 @@ public enum SendMessageType {
     AUTHENTICATION_SEND((short) 2),
     MESSAGE_SEND((short) 4),
     CURRENT_LOBBY_STATE_SEND((short) -2),
+    PONG_SEND((short) -4),
     CHOOSE_CHAMPION_SEND((short) 7),
     INFO_PLAYERS_IN_ROOM_SEND((short) 5),
     PLAYER_READY_SEND((short) 9),
@@ -24,8 +25,11 @@ public enum SendMessageType {
     IS_IN_PLAYGROUND_SEND((short) 22),
     GOLD_AMOUNT_SEND((short) 23),
 
-    ATTACK_ANIMATION_DISPLAY_SEND((short) 104),
+    CAST_SKILL_SEND((short) 25),
+
+    ATTACK_ANIMATION_SEND((short) 104),
     HEALTH_UPDATE_SEND((short) 105),
+    
     CHAMPION_DEATH_SEND((short) 106),
     CHAMPION_RESPAWN_TIME_SEND((short) 107),
     CHAMPION_RESPAWN_SEND((short) 108),
@@ -34,7 +38,6 @@ public enum SendMessageType {
     TROOP_DEATH_SEND((short) 202), // Troop death message
 
     HEARTBEAT_SEND((short) 255), // Heartbeat message
-    DISTANCE_SEND((short) 998),
 
     TEST_GAME_START_RESPONSE((short) 2026),
     ;

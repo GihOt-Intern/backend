@@ -4,16 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.server.game.resource.model.GameMap;
-import com.server.game.resource.model.SlotInfo;
 import com.server.game.resource.repository.GameMapRepository;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.sendObject.initialGameState.InitialPositionsSend.InitialPositionData;
 
 import lombok.AccessLevel;
 
@@ -33,25 +29,6 @@ public class GameMapService {
         });
     }
 
-    public List<InitialPositionData> getInitialPositionsData(short gameMapId) {
-
-        GameMap gameMap = getGameMapById(gameMapId);
-        if (gameMap == null) {
-            return List.of();
-        }   
-
-        List<SlotInfo> slotInfos = gameMap.getSlotInfos();
-        try {
-            return slotInfos.stream() // Toi yeu phân sân nồ brồ gram ming
-                .map(slotInfo -> {
-                    return new InitialPositionData(slotInfo);
-                })
-                .collect(Collectors.toList());
-       } catch (Exception e) {
-            System.out.println(">>> [Log in GameMapService.getInitialPositionsData] Error with phân sân nồ brồ gram ming: " + e.getMessage());
-            return List.of();
-        }
-    }
 
     public Vector2 getSpawnPosition(Short gameMapId, short slot) {
         GameMap gameMap = getGameMapById(gameMapId);

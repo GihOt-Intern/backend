@@ -1,6 +1,7 @@
 package com.server.game.netty.receiveObject;
 
-import java.nio.ByteBuffer;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 
 import org.springframework.stereotype.Component;
 
@@ -24,17 +25,16 @@ public class AuthenticationReceive implements TLVDecodable {
     String gameId;
 
     @Override
-    public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
-        int tokenByteLength = buffer.getInt();
-        byte[] tokenBytes = new byte[tokenByteLength];
-        buffer.get(tokenBytes);
-        this.token = Util.bytesToString(tokenBytes);
+    public void decode(byte[] value) {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(value);
+            DataInputStream dis = new DataInputStream(bais);
 
-        int gameIdByteLength = buffer.getInt();
-        byte[] gameIdBytes = new byte[gameIdByteLength];
-        buffer.get(gameIdBytes);
-        this.gameId = Util.bytesToString(gameIdBytes);
+            this.token = Util.readString(dis, Integer.class);
+            this.gameId = Util.readString(dis, Integer.class);
 
-        System.out.println(">>> Server Decoded Token: " + this.token + ", Game ID: " + this.gameId);
+        } catch (Exception e) {
+            throw new  RuntimeException("Cannot decode " + this.getClass().getSimpleName(), e);
+        }
     }
 }

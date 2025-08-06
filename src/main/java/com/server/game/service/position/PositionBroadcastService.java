@@ -1,118 +1,105 @@
 package com.server.game.service.position;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.PositionSend;
 import com.server.game.service.move.MoveService;
 import com.server.game.service.move.MoveService.PositionData;
+import com.server.game.model.game.Entity;
+
 
 import io.netty.channel.Channel;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+@Deprecated
+@SuppressWarnings("unused")
 @Service
 @Slf4j
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PositionBroadcastService {
     
-    @Autowired
-    private PositionService positionService;
-
-    @Autowired
-    private MoveService moveService;
+    PositionService positionService;
+    MoveService moveService;
     
     /**
      * Hủy đăng ký game - được gọi từ GameScheduler
      */
-    public void unregisterGame(String gameId) {
-        positionService.clearGamePositions(gameId);
-        moveService.clearMoveTargets(gameId);
-        ChannelManager.clearGameSlotMappings(gameId);
-        log.info("Unregistered game from position broadcasting: {}", gameId);
+    public void unregisterGame(GameState gameState) {
+        positionService.clearPendingPositionsOf(gameState);
+        moveService.clearGameMoveTargets(gameState);
+        ChannelManager.clearGameSlotMappings(gameState.getGameId());
+        log.info("Unregistered game from position broadcasting: {}", gameState.getGameId());
     }
     
     /**
      * Broadcast vị trí cho một game cụ thể - được gọi từ GameScheduler
      */
-    public void broadcastGamePositions(String gameId) {
-        // Lấy pending positions (vị trí mới từ client)
-        Map<Short, PositionData> pendingPositions = positionService.getPendingPositions(gameId);
-        
-        if (pendingPositions.isEmpty()) {
-            return; // Không có vị trí mới để broadcast
-        }
-        
-        // Lấy vị trí cũ từ main cache
-        Map<Short, PositionData> oldPositions = positionService.getGamePositions(gameId);
-        
-        // Tạo danh sách player data chỉ cho những player đã thay đổi vị trí
-        List<PositionSend.PlayerPositionData> playerDataList = new ArrayList<>();
-        
-        for (Map.Entry<Short, PositionData> entry : pendingPositions.entrySet()) {
-            short playerSlot = entry.getKey();
-            PositionData newPosition = entry.getValue();
-            PositionData oldPosition = oldPositions.get(playerSlot);
-            
-            // Kiểm tra xem player này có thay đổi vị trí không
-            if (hasPositionChanged(oldPosition, newPosition)) {
-                playerDataList.add(new PositionSend.PlayerPositionData(
-                    playerSlot,
-                    newPosition.getPosition(),
-                    newPosition.getSpeed()
-                ));
-            }
-        }
-        
-        // Nếu có player thay đổi vị trí, broadcast
-        if (!playerDataList.isEmpty()) {
-            // Tạo message để broadcast
-            long currentTime = System.currentTimeMillis();
-            PositionSend positionSend = new PositionSend(playerDataList, currentTime);
-            log.debug("Broadcasting positions for game {}: {}", gameId, positionSend);
+    public void broadcastGamePositions(GameState gameState) {
 
-            Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
-            if (channel != null) {
-                channel.writeAndFlush(positionSend); // sendTarget of positionSend message is AMatchTarget
-            } else {
-                // Không có player nào trong game, không cần broadcast, xoá game khỏi activeGames
-                unregisterGame(gameId);
-            }
+
+        Map<Entity, PositionData> gameStatePendingPositions = 
+            positionService.deepCopyPendingPositionsOf(gameState);
+
+        // Filter entities having changed position
+        gameStatePendingPositions.entrySet().removeIf(entry -> {
+            Entity entity = entry.getKey();
             
-            // Cập nhật main cache với vị trí mới
-            for (Map.Entry<Short, PositionData> entry : pendingPositions.entrySet()) {
-                short playerSlot = entry.getKey();
-                PositionData position = entry.getValue();
-                positionService.updatePosition(gameId, playerSlot, 
-                    position.getPosition(), position.getSpeed(), position.getTimestamp());
-            }
-            
-            // Xóa pending positions sau khi đã broadcast
-            positionService.clearPendingPositions(gameId);
+            Vector2 oldPosition = entity.getCurrentPosition();
+            Vector2 newPosition = entry.getValue().getPosition();
+            return !hasPositionChanged(oldPosition, newPosition);
+        });
+
+        if (gameStatePendingPositions.isEmpty()) {
+            return; // Không có vị trí nào thay đổi
         }
+
+        // Tạo message để broadcast
+        long currentTime = System.currentTimeMillis();
+        PositionSend positionSend =  null;
+        // new PositionSend(gameStatePendingPositions, currentTime);
+        
+        String gameId = gameState.getGameId();
+        log.debug("Broadcasting positions for game {}: {}", gameId, positionSend);
+
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null) {
+            channel.writeAndFlush(positionSend); // sendTarget of positionSend message is AMatchTarget
+        } else {
+            // Không có player nào trong game, không cần broadcast, xoá game khỏi activeGames
+            this.unregisterGame(gameState);
+        }
+        
+        // Update new positions for entities
+        for (Map.Entry<Entity, PositionData> entry : gameStatePendingPositions.entrySet()) {
+            Entity entity = entry.getKey();
+            Vector2 newPosition = entry.getValue().getPosition();
+            entity.updatePosition(newPosition);
+        }
+        
+        // Xóa pending positions sau khi đã broadcast
+        positionService.clearPendingPositionsOf(gameState);
     }
     
     /**
      * Kiểm tra xem player có thay đổi vị trí so với lần cập nhật trước không
      */
-    private boolean hasPositionChanged(PositionData oldPosition, PositionData newPosition) {
+    private boolean hasPositionChanged(Vector2 oldPosition, Vector2 newPosition) {
         if (oldPosition == null) {
             return true; // Lần đầu, coi như thay đổi
         }
         
-        
         // So sánh vị trí với ngưỡng thay đổi nhỏ
         float threshold = 0.005f; // Ngưỡng thay đổi tối thiểu
-        
-        
-        Vector2 oldPos = oldPosition.getPosition();
-        Vector2 newPos = newPosition.getPosition();
-        Vector2 delta = newPos.subtract(oldPos);
-        float dPos = delta.length();
-        return dPos > threshold;
+
+        return oldPosition.distance(newPosition) > threshold;
     }
 } 

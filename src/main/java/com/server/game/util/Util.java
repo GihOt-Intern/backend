@@ -1,5 +1,6 @@
 package com.server.game.util;
 
+import java.io.DataInputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -25,6 +26,17 @@ public class Util {
     private static final String STRING_ENCODING = "UTF-8";
 
     private static Integer gameTickIntervalMs;
+
+    public static final int[][] EIGHT_DIRECTIONS = {
+        {-1, 0},  // up
+        {1, 0},   // down
+        {0, -1},  // left
+        {0, 1},   // right
+        {-1, -1}, // diagonal up left
+        {-1, 1},  // diagonal up right
+        {1, -1},  // diagonal down left
+        {1, 1}    // diagonal down right
+    };
 
     public static void printHex(ByteBuffer buffer, boolean isFromBeginning) {
         ByteBuffer readOnly = buffer.asReadOnlyBuffer();
@@ -119,5 +131,12 @@ public class Util {
         }
 
         return array;
+    }
+
+    public static String readString(DataInputStream dis, Class<?> lengthType) throws Exception {
+        int lengthByte = lengthType == Short.class ? dis.readShort() : dis.readInt();
+        byte[] bytes = new byte[lengthByte];
+        dis.readFully(bytes);
+        return Util.bytesToString(bytes);
     }
 }

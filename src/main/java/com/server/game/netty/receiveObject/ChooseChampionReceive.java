@@ -1,6 +1,7 @@
 package com.server.game.netty.receiveObject;
 
-import java.nio.ByteBuffer;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 
 import org.springframework.stereotype.Component;
 
@@ -22,9 +23,16 @@ import lombok.experimental.FieldDefaults;
 public class ChooseChampionReceive implements TLVDecodable {
     ChampionEnum championEnum;
 
-    @Override // must override this method of TLVDecodable interface
-    public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
-        short championId = buffer.getShort();
-        this.championEnum = ChampionEnum.fromShort(championId);
+    @Override
+    public void decode(byte[] value) {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(value);
+            DataInputStream dis = new DataInputStream(bais);
+
+            this.championEnum = ChampionEnum.fromShort(dis.readShort());
+
+        } catch (Exception e) {
+            throw new  RuntimeException("Cannot decode " + this.getClass().getSimpleName(), e);
+        }
     }
 }

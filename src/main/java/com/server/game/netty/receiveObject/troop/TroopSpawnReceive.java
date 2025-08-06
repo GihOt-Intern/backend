@@ -1,6 +1,7 @@
 package com.server.game.netty.receiveObject.troop;
 
-import java.nio.ByteBuffer;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 
 import org.springframework.stereotype.Component;
 
@@ -21,12 +22,20 @@ import lombok.experimental.FieldDefaults;
 public class TroopSpawnReceive implements TLVDecodable {
     short troopId;
     short ownerSlot;
+    boolean isAttack;
     long timestamp;
 
     @Override
-    public void decode(ByteBuffer buffer) {
-        this.troopId = buffer.getShort();
-        this.ownerSlot = buffer.getShort();
-        this.timestamp = buffer.getLong();
+    public void decode(byte[] value) {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(value);
+            DataInputStream dis = new DataInputStream(bais);
+            this.troopId = dis.readShort();
+            this.ownerSlot = dis.readShort();
+            this.isAttack = dis.readBoolean();
+            this.timestamp = dis.readLong();
+        } catch (Exception e) {
+            throw new  RuntimeException("Cannot decode " + this.getClass().getSimpleName(), e);
+        }
     }
 }

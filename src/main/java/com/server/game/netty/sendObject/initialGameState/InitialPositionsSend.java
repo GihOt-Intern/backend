@@ -8,12 +8,16 @@ import java.util.stream.Collectors;
 
 import io.netty.channel.Channel;
 
+import com.server.game.model.game.Champion;
+import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.Vector2;
+import com.server.game.netty.ChannelManager;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.messageEnum.SendMessageType;
 import com.server.game.resource.model.SlotInfo;
+import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -28,10 +32,13 @@ public class InitialPositionsSend implements TLVEncodable {
     List<InitialPositionData> championPositionsData;
 
     
-    public InitialPositionsSend(short mapId, List<SlotInfo> slotInfos) {
-        this.mapId = mapId;
+    public InitialPositionsSend(GameState gameState) {
+        this.mapId = gameState.getGameMapId();
+        List<SlotInfo> slotInfos = gameState.getSlotInfos();
         this.championPositionsData = slotInfos.stream()
-            .map(slotInfo -> new InitialPositionData(slotInfo))
+            .map(slotInfo -> new InitialPositionData(slotInfo, 
+                gameState.getChampionBySlot(slotInfo.getSlot()),
+                ChannelManager.getUsernameBySlot(gameState.getGameId(), slotInfo.getSlot())))
             .collect(Collectors.toList());
     }
 
@@ -79,13 +86,22 @@ public class InitialPositionsSend implements TLVEncodable {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public static class InitialPositionData {
         short slot;
+        String championStringId;
+        ChampionEnum championEnum; 
+        String username;
         Vector2 position;
         float rotate;
+        int maxHP;
 
-        public InitialPositionData(SlotInfo slotInfo) {
+        public InitialPositionData(SlotInfo slotInfo, Champion champion,
+            String username) {
             this.slot = slotInfo.getSlot();
+            this.championEnum = champion.getChampionEnum();
+            this.championStringId = champion.getStringId();
+            this.username = username;
             this.position = slotInfo.getSpawn().getPosition();
             this.rotate = slotInfo.getSpawn().getRotate();
+            this.maxHP = champion.getMaxHP();
         }
 
         
@@ -95,9 +111,15 @@ public class InitialPositionsSend implements TLVEncodable {
                 DataOutputStream dos = new DataOutputStream(baos);
 
                 dos.writeShort(slot);
+                dos.writeUTF(championStringId); // This method already add first two bytes for length
+                dos.writeShort(championEnum.getChampionId());
+                dos.writeUTF(username); // This method already add first two bytes for length
                 dos.writeFloat((float) position.x());
                 dos.writeFloat((float) position.y());
                 dos.writeFloat(rotate);
+                dos.writeInt(maxHP);
+
+                System.out.println(">>> [Log in InitialPositionData.encode] Champion " + championStringId + " position: " + position + ", rotate: " + rotate);
 
                 return baos.toByteArray();
 

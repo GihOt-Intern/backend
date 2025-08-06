@@ -2,17 +2,19 @@ package com.server.game.model.map.shape;
 
 import com.server.game.model.map.component.Vector2;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@AllArgsConstructor
 @Getter
-public class CircleShape implements CollisionShape {
+public class CircleShape extends Shape {
     private float radius;
 
+    public CircleShape(Vector2 center, float radius) {
+        super(center);
+        this.radius = radius;
+    }
 
     @Override
-    public boolean intersects(Vector2 thisPos, CollisionShape other, Vector2 otherPos) {
+    public boolean intersects(Vector2 thisPos, Shape other, Vector2 otherPos) {
         if (other instanceof CircleShape circle) {
             float distance = thisPos.distanceTo(otherPos);
             return distance <= (this.radius + circle.radius);
@@ -22,8 +24,8 @@ public class CircleShape implements CollisionShape {
     }
 
     @Override
-    public boolean contains(Vector2 thisPos, Vector2 point) {
-        return thisPos.distanceTo(point) <= radius;
+    public boolean contains(Vector2 point) {
+        return center.distanceTo(point) <= radius;
     }
 
     @Override
