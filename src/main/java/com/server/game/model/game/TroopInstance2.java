@@ -3,8 +3,10 @@ package com.server.game.model.game;
 import com.server.game.model.game.attackStrategy.TroopAttackStrategy;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
+import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.attributeComponent.TroopAttributeComponent;
 import com.server.game.model.game.context.AttackContext;
+import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.TroopDB;
 import com.server.game.service.move.MoveService2;
@@ -23,7 +25,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TroopInstance2 extends Entity {
+public class TroopInstance2 extends SkillReceiver {
 
     // This field below is inherited from Entity
     // private final String stringId; 
@@ -126,5 +128,10 @@ public class TroopInstance2 extends Entity {
     @Override
     public void afterUpdatePosition() {
         super.afterUpdatePosition();
+    }
+
+    @Override
+    public void receiveSkillDamage(CastSkillContext ctx) {
+        // TODO: Implement skill damage logic
     }
 }

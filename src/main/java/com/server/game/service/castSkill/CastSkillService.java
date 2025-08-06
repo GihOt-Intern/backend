@@ -24,7 +24,7 @@ public class CastSkillService {
     public void setCastSkill(CastSkillContext ctx) {
         Champion caster = ctx.getCaster();
         
-        caster.setCastSkillContext(ctx);
+        caster.useSkill(ctx);
 
         log.debug("Set cast skill context for entity {}: {}", caster.getStringId(), ctx);
     }
@@ -43,10 +43,10 @@ public class CastSkillService {
         caster.updateCastSkill();
     }
 
-    public void clearGameCastSkillContexts(GameState gameState) {
-        Set<Champion> champions = new HashSet<>(gameState.getChampions());
-        for (Champion caster : champions) {
-            caster.setCastSkillContext(null);
-        }
-    }
+    // public void clearGameCastSkillContexts(GameState gameState) {
+    //     Set<Champion> champions = new HashSet<>(gameState.getChampions());
+    //     for (Champion caster : champions) {
+    //         caster.setCastSkillContext(null);
+    //     }
+    // }
 }

@@ -8,6 +8,7 @@ import org.springframework.lang.Nullable;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
+import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.map.component.Vector2;
 
 import jakarta.validation.constraints.NotNull;
@@ -28,7 +29,7 @@ public class CastSkillContext {
     @NotNull
     private long timestamp; 
     @Nullable
-    private Entity target = null; // Can be null if the skill does not target an entity
+    private SkillReceiver target = null; // Can be null if the skill does not target an entity
     @NotNull
     private Float skillLength = 0.0f; // Length of the skill cast, can be 0 if not applicable
 
@@ -43,7 +44,7 @@ public class CastSkillContext {
     }
     
     public CastSkillContext(
-        GameState gameState, Champion caster, Entity target, Vector2 targetPoint, long timestamp) {
+        GameState gameState, Champion caster, SkillReceiver target, Vector2 targetPoint, long timestamp) {
         this.gameState = gameState;
         this.caster = caster;
         this.target = target;
@@ -51,7 +52,6 @@ public class CastSkillContext {
         this.timestamp = timestamp;
     }
 
-    @SuppressWarnings("null")
     public void addExtraData(Object key, Object value) {
         if (extraData == null) {
             extraData = new HashMap<>();
@@ -59,22 +59,22 @@ public class CastSkillContext {
         extraData.put(key, value);
     }
 
-    public void addCasterDamage(Float damage) {
+    public void addSkillDamage(Float damage) {
         if (damage == null) {
             throw new IllegalArgumentException("Damage must not be null");
         }
-        this.addExtraData("casterDamage", damage);
+        this.addExtraData("skillDamage", damage);
     }
 
-    public Float getCasterDamage() {
-        Object value = extraData.get("casterDamage");
+    public Float getSkillDamage() {
+        Object value = extraData.get("skillDamage");
         if (value == null) {
-            throw new IllegalArgumentException("Caster damage is not set in CastSkillContext");
+            throw new IllegalArgumentException("Skill damage is not set in CastSkillContext");
         }
         if (value instanceof Float float_val) {
             return float_val;
         }
-        throw new IllegalArgumentException("Caster damage is not set in CastSkillContext or is not a Float");
+        throw new IllegalArgumentException("Skill damage is not set in CastSkillContext or is not a Float");
     }
 
     public void addActualDamage(Integer actualDamage) {

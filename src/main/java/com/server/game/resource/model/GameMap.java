@@ -26,6 +26,8 @@ public class GameMap {
     String name;
     Integer initialGoldEachSlot;
     Integer goldGeneratedPerSecond;
+    Integer towerHP;
+    Integer burgHP;
     PlayGround playGround;
     List<SlotInfo> slotInfos;
 
@@ -38,6 +40,8 @@ public class GameMap {
         @JsonProperty("map_name") String name,
         @JsonProperty("initial_gold_each_slot") int initialGoldEachSlot,
         @JsonProperty("gold_generated_per_second") int goldGeneratedPerSecond,
+        @JsonProperty("tower_hp") Integer towerHP,
+        @JsonProperty("burg_hp") Integer burgHP,
         @JsonProperty("play_ground") PlayGround playGround,
         @JsonProperty("slot_info") List<SlotInfo> slotInfos
     ) {
@@ -45,6 +49,9 @@ public class GameMap {
         this.name = name;
         this.initialGoldEachSlot = initialGoldEachSlot;
         this.goldGeneratedPerSecond = goldGeneratedPerSecond;
+        this.towerHP = towerHP;
+        this.burgHP = burgHP;
+
         this.playGround = playGround;
         this.slotInfos = slotInfos;
 

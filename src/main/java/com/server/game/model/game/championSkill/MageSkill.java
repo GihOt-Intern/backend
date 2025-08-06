@@ -20,8 +20,9 @@ public class MageSkill extends SkillComponent {
     }
 
     @Override
-    public void update() {
-        // Implement any periodic updates needed for the Mage skill
+    public boolean updatePerTick() {
+        // Implement any periodic updates needed for the Assassin skill
         // For example, if the skill has a duration or needs to check conditions over time
+        return false;
     }
 }

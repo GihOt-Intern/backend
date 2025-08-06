@@ -13,10 +13,7 @@ import java.util.function.Function;
 
 public abstract class AbstractSizedObjectDeserializer<T> extends JsonDeserializer<T> {
 
-    protected T parse(JsonParser p, Function<SizedObject, T> builder) throws IOException {
-        ObjectCodec codec = p.getCodec();
-        JsonNode node = codec.readTree(p);
-
+    protected T parse(JsonNode node, Function<SizedObject, T> builder) throws IOException {
         String id = node.get("id").asText();
         Vector2 position = new Vector2(
                 (float) node.get("position").get("x").asDouble(),
