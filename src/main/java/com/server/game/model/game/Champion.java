@@ -12,7 +12,6 @@ import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
-import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.service.move.MoveService2;
 import com.server.game.util.ChampionEnum;

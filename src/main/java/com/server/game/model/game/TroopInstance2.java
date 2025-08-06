@@ -48,20 +48,6 @@ public class TroopInstance2 extends Entity {
     // private String currentTargetId; // Can be another troop instance ID or player slot as string
     private Entity stickEntity; // Can be another troop instance or champion
 
-    private long lastAIUpdate = 0;
-    private long stateChangeTime = 0;
-    
-    // Special states
-    private boolean isInvisible = false;
-    private long invisibilityEndTime = 0;
-    private boolean isBuffed = false;
-    private long buffEndTime = 0;
-    private float damageMultiplier = 1.0f;
-    private float defenseMultiplier = 1.0f;
-    
-    // Ability cooldown
-    private long lastAbilityUse = 0;
-
 
     public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot, MoveService2 moveService) {
         super("troop_" + UUID.randomUUID().toString(),
@@ -92,9 +78,6 @@ public class TroopInstance2 extends Entity {
         );
 
         this.addAllComponents();
-
-        this.lastAIUpdate = System.currentTimeMillis();
-        this.stateChangeTime = System.currentTimeMillis();
 
         log.debug("Created troop instance {} of type {} for player {} of gameid={}, at position {}",
             stringId, troopEnum, ownerSlot, gameState.getGameId(), this.getCurrentPosition());
