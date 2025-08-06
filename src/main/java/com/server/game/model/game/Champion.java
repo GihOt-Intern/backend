@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.server.game.model.game.attackStrategy.ChampionAttackStrategy;
 import com.server.game.model.game.component.HealthComponent;
+import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
@@ -28,28 +29,28 @@ import lombok.experimental.FieldDefaults;
 @Getter
 public final class Champion extends SkillReceiver {
 
-    ChampionEnum championEnum;
-    String name;
-    String role;
+    final ChampionEnum championEnum;
+    final String name;
+    final String role;
 
     @Delegate
-    ChampionAttributeComponent attributeComponent;
+    final ChampionAttributeComponent attributeComponent;
     @Delegate
-    HealthComponent healthComponent;
+    final HealthComponent healthComponent;
     @Delegate
-    SkillComponent skillComponent;
+    final MovingComponent movingComponent;
     @Delegate
-    AttackComponent attackComponent;
+    final SkillComponent skillComponent;
+    @Delegate
+    final AttackComponent attackComponent;
+
 
 
     public Champion(ChampionDB championDB, SlotState ownerSlot, GameState gameState,
         SkillFactory skillFactory, MoveService2 moveService) {
 
         super("champion_" + UUID.randomUUID().toString(),
-            ownerSlot, gameState,
-            gameState.getSpawnPosition(ownerSlot),
-            championDB.getStats().getMoveSpeed()
-        );
+            ownerSlot, gameState);
 
         this.championEnum = ChampionEnum.fromShort(championDB.getId());
         this.name = championDB.getName();
@@ -57,6 +58,11 @@ public final class Champion extends SkillReceiver {
         this.attributeComponent = new ChampionAttributeComponent(
             championDB.getStats().getDefense(),
             championDB.getStats().getResourceClaimingSpeed()
+        );
+        this.movingComponent = new MovingComponent(
+            this,
+            gameState.getSpawnPosition(ownerSlot),
+            championDB.getStats().getMoveSpeed()
         );
         this.healthComponent = new HealthComponent(
             championDB.getStats().getInitHP()
@@ -80,6 +86,7 @@ public final class Champion extends SkillReceiver {
     @Override
     protected void addAllComponents() {
         this.addComponent(ChampionAttributeComponent.class, attributeComponent);
+        this.addComponent(MovingComponent.class, movingComponent);
         this.addComponent(HealthComponent.class, healthComponent);
         this.addComponent(SkillComponent.class, skillComponent);
         this.addComponent(AttackComponent.class, attackComponent);
@@ -99,8 +106,8 @@ public final class Champion extends SkillReceiver {
         boolean nextInPlayGround = this.checkInPlayGround(
             this.getGameState().getGameMap().getPlayGround());
 
-        System.out.println(">>> [Log in Champion.checkInPlayGround] " + this.stringId + " nextInPlayGround: " +
-            nextInPlayGround + ", current inPlayGround: " + this.isInPlayground());
+        // System.out.println(">>> [Log in Champion.checkInPlayGround] " + this.stringId + " nextInPlayGround: " +
+        //     nextInPlayGround + ", current inPlayGround: " + this.isInPlayground());
 
         if (nextInPlayGround != this.isInPlayground()) {
             this.toggleInPlaygroundFlag(); // Toggle the state

@@ -83,10 +83,11 @@ public abstract class SkillComponent {
         long currentTick = ctx.getCurrentTick();
         if (!this.isReady(currentTick)) return false;
 
+        this.setCastSkillContext(ctx);
+
         // 1. Broadcast skill usage to the game state
         ctx.getGameStateService().sendCastSkillAnimation(ctx);
 
-        this.setCastSkillContext(ctx);
 
         this.doUse();
 

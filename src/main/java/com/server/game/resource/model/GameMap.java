@@ -6,15 +6,19 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.server.game.model.map.component.Vector2;
+import com.server.game.netty.sendObject.initialGameState.InitialPositionsSend.InitialPositionData;
 import com.server.game.resource.deserializer.PlayGroundDeserializer;
+import com.server.game.resource.model.SlotInfo.BurgDB;
+import com.server.game.resource.model.SlotInfo.TowerDB;
 
 import lombok.AccessLevel;
 
@@ -91,6 +95,29 @@ public class GameMap {
     public Float getInitialRotate(short slot) {
         if (slot2SlotInfo.containsKey(slot)) {
             return slot2SlotInfo.get(slot).getInitialRotate();
+        }
+        System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
+        return null;
+    }
+
+    public Set<TowerDB> getTowers(short slot) {
+        if (slot2SlotInfo.containsKey(slot)) {
+            return slot2SlotInfo.get(slot).getTowersDB();
+        }
+        System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
+        return new HashSet<>();
+    }
+
+    public TowerDB getTowerDB(Short slot, String dbId) {
+        return this.slot2SlotInfo.get(slot).getTowersDB().stream()
+            .filter(towerDB -> towerDB.getId().equals(dbId))
+            .findFirst()
+            .orElse(null);
+    }
+
+    public BurgDB getBurgDB(Short slot) {
+        if (slot2SlotInfo.containsKey(slot)) {
+            return slot2SlotInfo.get(slot).getBurgDB();
         }
         System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
         return null;

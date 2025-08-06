@@ -169,6 +169,10 @@ public class GameState {
         return gameMap.getGoldGeneratedPerSecond();
     }
 
+    public Integer getTowersInitHP() {
+        return gameMap.getTowerHP();
+    }
+
     public Vector2 toPosition(GridCell gridCell) {
         Vector2 origin = gameMapGrid.getOrigin();
         float cellSize = gameMapGrid.getCellSize();
@@ -243,5 +247,10 @@ public class GameState {
         return cell != null && 
                cell.r() >= 0 && cell.r() < gameMapGrid.getNRows() &&
                cell.c() >= 0 && cell.c() < gameMapGrid.getNCols();
+    }
+
+
+    public Integer getBurgsInitHP() {
+        return gameMap.getBurgHP();
     }
 }

@@ -9,6 +9,7 @@ import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMap.PlayGround;
 import com.server.game.util.Util;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @Slf4j
 public class MovingComponent {
+    @Getter(AccessLevel.PRIVATE)
     private final Entity owner;
     private Vector2 currentPosition; // WARNING: DO NOT SET THIS DIRECTLY, USE setCurrentPosition() INSTEAD
     private boolean inPlayground;
@@ -48,7 +50,7 @@ public class MovingComponent {
     public boolean setMoveContext(@Nullable MoveContext moveContext) {
         long currentTick = this.owner.getGameState().getCurrentTick();
         if (currentTick - lastAcceptedMoveRequestTick < MIN_UPDATE_INTERVAL_TICK) {
-            log.info(">>> [Log in PositionComponent.setMoveContext] Move request ignored due to rate limiting.");
+            // log.info(">>> [Log in PositionComponent.setMoveContext] Move request ignored due to rate limiting.");
             log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
             return false;
         }
@@ -157,10 +159,10 @@ public class MovingComponent {
             GridCell nextCell = this.moveContext.getPath().peekCurrentCell();
             Vector2 positionAtNextCell = this.moveContext.toPosition(nextCell);
             float distanceToNextCell = this.currentPosition.distance(positionAtNextCell);
-            System.out.println(">>> [Log in MovingComponent.performMove] Current pos: " + this.currentPosition + 
-                ", Needed move distance: " + neededMoveDistance + 
-                ", Distance to next cell: " + distanceToNextCell + ", Cell index: " + moveContext.getPath().getIndex() +
-                ", Path size: " + moveContext.getPath().size());
+            // System.out.println(">>> [Log in MovingComponent.performMove] Current pos: " + this.currentPosition + 
+            //     ", Needed move distance: " + neededMoveDistance + 
+            //     ", Distance to next cell: " + distanceToNextCell + ", Cell index: " + moveContext.getPath().getIndex() +
+            //     ", Path size: " + moveContext.getPath().size());
             if (neededMoveDistance >= distanceToNextCell) {
                 // Move to the next cell
                 this.setCurrentPosition(positionAtNextCell);

@@ -2,6 +2,7 @@ package com.server.game.model.game;
 
 import com.server.game.model.game.attackStrategy.TroopAttackStrategy;
 import com.server.game.model.game.component.HealthComponent;
+import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.attributeComponent.TroopAttributeComponent;
@@ -30,22 +31,22 @@ public class TroopInstance2 extends SkillReceiver {
     // This field below is inherited from Entity
     // private final String stringId; 
 
-    private final TroopEnum troopEnum;
+    final TroopEnum troopEnum;
 
     // Three fields below have been inherited from Entity
     // private final short ownerSlot;
     // private final GameState gameState;
-    // @Delegate
-    // PositionComponent positionComponent;
 
     Vector2 targetPosition;
 
     @Delegate
-    TroopAttributeComponent attributeComponent;
+    final TroopAttributeComponent attributeComponent;
     @Delegate
-    HealthComponent healthComponent;
+    final MovingComponent movingComponent;
     @Delegate
-    AttackComponent attackComponent;
+    final HealthComponent healthComponent;
+    @Delegate
+    final AttackComponent attackComponent;
     
     // private String currentTargetId; // Can be another troop instance ID or player slot as string
     private Entity stickEntity; // Can be another troop instance or champion
@@ -67,9 +68,7 @@ public class TroopInstance2 extends SkillReceiver {
 
     public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot, MoveService2 moveService) {
         super("troop_" + UUID.randomUUID().toString(),
-            ownerSlot, gameState,
-            gameState.getSpawnPosition(ownerSlot),
-            troopDB.getStats().getMoveSpeed());
+            ownerSlot, gameState);
 
         this.troopEnum = TroopEnum.fromShort(troopDB.getId());
 
@@ -79,6 +78,12 @@ public class TroopInstance2 extends SkillReceiver {
             troopDB.getStats().getHealingPower(),
             troopDB.getStats().getHealingRange(),
             troopDB.getStats().getCost()
+        );
+
+        this.movingComponent = new MovingComponent(
+            this,
+            gameState.getSpawnPosition(ownerSlot),
+            troopDB.getStats().getMoveSpeed()
         );
 
         this.healthComponent = new HealthComponent(
