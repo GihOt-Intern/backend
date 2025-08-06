@@ -10,6 +10,7 @@ import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.MoveContext;
+import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 
 import lombok.experimental.Delegate;
@@ -200,6 +201,17 @@ public abstract class Entity implements Attackable {
         return null;
     }
 
+    public GridCell getCurrentGridCell() {
+        if (hasComponent(MovingComponent.class)) {
+            return gameState.toGridCell(this.getCurrentPosition());
+        }
+        if (this instanceof Building building) {
+            return gameState.toGridCell(building.getPosition());
+        }
+        System.out.println("Entity does not have MovingComponent or not a Building, returning null");
+        return null;
+    }
+
     public final float distanceTo(Entity other) {
         return this.getComponent(MovingComponent.class)
             .distanceTo(other.getCurrentPosition());
@@ -220,8 +232,24 @@ public abstract class Entity implements Attackable {
      * it can just call super.afterUpdatePosition().
      */
     public void afterUpdatePosition() {
+
+        log.info("afterUpdatePosition in Entity called for updating grid cell...");
+
         this.getGameStateService()
-            .updateEntityGridCellMapping(this.gameState, this);
+            .addEntityToGridCellMapping(this);
+
+    }
+    
+    /**
+     * MUST be overridden by subclass.
+     * If subclass has nothing to do after updating position,
+     * it can just call super.beforeUpdatePosition().
+     */
+    public void beforeUpdatePosition() {
+        log.info("beforeUpdatePosition in Entity called for updating grid cell...");
+
+        this.getGameStateService()
+            .removeEntityFromGridCellMapping(this);
     }
 
     public boolean performAttack() {
@@ -244,7 +272,7 @@ public abstract class Entity implements Attackable {
     public void setAttackContext(AttackContext ctx) {
         if (hasComponent(AttackComponent.class)) {
             getComponent(AttackComponent.class).setAttackContext(ctx);
-            System.out.println(">>> [Log in Entity.setAttackContext] Attack context set: " + ctx);
+            log.info(">>> [Log in Entity.setAttackContext] Attack context set: {}", ctx);
         } else {
             throw new UnsupportedOperationException("Entity does not have AttackComponent");
         }

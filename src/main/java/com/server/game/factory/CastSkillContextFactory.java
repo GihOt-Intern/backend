@@ -9,12 +9,14 @@ import com.server.game.model.map.component.Vector2;
 import com.server.game.service.gameState.GameStateService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
 
 @Data
 @Component
 @AllArgsConstructor
+@Slf4j
 public class CastSkillContextFactory {
     
     private final GameStateService gameStateService;
@@ -28,29 +30,29 @@ public class CastSkillContextFactory {
 
         GameState gameState = gameStateService.getGameStateById(gameId);
         if (gameState == null) {
-            throw new IllegalArgumentException(">>> [AttackContextFactory] GameState not found for gameId: " + gameId);
+            log.info("GameState not found for gameId: {}", gameId);
         }
 
         Champion caster = (Champion) gameState.getEntityByStringId(casterStringId);
 
         if (caster == null) {
-            throw new IllegalArgumentException(">>> [AttackContextFactory] Caster not found: " + casterStringId);
+            log.info("Caster not found: {}", casterStringId);
         }
 
         if (targetEntityId == null) {
-            System.out.println(">>> [AttackContextFactory] Skill no need Target entity");
+            log.info("Skill no need Target entity");
         }
 
         Entity target = targetEntityId != null ? gameState.getEntityByStringId(targetEntityId) : null;
 
         if (targetEntityId != null && target == null) {
-            throw new IllegalArgumentException(">>> [AttackContextFactory] Target not found: " + targetEntityId);
+            log.info("Target not found: {}", targetEntityId);
         }
 
-        if (!(target instanceof SkillReceiver skillReceiver)) {
-            throw new IllegalArgumentException(">>> [AttackContextFactory] Target must be a SkillReceiver");
+        if ((target != null) && !(target instanceof SkillReceiver skillReceiver)) {
+            log.info("Target must be a SkillReceiver");
         }
 
-        return new CastSkillContext(gameState, caster, skillReceiver, targetPosition, timestamp);
+        return new CastSkillContext(gameState, caster, (SkillReceiver) target, targetPosition, timestamp);
     }
 }

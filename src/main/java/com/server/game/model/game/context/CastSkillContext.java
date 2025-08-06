@@ -14,11 +14,13 @@ import com.server.game.model.map.component.Vector2;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Delegate;
 
 
 @AllArgsConstructor
 @Data
+@EqualsAndHashCode(exclude = "caster")
 public class CastSkillContext {
     @NotNull @Delegate
     private GameState gameState;

@@ -7,9 +7,13 @@ import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 import com.server.game.util.Util;
+
+import lombok.extern.slf4j.Slf4j;
+
 import com.server.game.model.map.shape.CircleShape;
 
 // Xoay rìu trong 5s, mỗi giây gây sát thương phạm vi xung quanh 1 ô = 40 + 20% DEF		
+@Slf4j
 public class MeleeSkill extends SkillComponent {
 
     private static final float DURATION_SECONDS = 5.0f;
@@ -23,7 +27,9 @@ public class MeleeSkill extends SkillComponent {
 
 
     public float getDamagePerSecond() {
-        return 40 + 0.2f * this.getSkillOwner().getDefense();
+        // return 40 + 0.2f * this.getSkillOwner().getDefense();
+
+        return 20000f;
     }
 
     public MeleeSkill(Champion owner, ChampionAbility ability) {
@@ -41,23 +47,28 @@ public class MeleeSkill extends SkillComponent {
 
     @Override
     public boolean updatePerTick() {
-        if (this.castSkillContext == null) { return false; }
+        if (!this.isActive) { return false; }
 
         long currentTick = this.getCastSkillContext().getCurrentTick();
 
         // Kết thúc skill
         if (currentTick >= endTick) {
-            this.setCastSkillContext(null);
+            log.info("MeleeSkill ended for champion: {}", this.getSkillOwner().getName());
+            // this.setCastSkillContext(null);
+            this.isActive = false; // Mark skill as inactive
             return false;
         }
 
         if (currentTick >= nextDamageTick) {
+            log.info("MeleeSkill performing damage for champion: {}", this.getSkillOwner().getName());
             this.performAOEDamage();
             this.nextDamageTick += Util.seconds2GameTick(DAMAGE_INTERVAL_SECONDS);
             return true; // Skill is still active, continue to perform
         }
 
         // Skill is still active, but no damage this tick
+        log.debug("MeleeSkill: not in damage tick, current tick: {}, nextDamageTick: {}", 
+            currentTick, nextDamageTick);
         return true;
     }
 
@@ -73,6 +84,9 @@ public class MeleeSkill extends SkillComponent {
             .getSkillReceiverEnemiesInScope(
                 this.getSkillOwner().getGameState(), 
                 hitBox, this.getSkillOwner().getOwnerSlot());
+            
+        log.info("MeleeSkill hit {} entities in range for champion: {}", 
+            hitEntities.size(), this.getSkillOwner().getName());
 
         hitEntities.stream()
             .forEach(entity -> {

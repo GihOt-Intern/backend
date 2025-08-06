@@ -26,7 +26,7 @@ public class CastSkillService {
         
         caster.useSkill(ctx);
 
-        log.debug("Set cast skill context for entity {}: {}", caster.getStringId(), ctx);
+        log.info("Set cast skill context for entity {}: {}", caster.getStringId(), ctx);
     }
 
 
