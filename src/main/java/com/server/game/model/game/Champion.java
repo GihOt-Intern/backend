@@ -6,7 +6,7 @@ import java.util.UUID;
 import com.server.game.model.game.attackStrategy.ChampionAttackStrategy;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
-import com.server.game.model.game.component.attackComponent.SkillReceivable;
+import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillFactory;
@@ -26,7 +26,7 @@ import lombok.experimental.FieldDefaults;
 @EqualsAndHashCode(callSuper=false)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
-public final class Champion extends Entity implements SkillReceivable {
+public final class Champion extends SkillReceiver {
 
     ChampionEnum championEnum;
     String name;
@@ -143,7 +143,11 @@ public final class Champion extends Entity implements SkillReceivable {
             ctx.getGameId(), this, actualDamage, ctx.getTimestamp());
     }
 
+    public void useSkill(CastSkillContext ctx) {
+        this.skillComponent.use(ctx);
+    }
+
     public void updateCastSkill() {
-        this.skillComponent.update();
+        this.skillComponent.updatePerTick();
     }
 }

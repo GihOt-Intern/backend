@@ -10,6 +10,7 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.HeartbeatMessage;
 import com.server.game.service.attack.AttackService;
 import com.server.game.service.castSkill.CastSkillService;
+import com.server.game.service.defense.DefensiveStanceService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.goldGeneration.GoldGenerationService;
 import com.server.game.service.move.MoveService2;
@@ -31,6 +32,7 @@ public class GameLogicScheduler {
     CastSkillService castSkillService;
     GoldGenerationService goldGenerationService;
     GameStateService gameStateService;
+    DefensiveStanceService defensiveStanceService;
     
     /**
      * Main game logic loop - runs every 33ms (~30 FPS)
@@ -90,6 +92,7 @@ public class GameLogicScheduler {
     public void slowGameLogicLoop() {
         for (GameState gameState : gameStateService.getAllActiveGameStates()) {
             try {
+                defensiveStanceService.updateDefensiveStances(gameState);
                 // TODO: Add slower update systems here
                 // - Resource generation
                 // - AI decision making

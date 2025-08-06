@@ -3,6 +3,7 @@ package com.server.game.factory;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
+import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.gameState.GameStateService;
@@ -46,6 +47,10 @@ public class CastSkillContextFactory {
             throw new IllegalArgumentException(">>> [AttackContextFactory] Target not found: " + targetEntityId);
         }
 
-        return new CastSkillContext(gameState, caster, target, targetPosition, timestamp);
+        if (!(target instanceof SkillReceiver skillReceiver)) {
+            throw new IllegalArgumentException(">>> [AttackContextFactory] Target must be a SkillReceiver");
+        }
+
+        return new CastSkillContext(gameState, caster, skillReceiver, targetPosition, timestamp);
     }
 }

@@ -95,6 +95,8 @@ public class AttackComponent {
 
             // Vector2 ownerPosition = this.owner.getCurrentPosition();
             // Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
+            // Vector2 ownerPosition = this.owner.getCurrentPosition();
+            // Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
             
             // Vector2 direction = targetPosition.subtract(ownerPosition).normalize();
             // Vector2 newPosition = ownerPosition.add(direction.multiply(this.attackRange));

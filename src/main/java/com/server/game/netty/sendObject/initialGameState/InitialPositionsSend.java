@@ -29,11 +29,14 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InitialPositionsSend implements TLVEncodable {
     short mapId;
+    Integer towerHP;
+    Integer burgHP;
     List<InitialPositionData> championPositionsData;
 
     
     public InitialPositionsSend(GameState gameState) {
         this.mapId = gameState.getGameMapId();
+        this.towerHP = gameState.getGameMap().getTowerHP();
         List<SlotInfo> slotInfos = gameState.getSlotInfos();
         this.championPositionsData = slotInfos.stream()
             .map(slotInfo -> new InitialPositionData(slotInfo, 
@@ -93,6 +96,10 @@ public class InitialPositionsSend implements TLVEncodable {
         float rotate;
         int maxHP;
 
+        List<TowerData> towerDataList; 
+
+        BurgData burgData; 
+
         public InitialPositionData(SlotInfo slotInfo, Champion champion,
             String username) {
             this.slot = slotInfo.getSlot();
@@ -102,6 +109,12 @@ public class InitialPositionsSend implements TLVEncodable {
             this.position = slotInfo.getSpawn().getPosition();
             this.rotate = slotInfo.getSpawn().getRotate();
             this.maxHP = champion.getMaxHP();
+
+            this.towerDataList = slotInfo.getTowers().stream()
+                .map(tower -> new TowerData(tower.getPosition(), tower.getRotate()))
+                .collect(Collectors.toList());
+
+            this.burgData = new BurgData(slotInfo.getBurg().getPosition(), slotInfo.getBurg().getRotate());
         }
 
         
@@ -119,12 +132,67 @@ public class InitialPositionsSend implements TLVEncodable {
                 dos.writeFloat(rotate);
                 dos.writeInt(maxHP);
 
-                System.out.println(">>> [Log in InitialPositionData.encode] Champion " + championStringId + " position: " + position + ", rotate: " + rotate);
+                // Write tower data
+                dos.writeShort(towerDataList.size());
+                for (TowerData towerData : towerDataList) {
+                    byte[] towerDataBytes = towerData.encode();
+                    dos.write(towerDataBytes);
+                }
+
+                // Write burg data
+                byte[] burgDataBytes = burgData.encode();
+                dos.write(burgDataBytes);
+
+
+                // System.out.println(">>> [Log in InitialPositionData.encode] Champion " + championStringId + " position: " + position + ", rotate: " + rotate);
 
                 return baos.toByteArray();
 
             } catch (IOException e) {
-                throw new RuntimeException("Cannot encoding InitialPositionData", e);
+                throw new RuntimeException("Cannot encoding " + this.getClass().getSimpleName(), e);
+            }
+        }
+
+
+        @AllArgsConstructor
+        public static class TowerData {
+            Vector2 position;
+            float rotate;
+
+            public byte[] encode() {
+                try {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    DataOutputStream dos = new DataOutputStream(baos);
+
+                    dos.writeFloat((float) position.x());
+                    dos.writeFloat((float) position.y());
+                    dos.writeFloat(rotate);
+
+                    return baos.toByteArray();
+                } catch (IOException e) {
+                    throw new RuntimeException("Cannot encoding " + this.getClass().getSimpleName(), e);
+                }
+            }
+        }
+
+        @AllArgsConstructor
+        public static class BurgData {
+            Vector2 position;
+            float rotate;
+
+            public byte[] encode() {
+                try {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    DataOutputStream dos = new DataOutputStream(baos);
+
+                    dos.writeFloat((float) position.x());
+                    dos.writeFloat((float) position.y());
+                    dos.writeFloat(rotate);
+
+                    return baos.toByteArray();
+                } catch (IOException e) {
+                    throw new RuntimeException("Cannot encoding " + this.getClass().getSimpleName(), e);
+                }
             }
         }
     }

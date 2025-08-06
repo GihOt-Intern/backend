@@ -50,6 +50,7 @@ public class SlotInfo {
         Vector2 position;
         float width;
         float length;
+        float rotate; 
     }
 
     @Data
@@ -61,6 +62,7 @@ public class SlotInfo {
         Vector2 position;
         float width;
         float length;
+        float rotate; 
     }        
 
     public Vector2 getSpawnPosition() {

@@ -1,7 +1,5 @@
 package com.server.game.model.game.component;
 
-import java.util.Vector;
-
 import org.springframework.lang.Nullable;
 
 import com.server.game.model.game.Entity;

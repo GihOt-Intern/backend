@@ -58,6 +58,13 @@ public class TroopManager {
      * Attack a target
      */
     public void setAttackTarget(String gameId, String troopInstanceId, String targetId) {
+        GameState gameState = gameStateService.getGameStateById(gameId);
+        Entity troop = gameStateService.getEntityByStringId(gameState, troopInstanceId);
+
+        if (troop instanceof TroopInstance2) {
+            ((TroopInstance2) troop).setInDefensiveStance(false); // Disable defense on manual attack
+        }
+
         AttackContext attackContext = attackContextFactory.createAttackContext(gameId, troopInstanceId, targetId, System.currentTimeMillis());
         attackService.setAttack(attackContext);
     }
@@ -76,6 +83,7 @@ public class TroopManager {
             log.warn("Troop instance not found for ID: {}", troopInstanceId);
             return;
         }
+        ((TroopInstance2) troopInstance).updateDefensePosition(position);
         MoveContext moveContext = moveContextFactory.createMoveContext(gameState, troopInstance, position, System.currentTimeMillis());
         moveService.setMove(moveContext, true);
     }

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
-import com.server.game.model.game.component.attackComponent.SkillReceivable;
+import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.GridCell;
@@ -606,11 +606,11 @@ public class GameStateService {
         return res;
     }
 
-    public Set<SkillReceivable> getSkillReceivableEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
+    public Set<SkillReceiver> getSkillReceiverEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
         Set<Entity> entities = this.getEnemiesInScope(gameState, scope, slotState);
         return entities.stream()
-            .filter(entity -> entity instanceof SkillReceivable)
-            .map(SkillReceivable.class::cast)
+            .filter(entity -> entity instanceof SkillReceiver)
+            .map(SkillReceiver.class::cast)
             .collect(Collectors.toSet());
     }
 
