@@ -99,10 +99,7 @@ public class AttackComponent {
             throw new IllegalArgumentException("Target cannot be null");
         }
 
-        if (!this.inAttackWindow(currentTick)) {  
-            // System.out.println(">>> [Log in AttackComponent] Not in attack window, current tick: " + currentTick + ", next attack tick: " + this.nextAttackTick);
-            return false;  
-        }
+        
 
 
         if (!this.inAttackRange()) {
@@ -129,6 +126,11 @@ public class AttackComponent {
             //     moveService.setMove(this.owner, newPosition, false);
             // }
             return false;
+        }
+
+        if (!this.inAttackWindow(currentTick)) {  
+            // System.out.println(">>> [Log in AttackComponent] Not in attack window, current tick: " + currentTick + ", next attack tick: " + this.nextAttackTick);
+            return false;  
         }
 
         System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + 
