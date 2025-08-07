@@ -8,6 +8,7 @@ import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
+import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.MoveContext;
 import com.server.game.model.map.component.GridCell;
@@ -84,14 +85,14 @@ public abstract class Entity implements Attackable {
         return 0; // Default value if no attribute component is present
     }
     
-    public void setMoveTargetPoint(Vector2 targetPoint) {
-        if (hasComponent(MovingComponent.class)) {
-            getComponent(MovingComponent.class).setMoveTargetPoint(targetPoint);
-            System.out.println(">>> [Log in Entity.setMoveTargetPoint] Move target point set: " + targetPoint);
-        } else {
-            throw new UnsupportedOperationException("Entity does not have MovingComponent");
-        }
-    }
+    // public void setMoveTargetPoint(Vector2 targetPoint) {
+    //     if (hasComponent(MovingComponent.class)) {
+    //         getComponent(MovingComponent.class).setMoveTargetPoint(targetPoint);
+    //         System.out.println(">>> [Log in Entity.setMoveTargetPoint] Move target point set: " + targetPoint);
+    //     } else {
+    //         throw new UnsupportedOperationException("Entity does not have MovingComponent");
+    //     }
+    // }
 
     public void setStopMoving() {
         if (hasComponent(MovingComponent.class)) {
@@ -126,6 +127,14 @@ public abstract class Entity implements Attackable {
         }
         System.out.println("Entity does not have AttackComponent, returning false for isAttacking.");
         return false; // Default value if no attack component is present
+    }
+    
+    public void stopAttacking() {
+        if (hasComponent(AttackComponent.class)) {
+            getComponent(AttackComponent.class).stopAttacking();
+        } else {
+            System.out.println("Entity does not have AttackComponent, cannot stop attacking.");
+        }
     }
 
     public boolean inAttackRange() {
@@ -268,6 +277,22 @@ public abstract class Entity implements Attackable {
         System.out.println("Entity does not have HealthComponent, returning true as default.");
         return true; // Default value if no health component is present
     }
+
+    public boolean isCastingSkill() {
+        if (hasComponent(SkillComponent.class)) {
+            return getComponent(SkillComponent.class).isActive();
+        }
+        return false; // Default value if no skill component is present
+    }
+
+    public boolean canUseSkillWhileAttacking() {
+        if (hasComponent(SkillComponent.class)) {
+            return getComponent(SkillComponent.class).canUseWhileAttacking();
+        }
+        System.out.println("Entity does not have SkillComponent, returning false for canUseSkillWhileAttacking.");
+        return false; // Default value if no skill component is present
+    }
+
 
     public void setAttackContext(AttackContext ctx) {
         if (hasComponent(AttackComponent.class)) {

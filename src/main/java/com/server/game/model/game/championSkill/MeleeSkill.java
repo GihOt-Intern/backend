@@ -25,6 +25,10 @@ public class MeleeSkill extends SkillComponent {
     private long endTick = -1;                  // Khi kết thúc
     private long nextDamageTick = -1;           // Tick tiếp theo cần gây damage
 
+    @Override
+    public boolean canUseWhileAttacking() {
+        return false;
+    }
 
     public float getDamagePerSecond() {
         // return 40 + 0.2f * this.getSkillOwner().getDefense();
@@ -46,7 +50,7 @@ public class MeleeSkill extends SkillComponent {
     }
 
     @Override
-    public boolean updatePerTick() {
+    protected boolean doUpdatePerTick() {
         if (!this.isActive) { return false; }
 
         long currentTick = this.getCastSkillContext().getCurrentTick();

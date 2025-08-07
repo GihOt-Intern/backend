@@ -45,22 +45,13 @@ public abstract class SkillComponent {
         this.castSkillContext = ctx;
     }
 
-    // public final void setCastSkillContext(CastSkillContext ctx) {
-    //     if (this.castSkillContext != null) {
-    //         System.out.println(">>> [Log in SkillComponent] Skill is using, cannot overwrite another context. ERRROR!");
-    //         return;
-    //     }
-    //     this.castSkillContext = ctx;
-    // }
 
     public final boolean isActive() {
-        return this.castSkillContext != null;
+        return this.isActive;
     }
 
-    // public final void setInactive() {
-    //     this.castSkillContext = null;
-    //     this.lastUsedTick = -cooldownTick; // Reset last used tick to allow immediate reuse
-    // }
+    public abstract boolean canUseWhileAttacking();
+
 
     public final float getCooldown() {
         return cooldownSeconds;
@@ -109,6 +100,21 @@ public abstract class SkillComponent {
     // Protected access modifier to allow subclasses to implement their specific skill logic
     // but not to be called directly
     protected abstract void doUse();
-    public abstract boolean updatePerTick(); // Nếu có skill cần xử lý theo thời gian
 
+    public final boolean updatePerTick() {
+        if (!this.isActive) { return false; }
+
+        if (skillOwner.isAttacking() && !this.canUseWhileAttacking()) {
+            // skill has higher priority than attack, so we stop the attack
+            log.info("Using skill, but champion is attacking, stopping attack for champion {}.",
+                this.skillOwner.getName());
+
+            skillOwner.stopAttacking();
+        }
+
+        return this.doUpdatePerTick();
+    }
+
+
+    protected abstract boolean doUpdatePerTick(); // Nếu có skill cần xử lý theo thời gian
 }

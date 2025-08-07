@@ -12,6 +12,11 @@ public class MageSkill extends SkillComponent {
         super(owner, ability);
     }
 
+    @Override
+    public boolean canUseWhileAttacking() {
+        return false;
+    }
+
 
     @Override
     protected void doUse() {
@@ -20,7 +25,7 @@ public class MageSkill extends SkillComponent {
     }
 
     @Override
-    public boolean updatePerTick() {
+    protected boolean doUpdatePerTick() {
         // Implement any periodic updates needed for the Assassin skill
         // For example, if the skill has a duration or needs to check conditions over time
         return false;
