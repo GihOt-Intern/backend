@@ -25,7 +25,6 @@ public class AttackComponent {
 
     private final AttackStrategy strategy;
 
-    @Nullable
     private final MoveService2 moveService;
 
 
@@ -43,13 +42,29 @@ public class AttackComponent {
         this.moveService = moveService;
     }
 
-    public void setAttackContext(AttackContext ctx) {
+    public void setAttackContext(@Nullable AttackContext ctx) {
+
+        if (ctx == null) { // ctx null means forced stop attack
+            System.out.println(">>> [Log in AttackComponent] Setting attack context to null, force stopping attack.");
+            this.attackContext = null;
+            return;
+        }
+        
+        if (this.owner.isCastingSkill() && !this.owner.canUseSkillWhileAttacking()) {
+            System.out.println(">>> [Log in AttackComponent] Cannot set attack context while casting skill, skipping.");
+            return;
+        }
+
         this.attackContext = ctx;
         System.out.println(">>> [Log in AttackComponent] Attack context set: " + ctx);
     }
 
     public boolean isAttacking() {
         return this.attackContext != null && this.attackContext.getTarget() != null;
+    }
+    
+    public void stopAttacking() {
+        this.setAttackContext(null);
     }
 
     private final boolean inAttackWindow(long currentTick) {
@@ -84,25 +99,24 @@ public class AttackComponent {
             throw new IllegalArgumentException("Target cannot be null");
         }
 
-        if (!this.inAttackWindow(currentTick)) {  
-            System.out.println(">>> [Log in AttackComponent] Not in attack window, current tick: " + currentTick + ", next attack tick: " + this.nextAttackTick);
-            return false;  
-        }
+        
 
 
-        if (!this.inAttackRange(ctx.getTarget().getCurrentPosition())) {
-            System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to stick to target");
+        if (!this.inAttackRange()) {
+            System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to move to position that reach attack range.");
             System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
                 ", Target position: " + ctx.getTarget().getCurrentPosition() + 
                 ", Attack range: " + this.attackRange);
 
             // Vector2 ownerPosition = this.owner.getCurrentPosition();
             // Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
-            // Vector2 ownerPosition = this.owner.getCurrentPosition();
-            // Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
             
             // Vector2 direction = targetPosition.subtract(ownerPosition).normalize();
-            // Vector2 newPosition = ownerPosition.add(direction.multiply(this.attackRange));
+            // Vector2 newPosition = ownerPosition.add(
+            //     direction.multiply(owner.getDistanceNeededToReachAttackRange()));
+
+            // moveService.setMove(this.owner, newPosition, false);
+
             moveService.setMove(this.owner, ctx.getTarget().getCurrentPosition(), false);
 
             // If attacker is a troop (prefix = "troop_"), set the move position
@@ -112,6 +126,11 @@ public class AttackComponent {
             //     moveService.setMove(this.owner, newPosition, false);
             // }
             return false;
+        }
+
+        if (!this.inAttackWindow(currentTick)) {  
+            // System.out.println(">>> [Log in AttackComponent] Not in attack window, current tick: " + currentTick + ", next attack tick: " + this.nextAttackTick);
+            return false;  
         }
 
         System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + 
@@ -133,7 +152,7 @@ public class AttackComponent {
         if (ctx.getTarget() == null || !ctx.getTarget().isAlive()) {
             System.out.println(">>> [Log in AttackComponent] After performing attack, target is null or dead");
             moveService.setStopMoving(this.owner);
-            this.attackContext = null; // Clear the attack context if target is dead
+            this.stopAttacking();
         }
 
         // After performing the attack, update the next attack tick

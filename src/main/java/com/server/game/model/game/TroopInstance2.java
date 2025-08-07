@@ -99,10 +99,21 @@ public class TroopInstance2 extends SkillReceiver {
     @Override
     protected void addAllComponents() {
         this.addComponent(TroopAttributeComponent.class, attributeComponent);
+        this.addComponent(MovingComponent.class, movingComponent);
         this.addComponent(HealthComponent.class, healthComponent);
         this.addComponent(AttackComponent.class, attackComponent);
     }
 
+    
+    @Override
+    public void beforeUpdatePosition() {
+        super.beforeUpdatePosition();
+    }
+
+    @Override
+    public void afterUpdatePosition() {
+        super.afterUpdatePosition();
+    }
     /**
      * Updates the defense position and re-enables the defensive stance.
      * This is called when a player manually moves the troop.
@@ -139,10 +150,7 @@ public class TroopInstance2 extends SkillReceiver {
         return true; // Indicate that the attack was received successfully
     }
 
-    @Override
-    public void afterUpdatePosition() {
-        super.afterUpdatePosition();
-    }
+
 
     @Override
     public void receiveSkillDamage(CastSkillContext ctx) {

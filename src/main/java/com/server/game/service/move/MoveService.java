@@ -376,7 +376,7 @@ public class MoveService {
                     reachedFinalDestination = true;
                 }
             } else {
-                Vector2 direction = nextPosition.subtract(position).normalize();
+                Vector2 direction = position.directionTo(nextPosition);
                 position = position.add(direction.multiply(remainingDistance));
                 
                 break;
@@ -438,7 +438,7 @@ public class MoveService {
                     remainingDistance -= distanceToNext;
                     currentIndex++; // Advance simulation index
                 } else {
-                    Vector2 direction = nextPosition.subtract(position).normalize();
+                    Vector2 direction = position.directionTo(nextPosition);
                     position = position.add(direction.multiply(remainingDistance));
                     break;
                 }

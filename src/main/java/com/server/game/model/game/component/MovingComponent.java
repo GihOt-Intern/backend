@@ -63,6 +63,8 @@ public class MovingComponent {
         
         // Using Theta* algorithm to find the path, update the moveContext
         boolean foundPath = moveContext.findPath(); // this method already set the path in the moveContext (if found)
+        log.info("Path found: {}", moveContext.getPath().getPath().toString());
+
 
 
         if (this.pathFindingFailedCount >= MAX_PATH_FINDING_FAILED_ATTEMPTS) {
@@ -113,6 +115,8 @@ public class MovingComponent {
     public void setStop() { this.moveContext = null; }
 
     public void setCurrentPosition(Vector2 newPosition) {
+        owner.beforeUpdatePosition();
+
         this.currentPosition = newPosition;
 
         owner.afterUpdatePosition();
@@ -170,7 +174,7 @@ public class MovingComponent {
                 this.moveContext.getPath().popCurrentCell(); // pop the cell from the path
             } else {
                 // Move towards the next cell by using velocity vector
-                Vector2 direction = positionAtNextCell.subtract(this.currentPosition).normalize();
+                Vector2 direction = this.currentPosition.directionTo(positionAtNextCell);
                 Vector2 nextPosition = this.getCurrentPosition().add(direction.multiply(neededMoveDistance));
 
                 this.setCurrentPosition(nextPosition);

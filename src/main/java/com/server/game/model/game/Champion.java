@@ -9,6 +9,7 @@ import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
+import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.model.game.context.AttackContext;
@@ -22,11 +23,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper=false, exclude = "skillComponent")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
+@Slf4j
 public final class Champion extends SkillReceiver {
 
     final ChampionEnum championEnum;
@@ -94,11 +97,20 @@ public final class Champion extends SkillReceiver {
 
 
     @Override
+    public void beforeUpdatePosition() {
+        log.info("Call beforeUpdatePosition for champion, call super method...");
+        super.beforeUpdatePosition();
+    }
+
+
+    @Override
     public void afterUpdatePosition() {
-        
+        log.info("Call afterUpdatePosition for champion, check in playground and call super method...");
+
         this.checkInPlayGround();
 
         super.afterUpdatePosition();
+
     }
 
     private void checkInPlayGround() {
@@ -155,6 +167,8 @@ public final class Champion extends SkillReceiver {
     }
 
     public void updateCastSkill() {
-        this.skillComponent.updatePerTick();
+        if (this.skillComponent instanceof DurationSkillComponent durationSkillComponent) {
+            durationSkillComponent.updatePerTick();
+        }
     }
 }

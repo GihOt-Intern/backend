@@ -28,6 +28,7 @@ public abstract class SkillReceiver extends Entity {
         if (myDefense == null || myDefense <= 0) {
             throw new IllegalArgumentException("Defense must be a positive value");
         }
-        return skillDamage * (100.0f / (100 * myDefense));
+        // return skillDamage * (100.0f / (100 * myDefense));
+        return 20f;
     }
 }

@@ -15,7 +15,6 @@ import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.Tower;
-import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.SlotInfo.BurgDB;
 import com.server.game.resource.model.SlotInfo.TowerDB;
 

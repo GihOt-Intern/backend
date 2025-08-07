@@ -30,7 +30,6 @@ public class GameState {
     final Map<Short, SlotState> slotStates = new ConcurrentHashMap<>();
     final Map<String, Entity> stringId2Entity = new ConcurrentHashMap<>();
     final Map<GridCell, Set<Entity>> grid2Entity = new ConcurrentHashMap<>();
-    final Map<Entity, GridCell> entity2Grid = new ConcurrentHashMap<>();
 
     final GameStateService gameStateService;
 
@@ -68,9 +67,10 @@ public class GameState {
         }
 
         stringId2Entity.put(entity.getStringId(), entity);
+
+        // Also update the grid to entity mapping
         GridCell gridCell = toGridCell(entity.getCurrentPosition());
         grid2Entity.computeIfAbsent(gridCell, k -> ConcurrentHashMap.newKeySet()).add(entity);
-        entity2Grid.put(entity, gridCell);
     }
 
     public void removeEntity(Entity entity) {
@@ -80,7 +80,10 @@ public class GameState {
         }
 
         stringId2Entity.remove(entity.getStringId());
-        GridCell gridCell = entity2Grid.remove(entity);
+
+
+        // Also update the grid to entity mapping
+        GridCell gridCell = entity.getCurrentGridCell();
         if (gridCell != null) {
             Set<Entity> entitiesAtCell = grid2Entity.get(gridCell);
             if (entitiesAtCell != null) {
@@ -90,7 +93,6 @@ public class GameState {
                 }
             }
         }
-        entity2Grid.remove(entity);
     }
 
     public Set<Entity> getEntities() {

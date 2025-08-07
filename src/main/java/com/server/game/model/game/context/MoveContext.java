@@ -15,6 +15,7 @@ import com.server.game.util.ThetaStarPathfinder;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 
@@ -93,6 +94,7 @@ public class MoveContext {
 
     //****** INNER CLASS *****//
     public static class PathComponent {
+        @Getter
         private List<GridCell> path;
         private int index;
 

@@ -9,13 +9,13 @@ import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 import com.server.game.util.Util;
 
-import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
 @Component
+@Slf4j
 @EqualsAndHashCode(exclude = "skillOwner")
 public abstract class SkillComponent {
     protected Champion skillOwner;
@@ -24,8 +24,8 @@ public abstract class SkillComponent {
     protected long cooldownTick;
     protected long lastUsedTick;
 
-    @Setter(AccessLevel.PROTECTED)
     protected CastSkillContext castSkillContext = null;
+    protected boolean isActive = false;
 
     public SkillComponent(Champion owner, ChampionAbility ability) {
         this.skillOwner = owner;
@@ -41,22 +41,18 @@ public abstract class SkillComponent {
         this.cooldownTick = Util.seconds2GameTick(cooldownSeconds);
     }
 
-    // public final void setCastSkillContext(CastSkillContext ctx) {
-    //     if (this.castSkillContext != null) {
-    //         System.out.println(">>> [Log in SkillComponent] Skill is using, cannot overwrite another context. ERRROR!");
-    //         return;
-    //     }
-    //     this.castSkillContext = ctx;
-    // }
-
-    public final boolean isActive() {
-        return this.castSkillContext != null;
+    private final void setCastSkillContext(CastSkillContext ctx) {
+        this.castSkillContext = ctx;
     }
 
-    // public final void setInactive() {
-    //     this.castSkillContext = null;
-    //     this.lastUsedTick = -cooldownTick; // Reset last used tick to allow immediate reuse
-    // }
+
+    public final boolean isActive() {
+        return this.isActive;
+    }
+
+    public abstract boolean canUseWhileAttacking();
+    public abstract boolean canUseWhileMoving();
+
 
     public final float getCooldown() {
         return cooldownSeconds;
@@ -81,9 +77,16 @@ public abstract class SkillComponent {
     // Concrete subclasses must only implement the doUse method below
     public final boolean use(CastSkillContext ctx) {
         long currentTick = ctx.getCurrentTick();
-        if (!this.isReady(currentTick)) return false;
+        if (!this.isReady(currentTick)) {
+            log.info("Skill {} is not ready for champion {}. Current tick: {}, Last used tick: {}, Cooldown: {}, remaining: {}",
+                this.name, this.skillOwner.getName(), currentTick, this.lastUsedTick, this.cooldownSeconds, this.getCooldownSecondsRemain(currentTick));
+            return false;
+        }
 
         this.setCastSkillContext(ctx);
+        log.info("Set skill context: {}", ctx);
+
+        this.isActive = true; // Set the skill as active
 
         // 1. Broadcast skill usage to the game state
         ctx.getGameStateService().sendCastSkillAnimation(ctx);
@@ -97,7 +100,7 @@ public abstract class SkillComponent {
 
     // Protected access modifier to allow subclasses to implement their specific skill logic
     // but not to be called directly
-    protected abstract void doUse();
-    public abstract boolean updatePerTick(); // Nếu có skill cần xử lý theo thời gian
+    protected abstract boolean doUse();
 
+    
 }

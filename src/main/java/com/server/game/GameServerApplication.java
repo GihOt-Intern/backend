@@ -29,15 +29,15 @@ public class GameServerApplication {
 		// to ensure consistent date handling across the application
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
 
-		try {
-			System.out.println(">>> Testing Redis Connection");
-			redisUtil.testConnection();
-		} catch (RedisConnectionFailureException e) {
-			System.err.println("Redis connection failed: " + e.getMessage());
-			System.exit(1);
-		} catch (Exception e) {
-			System.err.println("Unexpected error during Redis test: " + e.getMessage());
-			e.printStackTrace();
-		}
+		// try {
+		// 	System.out.println(">>> Testing Redis Connection");
+		// 	redisUtil.testConnection();
+		// } catch (RedisConnectionFailureException e) {
+		// 	System.err.println("Redis connection failed: " + e.getMessage());
+		// 	System.exit(1);
+		// } catch (Exception e) {
+		// 	System.err.println("Unexpected error during Redis test: " + e.getMessage());
+		// 	e.printStackTrace();
+		// }
 	}
 }
