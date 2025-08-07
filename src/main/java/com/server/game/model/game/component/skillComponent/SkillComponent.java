@@ -100,7 +100,7 @@ public abstract class SkillComponent {
 
     // Protected access modifier to allow subclasses to implement their specific skill logic
     // but not to be called directly
-    protected abstract void doUse();
+    protected abstract boolean doUse();
 
     
 }

@@ -174,7 +174,7 @@ public class MovingComponent {
                 this.moveContext.getPath().popCurrentCell(); // pop the cell from the path
             } else {
                 // Move towards the next cell by using velocity vector
-                Vector2 direction = positionAtNextCell.subtract(this.currentPosition).normalize();
+                Vector2 direction = this.currentPosition.directionTo(positionAtNextCell);
                 Vector2 nextPosition = this.getCurrentPosition().add(direction.multiply(neededMoveDistance));
 
                 this.setCurrentPosition(nextPosition);

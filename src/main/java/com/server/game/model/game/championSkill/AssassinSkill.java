@@ -1,9 +1,13 @@
 package com.server.game.model.game.championSkill;
 
+import java.util.Set;
+
 import com.server.game.model.game.Champion;
+import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
+import com.server.game.model.map.component.Vector2;
+import com.server.game.model.map.shape.RectShape;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
-import com.server.game.util.Util;
 
 import lombok.extern.slf4j.Slf4j;
 // Lướt thẳng tới trước 1 khoảng cách X, gây sát thương lên đối thủ trên đường đi
@@ -32,11 +36,41 @@ public class AssassinSkill extends SkillComponent {
         return false;
     }
 
-    @Override
-    protected void doUse() {
-        // long currentTick = this.getCastSkillContext().getCurrentTick();
+    private final RectShape getHitbox() {
+        Vector2 ownerPoint = this.skillOwner.getCurrentPosition();
+        Vector2 mousePoint = this.getCastSkillContext().getTargetPoint();
+        Vector2 direction = ownerPoint.directionTo(mousePoint);
 
-        // this.startTick = currentTick;
-        // this.endTick = startTick + Util.seconds2GameTick(DURATION_SECONDS);
+        Vector2 centerPoint = ownerPoint.add(direction.multiply(DASH_LENGTH / 2));
+        
+        return new RectShape(
+            centerPoint,
+            DASH_WIDTH,
+            DASH_LENGTH,
+            direction
+        );
+    }
+
+    @Override
+    protected boolean doUse() {
+        RectShape hitbox = this.getHitbox();
+
+        this.getCastSkillContext().addSkillDamage(this.getDamage());
+
+        Set<SkillReceiver> hitEntities = this.getSkillOwner().getGameStateService()
+            .getSkillReceiverEnemiesInScope(
+                this.getSkillOwner().getGameState(),
+                hitbox, this.getSkillOwner().getOwnerSlot());
+
+        log.info("MeleeSkill hit {} entities in range for champion: {}",
+            hitEntities.size(), this.getSkillOwner().getName());
+
+        hitEntities.stream()
+            .forEach(entity -> {
+                this.getCastSkillContext().setTarget(entity);
+                entity.receiveSkillDamage(this.getCastSkillContext());
+            });
+
+        return true;
     }
 }

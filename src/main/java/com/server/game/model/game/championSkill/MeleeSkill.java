@@ -5,14 +5,11 @@ import java.util.Set;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
-import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
-import com.server.game.util.Util;
 
 import lombok.extern.slf4j.Slf4j;
 
 import com.server.game.model.map.shape.CircleShape;
-import com.server.game.model.map.shape.Shape;
 
 // Xoay rìu trong 5s, mỗi giây gây sát thương phạm vi xung quanh 1 ô = 40 + 20% DEF		
 @Slf4j

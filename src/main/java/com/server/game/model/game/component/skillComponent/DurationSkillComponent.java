@@ -1,5 +1,4 @@
 package com.server.game.model.game.component.skillComponent;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.stereotype.Component;
 
 import com.server.game.model.game.Champion;
@@ -33,12 +32,14 @@ public abstract class DurationSkillComponent extends SkillComponent {
 
 
     @Override
-    protected final void doUse() {
+    protected final boolean doUse() {
         long currentTick = this.getCastSkillContext().getCurrentTick();
 
         this.startTick = currentTick;
         this.endTick = startTick + Util.seconds2GameTick(DURATION_SECONDS);
         this.nextDamageTick = this.startTick; // Get damage immediately
+
+        return true;
     }
 
     public final boolean updatePerTick() {

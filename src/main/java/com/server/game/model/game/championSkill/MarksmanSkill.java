@@ -20,8 +20,9 @@ public class MarksmanSkill extends SkillComponent {
     }
 
     @Override
-    protected void doUse() {
+    protected boolean doUse() {
         // Implement the specific logic for using a Mage skill
         // This could involve dealing damage, applying effects, etc.
+        return true; // Indicate that the skill was used successfully
     }
 }
