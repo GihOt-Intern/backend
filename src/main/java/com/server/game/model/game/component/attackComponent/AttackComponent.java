@@ -98,12 +98,19 @@ public class AttackComponent {
 
             // Vector2 ownerPosition = this.owner.getCurrentPosition();
             // Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
+            // Vector2 ownerPosition = this.owner.getCurrentPosition();
+            // Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
             
             // Vector2 direction = targetPosition.subtract(ownerPosition).normalize();
             // Vector2 newPosition = ownerPosition.add(direction.multiply(this.attackRange));
-
-            // moveService.setMove(this.owner, newPosition, false);
             moveService.setMove(this.owner, ctx.getTarget().getCurrentPosition(), false);
+
+            // If attacker is a troop (prefix = "troop_"), set the move position
+            // if (this.owner.getStringId().startsWith("troop_")) {
+            //     System.out.println(">>> [Log in AttackComponent] Setting move position for troop: " + this.owner.getStringId());
+            // } else {
+            //     moveService.setMove(this.owner, newPosition, false);
+            // }
             return false;
         }
 
@@ -115,6 +122,12 @@ public class AttackComponent {
         System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
         
         // Use the strategy to perform the attack
+        short attakerSlot = this.owner.getOwnerSlot().getSlot();
+        short targetSlot = ctx.getTarget().getOwnerSlot().getSlot();
+        if (attakerSlot == targetSlot) {
+            System.out.println(">>> [Log in AttackComponent] Cannot attack own troops, skipping attack");
+            return false; // Cannot attack allies
+        }
         boolean didAttack = strategy.performAttack(ctx);
 
         if (ctx.getTarget() == null || !ctx.getTarget().isAlive()) {

@@ -51,20 +51,10 @@ public class TroopInstance2 extends SkillReceiver {
     // private String currentTargetId; // Can be another troop instance ID or player slot as string
     private Entity stickEntity; // Can be another troop instance or champion
 
-    private long lastAIUpdate = 0;
-    private long stateChangeTime = 0;
-    
-    // Special states
-    private boolean isInvisible = false;
-    private long invisibilityEndTime = 0;
-    private boolean isBuffed = false;
-    private long buffEndTime = 0;
-    private float damageMultiplier = 1.0f;
-    private float defenseMultiplier = 1.0f;
-    
-    // Ability cooldown
-    private long lastAbilityUse = 0;
-
+    Vector2 defensePosition;
+    float defenseRange;
+    boolean inDefensiveStance = true;
+    Entity defensiveTarget = null;
 
     public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot, MoveService2 moveService) {
         super("troop_" + UUID.randomUUID().toString(),
@@ -98,10 +88,9 @@ public class TroopInstance2 extends SkillReceiver {
             moveService
         );
 
-        this.addAllComponents();
+        this.defenseRange = this.attributeComponent.getDetectionRange() * 2.0f;
 
-        this.lastAIUpdate = System.currentTimeMillis();
-        this.stateChangeTime = System.currentTimeMillis();
+        this.addAllComponents();
 
         log.debug("Created troop instance {} of type {} for player {} of gameid={}, at position {}",
             stringId, troopEnum, ownerSlot, gameState.getGameId(), this.getCurrentPosition());
@@ -125,7 +114,27 @@ public class TroopInstance2 extends SkillReceiver {
     public void afterUpdatePosition() {
         super.afterUpdatePosition();
     }
-   
+    /**
+     * Updates the defense position and re-enables the defensive stance.
+     * This is called when a player manually moves the troop.
+     */
+    public void updateDefensePosition(Vector2 newPosition) {
+        this.defensePosition = newPosition;
+        this.inDefensiveStance = true;
+        this.defensiveTarget = null; // Clear previous target
+        this.attackComponent.setAttackContext(null); // Stop any current attack
+        log.debug("Troop {} defense position updated to {}. Re-engaging defensive stance.", stringId, defensePosition);
+    }
+
+    /**
+     * Checks if a target is within the troop's defense range.
+     */
+    public boolean isWithinDefenseRange(Entity target) {
+        if (target == null || defensePosition == null) {
+            return false;
+        }
+        return defensePosition.distance(target.getCurrentPosition()) <= defenseRange;
+    }
 
     @Override // from Attackable implemented by Entity
     public boolean receiveAttack(AttackContext ctx) {
