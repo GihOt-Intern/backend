@@ -51,6 +51,7 @@ public abstract class SkillComponent {
     }
 
     public abstract boolean canUseWhileAttacking();
+    public abstract boolean canUseWhileMoving();
 
 
     public final float getCooldown() {
@@ -101,20 +102,5 @@ public abstract class SkillComponent {
     // but not to be called directly
     protected abstract void doUse();
 
-    public final boolean updatePerTick() {
-        if (!this.isActive) { return false; }
-
-        if (skillOwner.isAttacking() && !this.canUseWhileAttacking()) {
-            // skill has higher priority than attack, so we stop the attack
-            log.info("Using skill, but champion is attacking, stopping attack for champion {}.",
-                this.skillOwner.getName());
-
-            skillOwner.stopAttacking();
-        }
-
-        return this.doUpdatePerTick();
-    }
-
-
-    protected abstract boolean doUpdatePerTick(); // Nếu có skill cần xử lý theo thời gian
+    
 }
