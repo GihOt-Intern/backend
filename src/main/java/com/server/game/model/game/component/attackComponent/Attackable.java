@@ -12,6 +12,6 @@ public interface Attackable {
             throw new IllegalArgumentException("Defense=0, stupid!");
         }
         // return attackerDamage * (100.0f / (100 * myDefense));
-        return 5f;
+        return 0.0f;
     }
 }
