@@ -146,6 +146,12 @@ public final class Champion extends SkillReceiver {
         ctx.getGameStateService().sendHealthUpdate(
             ctx.getGameId(), this, actualDamage, ctx.getTimestamp());
 
+        // 4. Check if champion died and handle death/respawn logic
+        if (this.getCurrentHP() <= 0) {
+            ctx.getGameStateService().checkAndHandleChampionDeath(
+                ctx.getGameId(), this.getOwnerSlot().getSlot());
+        }
+
         return true; 
     }
 
@@ -160,6 +166,12 @@ public final class Champion extends SkillReceiver {
         ctx.addActualDamage(actualDamage);
         ctx.getGameStateService().sendHealthUpdate(
             ctx.getGameId(), this, actualDamage, ctx.getTimestamp());
+        
+        // 4. Check if champion died and handle death/respawn logic
+        if (this.getCurrentHP() <= 0) {
+            ctx.getGameStateService().checkAndHandleChampionDeath(
+                ctx.getGameId(), this.getOwnerSlot().getSlot());
+        }
     }
 
     public void useSkill(CastSkillContext ctx) {

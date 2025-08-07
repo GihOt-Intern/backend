@@ -7,10 +7,13 @@ import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.factory.AttackContextFactory;
+import com.server.game.model.game.GameState;
+import com.server.game.model.game.TroopInstance2;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.attack.AttackReceive;
 import com.server.game.service.attack.AttackService;
+import com.server.game.service.gameState.GameStateService;
 
 import io.netty.channel.Channel;
 import lombok.AllArgsConstructor;
@@ -20,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @AllArgsConstructor
 public class AttackMessageHandler {
+    GameStateService gameStateService;
 
     private final AttackContextFactory attackContextFactory;
     private final AttackService attackService;
@@ -52,6 +56,14 @@ public class AttackMessageHandler {
 
         if (entityStringId.equals(receiveObject.getTargetId())) {
             return;
+        }
+
+        if (entityStringId.startsWith("troop_") ) {
+            GameState gameState = gameStateService.getGameStateById(gameId);
+            TroopInstance2 troop = (TroopInstance2) gameState.getEntityByStringId(entityStringId);
+            troop.setInDefensiveStance(false);
+            troop.setDefensePosition(null);
+            log.info(">>> [Log in AttackMessageHandler.handleAttackMessage] Troop {} defensive stance disabled", entityStringId);
         }
 
         AttackContext attackContext = attackContextFactory.createAttackContext(

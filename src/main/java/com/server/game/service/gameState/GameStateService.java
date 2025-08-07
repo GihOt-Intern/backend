@@ -26,7 +26,7 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageHandler.AnimationMessageHandler;
 import com.server.game.netty.messageHandler.GameStateMessageHandler;
 import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
-import com.server.game.netty.sendObject.respawn.ChampionDeathSend;
+import com.server.game.netty.sendObject.entity.EntityDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnTimeSend;
 import com.server.game.util.Util;
@@ -180,11 +180,19 @@ public class GameStateService {
     }
 
     private void sendChampionDeathMessage(String gameId, short slot) {
-        ChampionDeathSend deathMessage = new ChampionDeathSend(slot);
+        String championId = this.getStringIdBySlotId(gameId, slot);
+        if (championId == null) {
+            log.warn("Could not find champion ID for gameId: {}, slot: {}", gameId, slot);
+            return;
+        }
+        
+        EntityDeathSend deathMessage = new EntityDeathSend(championId);
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
         if (channel != null) {
             channel.writeAndFlush(deathMessage);
-            log.info("Sent champion death message for gameId: {}, slot: {}", gameId, slot);
+            log.info("Sent champion death message for gameId: {}, slot: {}, championId: {}", gameId, slot, championId);
+        } else {
+            log.warn("No channel found for gameId: {} when sending champion death message", gameId);
         }
     }
 
@@ -245,7 +253,8 @@ public class GameStateService {
 
         // Reset the state
         slotState.setChampionRevive();
-        slotState.setCurrentHP(maxHealth);
+        champion.setCurrentHP(maxHealth);
+        champion.setCurrentPosition(initialPosition);
 
         // TODO: reset position state
 
@@ -253,7 +262,7 @@ public class GameStateService {
         log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
 
         //Send message
-        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slot, initialPosition, rotateAngle, maxHealth);
+        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slotState.getChampion().getStringId(), initialPosition, rotateAngle, maxHealth);
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
         if (channel != null) {
             channel.writeAndFlush(respawnSend);

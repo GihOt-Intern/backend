@@ -14,6 +14,7 @@ import com.server.game.service.defense.DefensiveStanceService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.goldGeneration.GoldGenerationService;
 import com.server.game.service.move.MoveService2;
+import com.server.game.service.troop.TroopManager;
 
 import io.netty.channel.Channel;
 import lombok.AccessLevel;
@@ -33,6 +34,7 @@ public class GameLogicScheduler {
     GoldGenerationService goldGenerationService;
     GameStateService gameStateService;
     DefensiveStanceService defensiveStanceService;
+    TroopManager troopManager;
     
     /**
      * Main game logic loop - runs every 33ms (~30 FPS)
@@ -53,6 +55,9 @@ public class GameLogicScheduler {
 
                 // Process attack targeting and continuous combat
                 attackService.processAttacks(gameState);
+
+                // Check for troop deaths and handle cleanup
+                troopManager.checkAndHandleAllTroopDeaths(gameState.getGameId());
 
                 // Update movement positions
                 moveService.updatePositions(gameState);

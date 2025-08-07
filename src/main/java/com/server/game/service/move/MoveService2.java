@@ -23,8 +23,8 @@ public class MoveService2 {
      */
     public void setMove(MoveContext ctx, boolean needStopAttack) {
         ctx.getMover().setMoveContext(ctx);
-        log.info("Setting move target for entity {} to position {} at timestamp {}",
-            ctx.getMover().getStringId(), ctx.getTargetPoint(), ctx.getTimestamp());
+        // log.info("Setting move target for entity {} to position {} at timestamp {}",
+            // ctx.getMover().getStringId(), ctx.getTargetPoint(), ctx.getTimestamp());
 
         if (needStopAttack) {
             attackService.setStopAttacking(ctx.getMover());
@@ -39,7 +39,7 @@ public class MoveService2 {
 
     public void setStopMoving(Entity entity) {
         entity.setMoveContext(null);
-        log.info("Stopping move for entity {}", entity.getStringId());
+        // log.info("Stopping move for entity {}", entity.getStringId());
     }
 
     /**
@@ -64,6 +64,6 @@ public class MoveService2 {
         for (Entity entity : gameState.getEntities()) {
             entity.setMoveContext(null);
         }
-        log.info("Cleared all move targets for game {}", gameState.getGameId());
+        // log.info("Cleared all move targets for game {}", gameState.getGameId());
     }
 }

@@ -51,7 +51,7 @@ public class MovingComponent {
         long currentTick = this.owner.getGameState().getCurrentTick();
         if (currentTick - lastAcceptedMoveRequestTick < MIN_UPDATE_INTERVAL_TICK) {
             // log.info(">>> [Log in PositionComponent.setMoveContext] Move request ignored due to rate limiting.");
-            log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
+            // log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
             return false;
         }
 
@@ -70,7 +70,7 @@ public class MovingComponent {
         if (this.pathFindingFailedCount >= MAX_PATH_FINDING_FAILED_ATTEMPTS) {
             
             if (currentTick - this.lastPathFindingFailedTick < PATH_FINDING_FAILED_ATTEMPT_COOLDOWN_TICK) {
-                log.info("Entity {} in cooldown due to repeated failed pathfinding attempts", owner.getStringId());
+                // log.info("Entity {} in cooldown due to repeated failed pathfinding attempts", owner.getStringId());
                 return false;
             }
 
@@ -84,8 +84,8 @@ public class MovingComponent {
             this.lastPathFindingFailedTick = currentTick;
 
             if (this.pathFindingFailedCount >= MAX_PATH_FINDING_FAILED_ATTEMPTS) {
-                log.warn("Entity {} has failed to find a path {} times, entering cooldown", 
-                    owner.getStringId(), this.pathFindingFailedCount);
+                // log.warn("Entity {} has failed to find a path {} times, entering cooldown", 
+                    // owner.getStringId(), this.pathFindingFailedCount);
             }
             return false;
         }
@@ -96,7 +96,7 @@ public class MovingComponent {
 
     public void setMoveTargetPoint(Vector2 targetPoint) {
         if (moveContext == null) {
-            System.err.println(">>> [Log in MovingComponent.setMoveTargetPoint] Move context is null, cannot set target point.");
+            // System.err.println(">>> [Log in MovingComponent.setMoveTargetPoint] Move context is null, cannot set target point.");
             return;
         }
 
@@ -145,7 +145,14 @@ public class MovingComponent {
             return false;
         }
 
-        System.out.println(">>> [Log in MovingComponent.performMove] Performing move...");
+        // Add null check for path
+        if (moveContext.getPath() == null) {
+            // log.warn(">>> [Log in MovingComponent.performMove] Path is null, stopping movement for entity: {}", owner.getStringId());
+            this.moveContext = null;
+            return false;
+        }
+
+        // System.out.println(">>> [Log in MovingComponent.performMove] Performing move...");
 
         float neededMoveDistance = this.distancePerTick;
 
@@ -159,7 +166,7 @@ public class MovingComponent {
         }
 
         while(this.moveContext.getPath().hasNext()) {
-            System.out.println(">>> [Log in MovingComponent.performMove] Moving to next cell...");
+            // System.out.println(">>> [Log in MovingComponent.performMove] Moving to next cell...");
             GridCell nextCell = this.moveContext.getPath().peekCurrentCell();
             Vector2 positionAtNextCell = this.moveContext.toPosition(nextCell);
             float distanceToNextCell = this.currentPosition.distance(positionAtNextCell);

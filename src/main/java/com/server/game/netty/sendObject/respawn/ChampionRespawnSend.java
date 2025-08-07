@@ -21,7 +21,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChampionRespawnSend implements TLVEncodable {
-    short championSlot;
+    String championId;
     Vector2 respawnPosition; // Position where the champion will respawn
     float rotate;
     int maxHealth;
@@ -37,7 +37,12 @@ public class ChampionRespawnSend implements TLVEncodable {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(baos);
 
-            dos.writeShort(championSlot);
+            byte[] championIdBytes = championId != null ? championId.getBytes("UTF-8") : new byte[0];
+            short championIdLength = (short) (short) championIdBytes.length;
+            dos.writeShort(championIdLength);
+            if (championIdLength > 0) {
+                dos.write(championIdBytes);
+            }
             dos.writeFloat(respawnPosition.x());
             dos.writeFloat(respawnPosition.y());
             dos.writeFloat(rotate);
