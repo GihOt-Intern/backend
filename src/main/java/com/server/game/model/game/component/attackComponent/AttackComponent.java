@@ -42,21 +42,22 @@ public class AttackComponent {
         this.moveService = moveService;
     }
 
-    public void setAttackContext(@Nullable AttackContext ctx) {
+    public boolean setAttackContext(@Nullable AttackContext ctx) {
 
         if (ctx == null) { // ctx null means forced stop attack
             System.out.println(">>> [Log in AttackComponent] Setting attack context to null, force stopping attack.");
             this.attackContext = null;
-            return;
+            return true;
         }
         
         if (this.owner.isCastingSkill() && !this.owner.canUseSkillWhileAttacking()) {
             System.out.println(">>> [Log in AttackComponent] Cannot set attack context while casting skill, skipping.");
-            return;
+            return false;
         }
 
         this.attackContext = ctx;
         System.out.println(">>> [Log in AttackComponent] Attack context set: " + ctx);
+        return true;
     }
 
     public boolean isAttacking() {
@@ -137,7 +138,8 @@ public class AttackComponent {
             strategy.getClass().getSimpleName());
 
         // Stop moving before performing the attack
-        moveService.setStopMoving(this.owner);
+        // is not forced bacause this request is called 
+        moveService.setStopMoving(this.owner, true);
         System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
         
         // Use the strategy to perform the attack
@@ -151,7 +153,7 @@ public class AttackComponent {
 
         if (ctx.getTarget() == null || !ctx.getTarget().isAlive()) {
             System.out.println(">>> [Log in AttackComponent] After performing attack, target is null or dead");
-            moveService.setStopMoving(this.owner);
+            moveService.setStopMoving(this.owner, true);
             this.stopAttacking();
         }
 

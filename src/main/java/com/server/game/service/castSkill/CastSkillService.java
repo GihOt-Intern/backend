@@ -23,10 +23,10 @@ public class CastSkillService {
 
     public void setCastSkill(CastSkillContext ctx) {
         Champion caster = ctx.getCaster();
-        
-        caster.useSkill(ctx);
 
         log.info("Set cast skill context for entity {}: {}", caster.getStringId(), ctx);
+        
+        caster.useSkill(ctx);
     }
 
 

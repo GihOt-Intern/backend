@@ -71,6 +71,20 @@ public class AssassinSkill extends SkillComponent {
                 entity.receiveSkillDamage(this.getCastSkillContext());
             });
 
+        
+        // Broadcast cast skill event
+        this.castSkillContext.setSkillLength(DASH_LENGTH);
+
+        this.getSkillOwner().getGameStateService()
+            .sendCastSkillAnimation(this.castSkillContext);
+
+        // Move the champion to the end of the dash
+        Vector2 ownerCurrentPosition = this.skillOwner.getCurrentPosition();
+        Vector2 mousePoint = this.getCastSkillContext().getTargetPoint();
+        Vector2 direction = ownerCurrentPosition.directionTo(mousePoint);
+        Vector2 ownerNewPosition = ownerCurrentPosition.add(direction.multiply(DASH_LENGTH));
+        this.skillOwner.setCurrentPosition(ownerNewPosition);
+
         return true;
     }
 }

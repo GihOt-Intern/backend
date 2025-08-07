@@ -67,10 +67,10 @@ public abstract class Entity implements Attackable {
         return components.containsKey(clazz);
     }
 
-    public boolean setMoveContext(MoveContext ctx) {
+    public boolean setMoveContext(MoveContext ctx, boolean isForced) {
         if (hasComponent(MovingComponent.class)) {
             System.out.println(">>> [Log in Entity.setMoveContext] Move context set: " + ctx);
-            return getComponent(MovingComponent.class).setMoveContext(ctx);
+            return getComponent(MovingComponent.class).setMoveContext(ctx, isForced);
         } else {
             throw new UnsupportedOperationException("Entity does not have MovingComponent");
         }
@@ -94,10 +94,9 @@ public abstract class Entity implements Attackable {
     //     }
     // }
 
-    public void setStopMoving() {
+    public boolean setStopMoving(boolean isForced) {
         if (hasComponent(MovingComponent.class)) {
-            getComponent(MovingComponent.class).setMoveContext(null);
-            System.out.println(">>> [Log in Entity.setStopMoving] Stopped moving.");
+            return getComponent(MovingComponent.class).setMoveContext(null, isForced);
         } else {
             throw new UnsupportedOperationException("Entity does not have MovingComponent");
         }
@@ -289,17 +288,26 @@ public abstract class Entity implements Attackable {
         if (hasComponent(SkillComponent.class)) {
             return getComponent(SkillComponent.class).canUseWhileAttacking();
         }
-        System.out.println("Entity does not have SkillComponent, returning false for canUseSkillWhileAttacking.");
-        return false; // Default value if no skill component is present
+        System.out.println("Entity does not have SkillComponent, returning true for canUseSkillWhileAttacking.");
+        return true; // Default value if no skill component is present
+    }
+
+    public boolean canUseSkillWhileMoving() {
+        if (hasComponent(SkillComponent.class)) {
+            return getComponent(SkillComponent.class).canUseWhileMoving();
+        }
+        System.out.println("Entity does not have SkillComponent, returning true for canUseSkillWhileMoving.");
+        return true; // Default value if no skill component is present
     }
 
 
-    public void setAttackContext(AttackContext ctx) {
+    public boolean setAttackContext(AttackContext ctx) {
         if (hasComponent(AttackComponent.class)) {
-            getComponent(AttackComponent.class).setAttackContext(ctx);
             log.info(">>> [Log in Entity.setAttackContext] Attack context set: {}", ctx);
+            return getComponent(AttackComponent.class).setAttackContext(ctx);
         } else {
-            throw new UnsupportedOperationException("Entity does not have AttackComponent");
+            log.info("Entity does not have AttackComponent, cannot set attack context.");
+            return false; // Default value if no attack component is present
         }
     }
 

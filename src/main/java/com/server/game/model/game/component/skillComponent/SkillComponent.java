@@ -83,6 +83,22 @@ public abstract class SkillComponent {
             return false;
         }
 
+        if (this.skillOwner.isMoving() && !this.canUseWhileMoving()) {
+            // cast skill is higher priority than moving, so we stop moving
+            log.info("Champion {} is moving and received a skill use request, stopping movement.",
+                this.skillOwner.getName());
+
+            this.skillOwner.setStopMoving(true);
+        }
+
+        if (this.skillOwner.isAttacking() && !this.canUseWhileAttacking()) {
+            // cast skill is higher priority than attack, so we stop the attack
+            log.info("Champion {} is attacking and received a skill use request, stopping attack.",
+                this.skillOwner.getName());
+
+            this.skillOwner.stopAttacking();
+        }
+
         this.setCastSkillContext(ctx);
         log.info("Set skill context: {}", ctx);
 

@@ -47,10 +47,16 @@ public class MovingComponent {
         this.distancePerTick = Util.getGameTickIntervalMs() * ownerSpeed / 1000f;
     }
 
-    public boolean setMoveContext(@Nullable MoveContext moveContext) {
+    public boolean setMoveContext(@Nullable MoveContext moveContext, boolean isForced) {
         long currentTick = this.owner.getGameState().getCurrentTick();
+
+        if (isForced) {
+            this.moveContext = moveContext;
+            lastAcceptedMoveRequestTick = currentTick;
+            return true;
+        }
+
         if (currentTick - lastAcceptedMoveRequestTick < MIN_UPDATE_INTERVAL_TICK) {
-            // log.info(">>> [Log in PositionComponent.setMoveContext] Move request ignored due to rate limiting.");
             log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
             return false;
         }
@@ -59,10 +65,18 @@ public class MovingComponent {
 
         lastAcceptedMoveRequestTick = currentTick;
         
-        if (moveContext == null) { return true; }
-        
+        if (moveContext == null) {
+            log.info(">>> [Log in PositionComponent.setMoveContext] Move context is null, stopping movement.");
+            return true; // Stop moving
+        }
+
+        if (this.owner.isCastingSkill() && !this.owner.canUseSkillWhileMoving()) {
+            log.info(">>> [Log in PositionComponent.setMoveContext] Cannot set move context while casting skill, skipping.");
+            return false; // Cannot set move context while casting skill
+        }
+
         // Using Theta* algorithm to find the path, update the moveContext
-        boolean foundPath = moveContext.findPath(); // this method already set the path in the moveContext (if found)
+        boolean foundPath = this.moveContext.findPath(); // this method already set the path in the moveContext (if found)
         log.info("Path found: {}", moveContext.getPath().getPath().toString());
 
 

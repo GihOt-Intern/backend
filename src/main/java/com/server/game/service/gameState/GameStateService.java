@@ -657,7 +657,8 @@ public class GameStateService {
         }
         
         // Send the update message to all players in the game
-        this.playgroundMessageHandler.sendInPlaygroundUpdateMessage(gameState.getGameId(), slot.getSlot(), isInPlayground);
+        this.playgroundMessageHandler.sendInPlaygroundUpdateMessage(
+            gameState.getGameId(), slot.getSlot(), isInPlayground);
     }
 
     public void sendAttackAnimation(AttackContext ctx) {

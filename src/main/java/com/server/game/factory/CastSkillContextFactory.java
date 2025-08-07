@@ -31,6 +31,7 @@ public class CastSkillContextFactory {
         GameState gameState = gameStateService.getGameStateById(gameId);
         if (gameState == null) {
             log.info("GameState not found for gameId: {}", gameId);
+            return null;
         }
 
         Champion caster = (Champion) gameState.getEntityByStringId(casterStringId);
@@ -49,7 +50,7 @@ public class CastSkillContextFactory {
             log.info("Target not found: {}", targetEntityId);
         }
 
-        if ((target != null) && !(target instanceof SkillReceiver skillReceiver)) {
+        if ((target != null) && !(target instanceof SkillReceiver)) {
             log.info("Target must be a SkillReceiver");
         }
 

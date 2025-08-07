@@ -6,7 +6,6 @@ import java.util.Map;
 import org.springframework.lang.Nullable;
 
 import com.server.game.model.game.Champion;
-import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.map.component.Vector2;

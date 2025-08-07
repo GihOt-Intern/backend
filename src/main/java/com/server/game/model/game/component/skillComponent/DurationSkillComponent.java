@@ -45,6 +45,14 @@ public abstract class DurationSkillComponent extends SkillComponent {
     public final boolean updatePerTick() {
         if (!this.isActive) { return false; }
 
+        if (this.skillOwner.isMoving() && !this.canUseWhileMoving()) {
+            // cast skill is higher priority than moving, so we stop moving
+            log.info("Champion {} is moving and received a skill use request, stopping movement.",
+                this.skillOwner.getName());
+
+            this.skillOwner.setStopMoving(true);
+        }
+
         if (skillOwner.isAttacking() && !this.canUseWhileAttacking()) {
             // skill has higher priority than attack, so we stop the attack
             log.info("Using skill, but champion is attacking, stopping attack for champion {}.",
