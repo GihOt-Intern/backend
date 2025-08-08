@@ -241,7 +241,7 @@ public abstract class Entity implements Attackable {
      */
     public void afterUpdatePosition() {
 
-        log.info("afterUpdatePosition in Entity called for updating grid cell...");
+        // log.info("afterUpdatePosition in Entity called for updating grid cell...");
 
         this.getGameStateService()
             .addEntityToGridCellMapping(this);
@@ -254,7 +254,7 @@ public abstract class Entity implements Attackable {
      * it can just call super.beforeUpdatePosition().
      */
     public void beforeUpdatePosition() {
-        log.info("beforeUpdatePosition in Entity called for updating grid cell...");
+        // log.info("beforeUpdatePosition in Entity called for updating grid cell...");
 
         this.getGameStateService()
             .removeEntityFromGridCellMapping(this);

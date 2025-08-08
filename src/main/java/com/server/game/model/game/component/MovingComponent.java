@@ -57,54 +57,56 @@ public class MovingComponent {
         }
 
         if (currentTick - lastAcceptedMoveRequestTick < MIN_UPDATE_INTERVAL_TICK) {
-            log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
+            log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + 
+                lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
             return false;
         }
 
-        this.moveContext = moveContext;
 
-        lastAcceptedMoveRequestTick = currentTick;
-        
-        if (moveContext == null) {
-            log.info(">>> [Log in PositionComponent.setMoveContext] Move context is null, stopping movement.");
-            return true; // Stop moving
-        }
+        // if (moveContext == null) {
+        //     log.info(">>> [Log in PositionComponent.setMoveContext] Move context is null, stopping movement.");
+        //     return true; // Stop moving
+        // }
 
         if (this.owner.isCastingSkill() && !this.owner.canUseSkillWhileMoving()) {
             log.info(">>> [Log in PositionComponent.setMoveContext] Cannot set move context while casting skill, skipping.");
             return false; // Cannot set move context while casting skill
         }
 
-        // Using Theta* algorithm to find the path, update the moveContext
-        boolean foundPath = this.moveContext.findPath(); // this method already set the path in the moveContext (if found)
-        log.info("Path found: {}", moveContext.getPath().getPath().toString());
+        this.moveContext = moveContext;
+
+        lastAcceptedMoveRequestTick = currentTick;
+
+        // // Using Theta* algorithm to find the path, update the moveContext
+        // boolean foundPath = this.moveContext.findPath(); // this method already set the path in the moveContext (if found)
+        // log.info("Path found: {}", moveContext.getPath().getPath().toString());
 
 
 
-        if (this.pathFindingFailedCount >= MAX_PATH_FINDING_FAILED_ATTEMPTS) {
+        // if (this.pathFindingFailedCount >= MAX_PATH_FINDING_FAILED_ATTEMPTS) {
             
-            if (currentTick - this.lastPathFindingFailedTick < PATH_FINDING_FAILED_ATTEMPT_COOLDOWN_TICK) {
-                log.info("Entity {} in cooldown due to repeated failed pathfinding attempts", owner.getStringId());
-                return false;
-            }
+        //     if (currentTick - this.lastPathFindingFailedTick < PATH_FINDING_FAILED_ATTEMPT_COOLDOWN_TICK) {
+        //         log.info("Entity {} in cooldown due to repeated failed pathfinding attempts", owner.getStringId());
+        //         return false;
+        //     }
 
-            this.pathFindingFailedCount = 0; // reset the count if we are not in cooldown
-            return true;
-        }
+        //     this.pathFindingFailedCount = 0; // reset the count if we are not in cooldown
+        //     return true;
+        // }
 
 
-        if (!foundPath) {
-            ++this.pathFindingFailedCount;
-            this.lastPathFindingFailedTick = currentTick;
+        // if (!foundPath) {
+        //     ++this.pathFindingFailedCount;
+        //     this.lastPathFindingFailedTick = currentTick;
 
-            if (this.pathFindingFailedCount >= MAX_PATH_FINDING_FAILED_ATTEMPTS) {
-                log.warn("Entity {} has failed to find a path {} times, entering cooldown", 
-                    owner.getStringId(), this.pathFindingFailedCount);
-            }
-            return false;
-        }
+        //     if (this.pathFindingFailedCount >= MAX_PATH_FINDING_FAILED_ATTEMPTS) {
+        //         log.warn("Entity {} has failed to find a path {} times, entering cooldown", 
+        //             owner.getStringId(), this.pathFindingFailedCount);
+        //     }
+        //     return false;
+        // }
 
-        this.pathFindingFailedCount = 0;
+        // this.pathFindingFailedCount = 0;
         return true;
     }
 

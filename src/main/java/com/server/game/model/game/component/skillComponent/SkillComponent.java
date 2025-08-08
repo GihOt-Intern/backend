@@ -108,7 +108,18 @@ public abstract class SkillComponent {
         ctx.getGameStateService().sendCastSkillAnimation(ctx);
 
 
-        this.doUse();
+        boolean didUse = this.doUse();
+
+        if (!didUse) {
+            log.error("Something wrong makes Skill {} failed to use for champion {} at tick {}",
+                this.name, this.skillOwner.getName(), currentTick);
+            this.isActive = false; // Mark skill as inactive if it failed to use
+            return false;
+        }
+
+        this.isActive = false; // Mark skill as inactive after use
+        log.info("Skill {} used successfully for champion {} at tick {}",
+            this.name, this.skillOwner.getName(), currentTick);
 
         lastUsedTick = currentTick;
         return true;

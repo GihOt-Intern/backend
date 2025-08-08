@@ -535,11 +535,11 @@ public class GameStateService {
         GameState gameState = entity.getGameState();
         gameState.getGrid2Entity().computeIfPresent(oldGridCell, (cell, entities) -> {
             entities.remove(entity);
-            log.info("Removed entity {} from grid cell {}", entity.getStringId(), cell);
+            // log.info("Removed entity {} from grid cell {}", entity.getStringId(), cell);
 
             if (entities.isEmpty()) {
                 gameState.getGrid2Entity().remove(cell);
-                log.info("Removed empty grid cell {} from gameId: {}", cell, gameState.getGameId());
+                // log.info("Removed empty grid cell {} from gameId: {}", cell, gameState.getGameId());
             }
             return entities; // no need
         });
@@ -560,8 +560,8 @@ public class GameStateService {
 
         GridCell newGridCell = entity.getCurrentGridCell();
 
-        log.info("Updating entity, new position: {} to grid cell {}", 
-                entity.getCurrentPosition(), newGridCell);
+        // log.info("Updating entity, new position: {} to grid cell {}", 
+        //         entity.getCurrentPosition(), newGridCell);
         
         GameState gameState = entity.getGameState();
         gameState.getGrid2Entity().computeIfAbsent(newGridCell, k -> ConcurrentHashMap.newKeySet()).add(entity);        

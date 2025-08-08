@@ -98,14 +98,14 @@ public final class Champion extends SkillReceiver {
 
     @Override
     public void beforeUpdatePosition() {
-        log.info("Call beforeUpdatePosition for champion, call super method...");
+        // log.info("Call beforeUpdatePosition for champion, call super method...");
         super.beforeUpdatePosition();
     }
 
 
     @Override
     public void afterUpdatePosition() {
-        log.info("Call afterUpdatePosition for champion, check in playground and call super method...");
+        // log.info("Call afterUpdatePosition for champion, check in playground and call super method...");
 
         this.checkInPlayGround();
 

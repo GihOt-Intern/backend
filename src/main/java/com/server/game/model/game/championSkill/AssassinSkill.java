@@ -8,6 +8,7 @@ import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.model.map.shape.RectShape;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
+import com.server.game.util.ThetaStarPathfinder;
 
 import lombok.extern.slf4j.Slf4j;
 // Lướt thẳng tới trước 1 khoảng cách X, gây sát thương lên đối thủ trên đường đi
@@ -15,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AssassinSkill extends SkillComponent {
 
     private static final float DASH_LENGTH = 8.0f;
-    private static final float DASH_WIDTH = 8.0f;
+    private static final float DASH_WIDTH = 2.0f;
 
     public AssassinSkill(Champion owner, ChampionAbility ability) {
         super(owner, ability);
@@ -72,18 +73,28 @@ public class AssassinSkill extends SkillComponent {
             });
 
         
-        // Broadcast cast skill event
-        this.castSkillContext.setSkillLength(DASH_LENGTH);
-
-        this.getSkillOwner().getGameStateService()
-            .sendCastSkillAnimation(this.castSkillContext);
-
-        // Move the champion to the end of the dash
+        // Move the champion to the new position after the skill is cast
+        // new position is the closest walkable position in the direction of the mouse point
+        // to ensure the champion does not get stuck in walls
+        // Calculate the new position based on the direction and DASH_LENGTH
         Vector2 ownerCurrentPosition = this.skillOwner.getCurrentPosition();
         Vector2 mousePoint = this.getCastSkillContext().getTargetPoint();
         Vector2 direction = ownerCurrentPosition.directionTo(mousePoint);
-        Vector2 ownerNewPosition = ownerCurrentPosition.add(direction.multiply(DASH_LENGTH));
-        this.skillOwner.setCurrentPosition(ownerNewPosition);
+        Vector2 ownerNewExpectedPosition = ownerCurrentPosition.add(direction.multiply(DASH_LENGTH));
+        Vector2 ownerActualNewPosition = ThetaStarPathfinder.findClosestWalkablePosition(
+                this.skillOwner.getGameState(), ownerNewExpectedPosition);
+
+        // Broadcast cast skill event
+        float actualDashLength = ownerCurrentPosition.distance(ownerActualNewPosition);
+        this.castSkillContext.setSkillLength(actualDashLength);
+        this.getSkillOwner().getGameStateService()
+            .sendCastSkillAnimation(this.castSkillContext);
+
+        // Update the champion's position
+        log.info("Dash from {} to {} position", 
+            ownerCurrentPosition, ownerActualNewPosition);
+        this.skillOwner.setStopMoving(true); 
+        this.skillOwner.setCurrentPosition(ownerActualNewPosition);
 
         return true;
     }
