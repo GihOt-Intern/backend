@@ -178,8 +178,9 @@ public final class Champion extends SkillReceiver {
         this.skillComponent.use(ctx);
     }
 
-    public void updateCastSkill() {
+    public void updateDurationSkill() {
         if (this.skillComponent instanceof DurationSkillComponent durationSkillComponent) {
+            // log.info("Updating duration skill for champion: {}", this.getName());
             durationSkillComponent.updatePerTick();
         }
     }

@@ -27,10 +27,10 @@ public class RectShape extends Shape {
     @Override
     public boolean contains(Vector2 point) {
 
-        log.info("Hitbox: center={}, direction={}, width={}, length={}",
-            this.center, this.direction, this.width, this.length);
+        // log.info("Hitbox: center={}, direction={}, width={}, length={}",
+        //     this.center, this.direction, this.width, this.length);
 
-        log.info("Point={}", point);
+        // log.info("Point={}", point);
         
         Vector2 toPoint = point.subtract(center); // vector từ center đến point
 

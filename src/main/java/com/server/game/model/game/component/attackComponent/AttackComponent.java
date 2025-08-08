@@ -50,7 +50,7 @@ public class AttackComponent {
             return true;
         }
         
-        if (this.owner.isCastingSkill() && !this.owner.canUseSkillWhileAttacking()) {
+        if (this.owner.isCastingDurationSkill() && !this.owner.canUseSkillWhileAttacking()) {
             System.out.println(">>> [Log in AttackComponent] Cannot set attack context while casting skill, skipping.");
             return false;
         }

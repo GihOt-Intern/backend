@@ -188,8 +188,16 @@ public class GameState {
         Vector2 origin = gameMapGrid.getOrigin(); // (-100; 30)
         float cellSize = gameMapGrid.getCellSize();
 
-        int col = (int) ((position.x() - origin.x()) / cellSize);
-        int row = (int) ((origin.y() - position.y()) / cellSize); // flip Y axis
+        float relativeX = position.x() - origin.x();
+        float relativeY = origin.y() - position.y(); // flip Y axis
+
+        int col = (int) (relativeX / cellSize);
+        int row = (int) (relativeY / cellSize);
+
+        // Kẹp giá trị để đảm bảo nó luôn nằm trong phạm vi hợp lệ của grid
+        col = Math.max(0, Math.min(col, gameMapGrid.getNCols() - 1));
+        row = Math.max(0, Math.min(row, gameMapGrid.getNRows() - 1));
+
         return new GridCell(row, col);
     }
 

@@ -19,12 +19,14 @@ public class ThetaStarPathfinder {
         int cols = grid[0].length;
 
 
-        // Nếu điểm bắt đầu hoặc kết thúc không đi được
-        if (!gameMapGrid.isValid(start) || !gameMapGrid.isValid(end)) {
+        // Nếu điểm bắt đầu hoặc kết thúc không nằm trong lưới -> vô lý -> trả về danh sách rỗng
+        // Nhưng điều này sẽ không xảy ra vì khi chuyển từ Vector2 sang GridCell,
+        // nó đã được đảm bảo kẹp giữa trong phạm vi của lưới
+        if (gameMapGrid.isOutGrid(start) || gameMapGrid.isOutGrid(end)) {
             return Collections.emptyList();
         }
 
-        // Nếu điểm bắt đầu không đi được
+        // Nếu điểm bắt đầu nằm ở ô không đi được
         if (!gameMapGrid.isWalkable(start)) {
             System.out.println(">>> Start point is not walkable");
             GridCell closestWalkable = findClosestWalkablePosition(grid, start);
@@ -36,7 +38,7 @@ public class ThetaStarPathfinder {
             start = closestWalkable;
         }
 
-        // Nếu điểm kết thúc không đi được
+        // Nếu điểm kết thúc nằm ở ô không đi được
         if (!gameMapGrid.isWalkable(end)) {
             System.out.println(">>> End point is not walkable");
             GridCell closestWalkable = findClosestWalkablePosition(grid, end);

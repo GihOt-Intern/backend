@@ -30,8 +30,8 @@ public class GameMapGrid {
         return cornerA;
     }
 
-    public boolean isValid(GridCell cell) {
-        return cell.r() >= 0 && cell.r() < nRows && cell.c() >= 0 && cell.c() < nCols;
+    public boolean isOutGrid(GridCell cell) {
+        return cell.r() < 0 || cell.r() >= nRows || cell.c() < 0 || cell.c() >= nCols;
     }
 
     public boolean isWalkable(GridCell cell) {

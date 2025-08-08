@@ -5,6 +5,7 @@ import java.util.Set;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
+import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.model.map.shape.RectShape;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
@@ -37,54 +38,60 @@ public class AssassinSkill extends SkillComponent {
         return false;
     }
 
-    private final RectShape getHitbox() {
-        Vector2 ownerPoint = this.skillOwner.getCurrentPosition();
-        Vector2 mousePoint = this.getCastSkillContext().getTargetPoint();
-        Vector2 direction = ownerPoint.directionTo(mousePoint);
+    private final RectShape getHitbox(Vector2 ownerOldPosition, Vector2 actualDirection) {
 
         float hitboxLength = DASH_LENGTH + 2f;
 
-        Vector2 centerPoint = ownerPoint.add(direction.multiply(hitboxLength / 2));
+        Vector2 centerPoint = ownerOldPosition.add(actualDirection.multiply(hitboxLength / 2));
 
         return new RectShape(
             centerPoint,
             DASH_WIDTH,
             hitboxLength,
-            direction
+            actualDirection
         );
     }
 
-    private final void dash() {
-        // Move the champion to the new position after the skill is cast
-        // new position is the closest walkable position in the direction of the mouse point
-        // to ensure the champion does not get stuck in walls
-        // Calculate the new position based on the direction and DASH_LENGTH
-        Vector2 ownerCurrentPosition = this.skillOwner.getCurrentPosition();
-        Vector2 mousePoint = this.getCastSkillContext().getTargetPoint();
-        Vector2 direction = ownerCurrentPosition.directionTo(mousePoint);
-        Vector2 ownerNewExpectedPosition = ownerCurrentPosition.add(direction.multiply(DASH_LENGTH));
-        Vector2 ownerActualNewPosition = ThetaStarPathfinder.findClosestWalkablePosition(
-                this.skillOwner.getGameState(), ownerNewExpectedPosition);
+    private final void dash(Vector2 ownerOldPosition, 
+        Vector2 ownerNewExpectedPosition,
+        Vector2 ownerActualNewPosition) {
 
+        
+        
+        // GridCell expectedCell = this.skillOwner
+        //     .getGameState().toGridCell(ownerNewExpectedPosition);
+        // boolean isExpectedValid = this.skillOwner
+        //     .getGameState().getGameMapGrid().isWalkable(expectedCell);
+        // log.info("Is expected position {}, cell {} valid: {}", 
+        //     ownerNewExpectedPosition, expectedCell, isExpectedValid);
+
+
+        // GridCell actualCell = this.skillOwner
+        //     .getGameState().toGridCell(ownerActualNewPosition);
+        // boolean isActualValid = this.skillOwner
+        //     .getGameState().getGameMapGrid().isWalkable(actualCell);
+        // log.info("Is actual position {}, cell {} valid: {}", 
+        //     ownerActualNewPosition, actualCell, isActualValid);
+        
+    
         // Broadcast cast skill event
-        float actualDashLength = ownerCurrentPosition.distance(ownerActualNewPosition);
+        float actualDashLength = ownerOldPosition.distance(ownerActualNewPosition);
         this.castSkillContext.setSkillLength(actualDashLength);
 
-        this.getSkillOwner().getGameStateService()
-            .sendCastSkillAnimation(this.castSkillContext);
-
-        log.info("Assassin dashing, expect position: {}, actual position: {}, expect dash length: {}, actual dash length: {}",
+        log.info("Assassin dashing, current position: {}, expect position: {}, actual position: {}, expect dash length: {}, actual dash length: {}",
+            ownerOldPosition,
             ownerNewExpectedPosition,
             ownerActualNewPosition,
             DASH_LENGTH,
             actualDashLength
         );
 
-        // Update the champion's position
-        log.info("Dash from {} to {} position", 
-            ownerCurrentPosition, ownerActualNewPosition);
         this.skillOwner.setStopMoving(true); 
         this.skillOwner.setCurrentPosition(ownerActualNewPosition);
+
+        this.getSkillOwner().getGameStateService()
+            .sendCastSkillAnimation(this.castSkillContext);
+        
     }
 
     private final void performAOEDamage(RectShape hitbox) {
@@ -108,11 +115,23 @@ public class AssassinSkill extends SkillComponent {
 
     @Override
     protected boolean doUse() {
-        // get hit box before dashing
-        RectShape hitbox = this.getHitbox();
 
-        this.dash();
+        // Find dashing end position (check walls colliding,...)
+        Vector2 ownerCurrentPosition = this.skillOwner.getCurrentPosition();
+        Vector2 mousePoint = this.getCastSkillContext().getTargetPoint();
+        Vector2 expectedDirection = ownerCurrentPosition.directionTo(mousePoint);
+        Vector2 ownerNewExpectedPosition = ownerCurrentPosition.add(expectedDirection.multiply(DASH_LENGTH));
+        Vector2 ownerActualNewPosition = ThetaStarPathfinder.findClosestWalkablePosition(
+                this.skillOwner.getGameState(), ownerNewExpectedPosition);
+
+        Vector2 actualDirection = ownerCurrentPosition.directionTo(ownerActualNewPosition);
+
+        // get hit box before dashing
+        RectShape hitbox = this.getHitbox(ownerCurrentPosition, actualDirection);
         this.performAOEDamage(hitbox);
+
+        this.dash(ownerCurrentPosition, expectedDirection, ownerActualNewPosition);
+
 
         return true;
     }

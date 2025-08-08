@@ -23,6 +23,8 @@ public abstract class DurationSkillComponent extends SkillComponent {
     protected long endTick = -1;                  // Khi kết thúc
     protected long nextDamageTick = -1;           // Tick tiếp theo cần gây damage
 
+    protected boolean isActive = false;           // Skill đang hoạt động hay không
+
     public DurationSkillComponent(Champion owner, ChampionAbility ability,
         float durationSeconds, float damageIntervalSeconds) {
         super(owner, ability);
@@ -39,11 +41,21 @@ public abstract class DurationSkillComponent extends SkillComponent {
         this.endTick = startTick + Util.seconds2GameTick(DURATION_SECONDS);
         this.nextDamageTick = this.startTick; // Get damage immediately
 
+        this.isActive = true; // Mark skill as active
+
+        this.getCastSkillContext().setSkillLength(DURATION_SECONDS);
+        this.getSkillOwner().getGameStateService()
+            .sendCastSkillAnimation(castSkillContext);
+
         return true;
     }
 
     public final boolean updatePerTick() {
-        if (!this.isActive) { return false; }
+        if (!this.isActive) { 
+            return false; 
+        }
+
+        log.info("Updating skill for champion: {}", this.getSkillOwner().getName());
 
         if (this.skillOwner.isMoving() && !this.canUseWhileMoving()) {
             // cast skill is higher priority than moving, so we stop moving

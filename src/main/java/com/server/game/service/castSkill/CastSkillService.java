@@ -30,17 +30,17 @@ public class CastSkillService {
     }
 
 
-    public void updateCastSkills(GameState gameState) {
+    public void updateDurationSkills(GameState gameState) {
         // Only process cast skills for champions
         Set<Champion> champions = new HashSet<>(gameState.getChampions());
         for (Champion caster : champions) {
-            this.processCastSkillOf(caster);
+            this.processDurationSkillOf(caster);
         }
     }
 
-    private void processCastSkillOf(Champion caster) {
-        // Perform the cast skill
-        caster.updateCastSkill();
+    private void processDurationSkillOf(Champion caster) {
+        // Perform the duration skill
+        caster.updateDurationSkill();
     }
 
     // public void clearGameCastSkillContexts(GameState gameState) {

@@ -63,7 +63,7 @@ public class GameLogicScheduler {
                 moveService.updatePositions(gameState);
 
 
-                castSkillService.updateCastSkills(gameState);
+                castSkillService.updateDurationSkills(gameState);
 
             } catch (Exception e) {
                 log.error("Error in game logic loop for game: {}", gameState.getGameId(), e);

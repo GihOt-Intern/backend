@@ -8,7 +8,6 @@ import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.model.map.shape.RectShape;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
-import com.server.game.util.ThetaStarPathfinder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ArcherSkill extends SkillComponent {
 
     private static final float ARCHER_LENGTH = 8.0f;
-    private static final float ARCHER_WIDTH = 2.0f;
+    private static final float ARCHER_WIDTH = 4.0f;
 
     public ArcherSkill(Champion owner, ChampionAbility ability) {
         super(owner, ability);
@@ -35,7 +34,7 @@ public class ArcherSkill extends SkillComponent {
 
     @Override
     public boolean canUseWhileMoving() {
-        return true;
+        return false;
     }
 
     private final RectShape getHitbox() {

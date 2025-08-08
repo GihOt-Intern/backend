@@ -51,10 +51,10 @@ public class MoveContext {
     }
 
     public void setPath(List<GridCell> path) {
-        if (path == null || path.isEmpty()) {
-            this.path = null;
-            return;
-        }
+        // if (path == null || path.isEmpty()) {
+        //     this.path = null;
+        //     return;
+        // }
         
         this.path = new PathComponent(path);
 

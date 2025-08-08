@@ -21,7 +21,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CastSkillSend implements TLVEncodable {
     String casterId;
-    Vector2 targetPosition; // Caster's mouse position
+    Vector2 mousePosition; // Caster's mouse position
+    Vector2 newChampionPosition; // Caster's new position after casting
     float skillLength;
     long timestamp;
 
@@ -37,8 +38,10 @@ public class CastSkillSend implements TLVEncodable {
             DataOutputStream dos = new DataOutputStream(baos);
 
             dos.writeUTF(casterId);
-            dos.writeFloat(targetPosition.x());
-            dos.writeFloat(targetPosition.y());
+            dos.writeFloat(mousePosition.x());
+            dos.writeFloat(mousePosition.y());
+            dos.writeFloat(newChampionPosition.x());
+            dos.writeFloat(newChampionPosition.y());
             dos.writeFloat(skillLength);
             dos.writeLong(timestamp);
 

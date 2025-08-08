@@ -54,7 +54,7 @@ public class CastSkillMessageHandler {
             gameId, entityStringId, receiveObject.getTargetPosition(), clientTimestamp);
 
 
-        castSkillService.setCastSkill(castSkillContext);
         log.info("Cast skill message received for entity {}: {}", entityStringId, castSkillContext);
+        castSkillService.setCastSkill(castSkillContext);
     }
 } 

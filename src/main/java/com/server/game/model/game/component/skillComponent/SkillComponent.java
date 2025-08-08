@@ -25,7 +25,6 @@ public abstract class SkillComponent {
     protected long lastUsedTick;
 
     protected CastSkillContext castSkillContext = null;
-    protected boolean isActive = false;
 
     public SkillComponent(Champion owner, ChampionAbility ability) {
         this.skillOwner = owner;
@@ -45,10 +44,6 @@ public abstract class SkillComponent {
         this.castSkillContext = ctx;
     }
 
-
-    public final boolean isActive() {
-        return this.isActive;
-    }
 
     public abstract boolean canUseWhileAttacking();
     public abstract boolean canUseWhileMoving();
@@ -102,19 +97,15 @@ public abstract class SkillComponent {
         this.setCastSkillContext(ctx);
         log.info("Set skill context: {}", ctx);
 
-        this.isActive = true; // Set the skill as active
-
 
         boolean didUse = this.doUse();
 
         if (!didUse) {
             log.error("Something wrong makes Skill {} failed to use for champion {} at tick {}",
                 this.name, this.skillOwner.getName(), currentTick);
-            this.isActive = false; // Mark skill as inactive if it failed to use
             return false;
         }
 
-        this.isActive = false; // Mark skill as inactive after use
         log.info("Skill {} used successfully for champion {} at tick {}",
             this.name, this.skillOwner.getName(), currentTick);
 

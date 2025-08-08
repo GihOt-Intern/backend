@@ -8,6 +8,7 @@ import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
+import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.MoveContext;
@@ -277,9 +278,9 @@ public abstract class Entity implements Attackable {
         return true; // Default value if no health component is present
     }
 
-    public boolean isCastingSkill() {
-        if (hasComponent(SkillComponent.class)) {
-            return getComponent(SkillComponent.class).isActive();
+    public boolean isCastingDurationSkill() {
+        if (hasComponent(DurationSkillComponent.class)) {
+            return getComponent(DurationSkillComponent.class).isActive();
         }
         return false; // Default value if no skill component is present
     }
