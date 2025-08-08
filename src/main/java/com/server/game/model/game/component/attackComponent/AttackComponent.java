@@ -73,8 +73,8 @@ public class AttackComponent {
 
     private final boolean inAttackRange(Vector2 targetPosition) {
         float distance = this.owner.getCurrentPosition().distance(targetPosition);
-        System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
-            "distance=" + distance + ", attackRange=" + this.attackRange);
+        // System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
+        //     "distance=" + distance + ", attackRange=" + this.attackRange);
         return distance - 0.1f <= this.attackRange;
     }
 

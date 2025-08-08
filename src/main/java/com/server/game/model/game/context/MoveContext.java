@@ -78,8 +78,8 @@ public class MoveContext {
         GridCell startCell = gameState.toGridCell(mover.getCurrentPosition());
         GridCell targetCell = gameState.toGridCell(targetPoint);
         GameMapGrid gameMapGrid = gameState.getGameMapGrid();
-        log.info("Setting move target for entity {}: from {} to {}", mover.getStringId(), mover.getCurrentPosition(), targetPoint);
-        log.info("Calculating path for entity {} from cell {} to cell {}", mover.getStringId(), startCell, targetCell);
+        // log.info("Setting move target for entity {}: from {} to {}", mover.getStringId(), mover.getCurrentPosition(), targetPoint);
+        // log.info("Calculating path for entity {} from cell {} to cell {}", mover.getStringId(), startCell, targetCell);
 
         List<GridCell> path = ThetaStarPathfinder.findPath(gameMapGrid, startCell, targetCell);
         if (path == null || path.isEmpty()) {

@@ -23,13 +23,14 @@ import lombok.experimental.FieldDefaults;
 @ReceiveType(ReceiveMessageType.TROOP_POSITION_RECEIVE)
 @Component
 public class TroopPositionReceive implements TLVDecodable{
-    private List<PositionData> positions;
+    private List<String> troopIds;
+    float x, y;
     private long timestamp;
 
     @Override
     public void decode(byte[] value) {
         try {
-            this.positions = new ArrayList<>(); // Initialize the list
+            this.troopIds = new ArrayList<>(); // Initialize the list
             ByteArrayInputStream bais = new ByteArrayInputStream(value);
             DataInputStream dis = new DataInputStream(bais);
             short size = dis.readShort();
@@ -38,23 +39,14 @@ public class TroopPositionReceive implements TLVDecodable{
                 byte[] troopIdBytes = new byte[troopIdLength];
                 dis.readFully(troopIdBytes);
                 String troopId = new String(troopIdBytes);
-
-                float x = dis.readFloat();
-                float y = dis.readFloat();
-
-                positions.add(new PositionData(troopId, x, y));
+                this.troopIds.add(troopId); // Add troopId to the list
             }
+            this.x = dis.readFloat();
+            this.y = dis.readFloat();
+            // Read the timestamp
             this.timestamp = dis.readLong();
         } catch (Exception e) {
             throw new RuntimeException("Cannot decode troop position dataa", e);
         }
-    }
-
-    @Data
-    @AllArgsConstructor
-    public static class PositionData {
-        private String troopId;
-        private float x;
-        private float y;
     }
 }

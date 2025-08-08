@@ -14,6 +14,7 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.troop.TroopPositionReceive;
 import com.server.game.netty.receiveObject.troop.TroopSpawnReceive;
 import com.server.game.netty.sendObject.troop.TroopSpawnSend;
+import com.server.game.netty.sendObject.troop.TroopCooldownSend;
 import com.server.game.service.gameState.GameCoordinator;
 import com.server.game.service.troop.TroopManager;
 import com.server.game.util.TroopEnum;
@@ -28,6 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -36,6 +39,10 @@ import java.util.Set;
 public class TroopMessageHandler {
     TroopManager troopManager;
     GameCoordinator gameCoordinator;
+    
+    // Cooldown tracking: gameId:slot:troopType -> timestamp when cooldown ends
+    private final Map<String, Long> troopCooldowns = new ConcurrentHashMap<>();
+    private static final long TROOP_SPAWN_COOLDOWN_MS = 3000; // 3 seconds
 
     @MessageMapping(TroopPositionReceive.class)
     public void handleTroopPosition(TroopPositionReceive request, ChannelHandlerContext ctx) {
@@ -54,41 +61,44 @@ public class TroopMessageHandler {
         }
 
         // Process each troop position and spread them out
-        List<TroopPositionReceive.PositionData> positions = request.getPositions();
-        if (positions == null || positions.isEmpty()) {
-            log.warn("No troop positions provided in request");
+        List<String> troopIds = request.getTroopIds();
+        if (troopIds == null || troopIds.isEmpty()) {
+            log.warn("No troop IDs provided in request");
             return;
         }
 
-        // Spread out the positions to prevent collisions
-        List<Vector2> spreadPositions = spreadTroopPositions(positions, gameState);
+        // Get the original position from the request
+        Vector2 originalPosition = new Vector2(request.getX(), request.getY());
+        
+        // Generate spread positions for all troops around the original position
+        List<Vector2> spreadPositions = spreadTroopPositions(troopIds, originalPosition, gameState);
         
         // Apply the spread positions to each troop
-        for (int i = 0; i < positions.size() && i < spreadPositions.size(); i++) {
-            TroopPositionReceive.PositionData posData = positions.get(i);
+        for (int i = 0; i < troopIds.size() && i < spreadPositions.size(); i++) {
+            String troopId = troopIds.get(i);
             Vector2 newPosition = spreadPositions.get(i);
             
             // Verify the troop belongs to the requesting slot for security
-            Entity troopEntity = gameState.getEntityByStringId(posData.getTroopId());
+            Entity troopEntity = gameState.getEntityByStringId(troopId);
             if (troopEntity == null || !(troopEntity instanceof TroopInstance2)) {
-                log.warn("Troop {} not found or invalid type", posData.getTroopId());
+                log.warn("Troop {} not found or invalid type", troopId);
                 continue;
             }
             
             TroopInstance2 troop = (TroopInstance2) troopEntity;
             if (troop.getOwnerSlot().getSlot() != requestingSlot) {
                 log.warn("Player {} attempted to move troop {} owned by slot {}", 
-                    requestingSlot, posData.getTroopId(), troop.getOwnerSlot().getSlot());
+                    requestingSlot, troopId, troop.getOwnerSlot().getSlot());
                 continue;
             }
             
             // Set the new position for the troop
-            troopManager.setMovePosition(gameId, posData.getTroopId(), newPosition);
+            troopManager.setMovePosition(gameId, troopId, newPosition);
             
-            log.debug("Moved troop {} to spread position {}", posData.getTroopId(), newPosition);
+            log.debug("Moved troop {} to spread position {}", troopId, newPosition);
         }
         
-        log.info("Processed {} troop positions with collision avoidance for game {}", positions.size(), gameId);
+        log.info("Processed {} troop positions with collision avoidance for game {}", troopIds.size(), gameId);
     }
 
     /**
@@ -119,6 +129,18 @@ public class TroopMessageHandler {
             return;
         }
 
+        // Check cooldown before spawning
+        String cooldownKey = gameId + ":" + requestingSlot + ":" + troopType;
+        long currentTime = System.currentTimeMillis();
+        Long cooldownEndTime = troopCooldowns.get(cooldownKey);
+        
+        if (cooldownEndTime != null && currentTime < cooldownEndTime) {
+            long remainingCooldown = (cooldownEndTime - currentTime) / 1000; // Convert to seconds
+            log.info("Troop spawn rejected due to cooldown. Slot: {}, TroopType: {}, Remaining: {}s",
+                requestingSlot, troopType, remainingCooldown);
+            return;
+        }
+
         GameState gameState = gameCoordinator.getGameState(gameId);
         if (gameState == null) {
             log.warn("No game state found for game ID: {}", gameId);
@@ -142,6 +164,13 @@ public class TroopMessageHandler {
             return;
         }
 
+        // Set cooldown after successful spawn
+        troopCooldowns.put(cooldownKey, currentTime + TROOP_SPAWN_COOLDOWN_MS);
+        
+        // Send cooldown message to client
+        TroopCooldownSend cooldownMessage = new TroopCooldownSend(request.getTroopId(), (short) (TROOP_SPAWN_COOLDOWN_MS / 1000));
+        channel.writeAndFlush(cooldownMessage);
+
         boolean isAttack = request.isAttack();
         if (isAttack) {
             log.info("Spawning attack troop of type {} for owner slot {}", troopType, request.getOwnerSlot());
@@ -160,7 +189,35 @@ public class TroopMessageHandler {
 
         broadcastTroopSpawn(gameId, troopInstance.getStringId(), request.getTroopId(), request.getOwnerSlot(), spawnPosition, troopInstance.getMaxHP());
 
-        log.info("Troop spawned successfully: {} at position {}", troopType, spawnPosition);
+        log.info("Troop spawned successfully: {} at position {}, cooldown set for {} seconds", 
+            troopType, spawnPosition, TROOP_SPAWN_COOLDOWN_MS / 1000);
+    }
+
+    /**
+     * Clean up expired cooldowns for a specific game to prevent memory leaks
+     */
+    public void cleanupGameCooldowns(String gameId) {
+        long currentTime = System.currentTimeMillis();
+        troopCooldowns.entrySet().removeIf(entry -> 
+            entry.getKey().startsWith(gameId + ":") && entry.getValue() <= currentTime
+        );
+        log.debug("Cleaned up expired cooldowns for game: {}", gameId);
+    }
+
+    /**
+     * Get remaining cooldown time for a specific troop type and slot
+     * @return remaining cooldown in milliseconds, or 0 if no cooldown
+     */
+    public long getRemainingCooldown(String gameId, short slot, TroopEnum troopType) {
+        String cooldownKey = gameId + ":" + slot + ":" + troopType;
+        Long cooldownEndTime = troopCooldowns.get(cooldownKey);
+        
+        if (cooldownEndTime == null) {
+            return 0;
+        }
+        
+        long remaining = cooldownEndTime - System.currentTimeMillis();
+        return Math.max(0, remaining);
     }
 
     private Vector2 getMinionPositionForSlot(GameState gameState, short ownerSlot) {
@@ -248,82 +305,85 @@ public class TroopMessageHandler {
     }
 
     /**
-     * Spreads out troop positions to maintain at least 2 cells distance between troops
-     * Each cell is assumed to be 1 unit, so 2 cells = 2.0 units minimum distance
+     * Arranges troop positions in a spiral pattern around the center position
+     * The first position remains unchanged, subsequent positions spiral outward
+     * with a minimum distance of 2 cells between each position
      */
-    private List<Vector2> spreadTroopPositions(List<TroopPositionReceive.PositionData> originalPositions, GameState gameState) {
-        final float MIN_DISTANCE = 2.0f; // 2 cells minimum distance
-        final float SPREAD_FACTOR = 1.5f; // How much to spread when resolving conflicts
-        final int MAX_ITERATIONS = 10; // Prevent infinite loops
+    private List<Vector2> spreadTroopPositions(List<String> troopIds, Vector2 centerPosition, GameState gameState) {
+        final float CELL_DISTANCE = 2.0f; // 2 cells distance between positions
         
         List<Vector2> spreadPositions = new ArrayList<>();
         
-        // Convert original positions to Vector2
-        for (TroopPositionReceive.PositionData posData : originalPositions) {
-            spreadPositions.add(new Vector2(posData.getX(), posData.getY()));
+        if (troopIds.isEmpty()) {
+            return spreadPositions;
         }
         
-        // Iteratively resolve conflicts
-        for (int iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
-            boolean hasConflicts = false;
+        // First position remains the same (center position)
+        spreadPositions.add(centerPosition);
+        
+        log.debug("Center position (first troop): {}", centerPosition);
+        
+        // If only one troop, return early
+        if (troopIds.size() == 1) {
+            return spreadPositions;
+        }
+        
+        // Generate spiral positions for the remaining troops
+        // Spiral directions: Left -> Up -> Right -> Down (counter-clockwise)
+        Vector2[] directions = {
+            new Vector2(-CELL_DISTANCE, 0),  // Left
+            new Vector2(0, CELL_DISTANCE),   // Up  
+            new Vector2(CELL_DISTANCE, 0),   // Right
+            new Vector2(0, -CELL_DISTANCE)   // Down
+        };
+        
+        Vector2 currentPosition = centerPosition;
+        int directionIndex = 0; // Start with Left direction
+        int stepsInCurrentDirection = 1; // How many steps to take in current direction
+        int stepsTaken = 0; // Steps taken in current direction
+        int stepsBeforeDirectionChange = 1; // After how many steps to change direction
+        
+        // Place remaining troops in spiral pattern
+        for (int i = 1; i < troopIds.size(); i++) {
+            // Move to next position in current direction
+            Vector2 direction = directions[directionIndex];
+            currentPosition = currentPosition.add(direction);
+            spreadPositions.add(currentPosition);
             
-            // Check all pairs for conflicts
-            for (int i = 0; i < spreadPositions.size(); i++) {
-                for (int j = i + 1; j < spreadPositions.size(); j++) {
-                    Vector2 pos1 = spreadPositions.get(i);
-                    Vector2 pos2 = spreadPositions.get(j);
-                    
-                    float distance = pos1.distance(pos2);
-                    if (distance < MIN_DISTANCE && distance > 0) {
-                        hasConflicts = true;
-                        
-                        // Calculate direction to separate the positions
-                        Vector2 direction = pos2.subtract(pos1).normalize();
-                        
-                        // If positions are identical, use a random direction
-                        if (direction.length() == 0) {
-                            direction = new Vector2(1.0f, 0.0f);
-                        }
-                        
-                        // Calculate how much to move each position
-                        float requiredSeparation = MIN_DISTANCE - distance;
-                        float moveDistance = (requiredSeparation / 2.0f) * SPREAD_FACTOR;
-                        
-                        // Move positions apart
-                        Vector2 offset = direction.multiply(moveDistance);
-                        spreadPositions.set(i, pos1.subtract(offset));
-                        spreadPositions.set(j, pos2.add(offset));
-                        
-                        log.trace("Resolved collision between positions {} and {}, moved apart by {}", 
-                            pos1, pos2, moveDistance * 2);
-                    }
+            log.trace("Troop {} positioned at {} (direction: {})", 
+                i, currentPosition, getDirectionName(directionIndex));
+            
+            stepsTaken++;
+            
+            // Check if we need to change direction
+            if (stepsTaken >= stepsInCurrentDirection) {
+                directionIndex = (directionIndex + 1) % 4; // Move to next direction
+                stepsTaken = 0;
+                
+                // After completing Left and Right directions, increase steps
+                if (directionIndex == 2 || directionIndex == 0) { // Right or Left
+                    stepsBeforeDirectionChange++;
+                    stepsInCurrentDirection = stepsBeforeDirectionChange;
+                } else { // Up or Down
+                    stepsInCurrentDirection = stepsBeforeDirectionChange;
                 }
             }
-            
-            // If no conflicts found, we're done
-            if (!hasConflicts) {
-                log.debug("Position spreading completed after {} iterations", iteration + 1);
-                break;
-            }
-            
-            if (iteration == MAX_ITERATIONS - 1) {
-                log.warn("Position spreading reached maximum iterations, some conflicts may remain");
-            }
         }
         
-        // Validate all positions are still valid (optional: check map bounds)
-        for (int i = 0; i < spreadPositions.size(); i++) {
-            Vector2 pos = spreadPositions.get(i);
-            if (pos.x() < 0 || pos.y() < 0) {
-                // Clamp to positive coordinates if needed
-                spreadPositions.set(i, new Vector2(Math.max(0, pos.x()), Math.max(0, pos.y())));
-                log.debug("Clamped position {} to positive coordinates", pos);
-            }
-        }
-        
-        log.debug("Spread {} troop positions with minimum distance of {} units", 
-            spreadPositions.size(), MIN_DISTANCE);
-        
+        log.debug("Generated {} spread positions in spiral pattern", spreadPositions.size());
         return spreadPositions;
+    }
+    
+    /**
+     * Helper method to get direction name for logging
+     */
+    private String getDirectionName(int directionIndex) {
+        switch (directionIndex) {
+            case 0: return "LEFT";
+            case 1: return "UP";
+            case 2: return "RIGHT";
+            case 3: return "DOWN";
+            default: return "UNKNOWN";
+        }
     }
 }

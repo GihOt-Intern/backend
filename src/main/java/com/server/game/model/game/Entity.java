@@ -69,7 +69,7 @@ public abstract class Entity implements Attackable {
 
     public boolean setMoveContext(MoveContext ctx) {
         if (hasComponent(MovingComponent.class)) {
-            System.out.println(">>> [Log in Entity.setMoveContext] Move context set: " + ctx);
+            // System.out.println(">>> [Log in Entity.setMoveContext] Move context set: " + ctx);
             return getComponent(MovingComponent.class).setMoveContext(ctx);
         } else {
             throw new UnsupportedOperationException("Entity does not have MovingComponent");
@@ -97,7 +97,7 @@ public abstract class Entity implements Attackable {
     public void setStopMoving() {
         if (hasComponent(MovingComponent.class)) {
             getComponent(MovingComponent.class).setMoveContext(null);
-            System.out.println(">>> [Log in Entity.setStopMoving] Stopped moving.");
+            // System.out.println(">>> [Log in Entity.setStopMoving] Stopped moving.");
         } else {
             throw new UnsupportedOperationException("Entity does not have MovingComponent");
         }
@@ -242,7 +242,7 @@ public abstract class Entity implements Attackable {
      */
     public void afterUpdatePosition() {
 
-        log.info("afterUpdatePosition in Entity called for updating grid cell...");
+        // log.info("afterUpdatePosition in Entity called for updating grid cell...");
 
         this.getGameStateService()
             .addEntityToGridCellMapping(this);
@@ -255,7 +255,7 @@ public abstract class Entity implements Attackable {
      * it can just call super.beforeUpdatePosition().
      */
     public void beforeUpdatePosition() {
-        log.info("beforeUpdatePosition in Entity called for updating grid cell...");
+        // log.info("beforeUpdatePosition in Entity called for updating grid cell...");
 
         this.getGameStateService()
             .removeEntityFromGridCellMapping(this);

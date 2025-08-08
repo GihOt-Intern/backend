@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.GameState;
+import com.server.game.netty.messageHandler.troopMessageHandler.TroopMessageHandler;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,13 +18,15 @@ import lombok.extern.slf4j.Slf4j;
 public class GameCoordinator {
     
     private final GameStateService gameStateService;
+    private final TroopMessageHandler troopMessageHandler;
 
     // Store all currently active GameStates
     private final Map<String, GameState> gameStates = new ConcurrentHashMap<>();
 
 
-    public GameCoordinator(@Lazy GameStateService gameStateService) {
+    public GameCoordinator(@Lazy GameStateService gameStateService, @Lazy TroopMessageHandler troopMessageHandler) {
         this.gameStateService = gameStateService;
+        this.troopMessageHandler = troopMessageHandler;
     }
     
     /**
@@ -41,6 +44,7 @@ public class GameCoordinator {
     public void unregisterGame(String gameId) {
         gameStateService.cleanupGameState(gameId);
         // pvpService.cleanupGameCooldowns(gameId); // Clean up attack cooldowns
+        troopMessageHandler.cleanupGameCooldowns(gameId); // Clean up troop spawn cooldowns
         gameStates.remove(gameId); // Remove GameState (model)
         log.info("Unregistered game from all schedulers and cleaned up game state: {}", gameId);
     }

@@ -63,7 +63,7 @@ public class MovingComponent {
         
         // Using Theta* algorithm to find the path, update the moveContext
         boolean foundPath = moveContext.findPath(); // this method already set the path in the moveContext (if found)
-        log.info("Path found: {}", moveContext.getPath().getPath().toString());
+        // log.info("Path found: {}", moveContext.getPath().getPath().toString());
 
 
 
