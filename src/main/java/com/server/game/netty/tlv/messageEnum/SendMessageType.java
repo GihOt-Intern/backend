@@ -30,12 +30,12 @@ public enum SendMessageType {
     ATTACK_ANIMATION_SEND((short) 104),
     HEALTH_UPDATE_SEND((short) 105),
     
-    CHAMPION_DEATH_SEND((short) 106),
     CHAMPION_RESPAWN_TIME_SEND((short) 107),
     CHAMPION_RESPAWN_SEND((short) 108),
 
     TROOP_SPAWN_SEND((short) 201),
-    TROOP_DEATH_SEND((short) 202), // Troop death message
+    ENTITY_DEATH_SEND((short) 203), // Unified entity death message for both champions and troops
+    TROOP_SPAWN_COOLDOWN_SEND((short) 204),
 
     HEARTBEAT_SEND((short) 255), // Heartbeat message
 

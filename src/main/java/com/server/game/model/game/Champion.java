@@ -5,14 +5,15 @@ import java.util.UUID;
 
 import com.server.game.model.game.attackStrategy.ChampionAttackStrategy;
 import com.server.game.model.game.component.HealthComponent;
+import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
-import com.server.game.model.game.component.attackComponent.SkillReceivable;
+import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
+import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
-import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.service.move.MoveService2;
 import com.server.game.util.ChampionEnum;
@@ -22,35 +23,37 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper=false, exclude = "skillComponent")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
-public final class Champion extends Entity implements SkillReceivable {
+@Slf4j
+public final class Champion extends SkillReceiver {
 
-    ChampionEnum championEnum;
-    String name;
-    String role;
+    final ChampionEnum championEnum;
+    final String name;
+    final String role;
 
     @Delegate
-    ChampionAttributeComponent attributeComponent;
+    final ChampionAttributeComponent attributeComponent;
     @Delegate
-    HealthComponent healthComponent;
+    final HealthComponent healthComponent;
     @Delegate
-    SkillComponent skillComponent;
+    final MovingComponent movingComponent;
     @Delegate
-    AttackComponent attackComponent;
+    final SkillComponent skillComponent;
+    @Delegate
+    final AttackComponent attackComponent;
+
 
 
     public Champion(ChampionDB championDB, SlotState ownerSlot, GameState gameState,
         SkillFactory skillFactory, MoveService2 moveService) {
 
         super("champion_" + UUID.randomUUID().toString(),
-            ownerSlot, gameState,
-            gameState.getSpawnPosition(ownerSlot),
-            championDB.getStats().getMoveSpeed()
-        );
+            ownerSlot, gameState);
 
         this.championEnum = ChampionEnum.fromShort(championDB.getId());
         this.name = championDB.getName();
@@ -58,6 +61,11 @@ public final class Champion extends Entity implements SkillReceivable {
         this.attributeComponent = new ChampionAttributeComponent(
             championDB.getStats().getDefense(),
             championDB.getStats().getResourceClaimingSpeed()
+        );
+        this.movingComponent = new MovingComponent(
+            this,
+            gameState.getSpawnPosition(ownerSlot),
+            championDB.getStats().getMoveSpeed()
         );
         this.healthComponent = new HealthComponent(
             championDB.getStats().getInitHP()
@@ -81,6 +89,7 @@ public final class Champion extends Entity implements SkillReceivable {
     @Override
     protected void addAllComponents() {
         this.addComponent(ChampionAttributeComponent.class, attributeComponent);
+        this.addComponent(MovingComponent.class, movingComponent);
         this.addComponent(HealthComponent.class, healthComponent);
         this.addComponent(SkillComponent.class, skillComponent);
         this.addComponent(AttackComponent.class, attackComponent);
@@ -88,11 +97,20 @@ public final class Champion extends Entity implements SkillReceivable {
 
 
     @Override
+    public void beforeUpdatePosition() {
+        log.info("Call beforeUpdatePosition for champion, call super method...");
+        super.beforeUpdatePosition();
+    }
+
+
+    @Override
     public void afterUpdatePosition() {
-        
+        log.info("Call afterUpdatePosition for champion, check in playground and call super method...");
+
         this.checkInPlayGround();
 
         super.afterUpdatePosition();
+
     }
 
     private void checkInPlayGround() {
@@ -100,8 +118,8 @@ public final class Champion extends Entity implements SkillReceivable {
         boolean nextInPlayGround = this.checkInPlayGround(
             this.getGameState().getGameMap().getPlayGround());
 
-        System.out.println(">>> [Log in Champion.checkInPlayGround] " + this.stringId + " nextInPlayGround: " +
-            nextInPlayGround + ", current inPlayGround: " + this.isInPlayground());
+        // System.out.println(">>> [Log in Champion.checkInPlayGround] " + this.stringId + " nextInPlayGround: " +
+        //     nextInPlayGround + ", current inPlayGround: " + this.isInPlayground());
 
         if (nextInPlayGround != this.isInPlayground()) {
             this.toggleInPlaygroundFlag(); // Toggle the state
@@ -128,6 +146,12 @@ public final class Champion extends Entity implements SkillReceivable {
         ctx.getGameStateService().sendHealthUpdate(
             ctx.getGameId(), this, actualDamage, ctx.getTimestamp());
 
+        // 4. Check if champion died and handle death/respawn logic
+        if (this.getCurrentHP() <= 0) {
+            ctx.getGameStateService().checkAndHandleChampionDeath(
+                ctx.getGameId(), this.getOwnerSlot().getSlot());
+        }
+
         return true; 
     }
 
@@ -142,9 +166,21 @@ public final class Champion extends Entity implements SkillReceivable {
         ctx.addActualDamage(actualDamage);
         ctx.getGameStateService().sendHealthUpdate(
             ctx.getGameId(), this, actualDamage, ctx.getTimestamp());
+        
+        // 4. Check if champion died and handle death/respawn logic
+        if (this.getCurrentHP() <= 0) {
+            ctx.getGameStateService().checkAndHandleChampionDeath(
+                ctx.getGameId(), this.getOwnerSlot().getSlot());
+        }
+    }
+
+    public void useSkill(CastSkillContext ctx) {
+        this.skillComponent.use(ctx);
     }
 
     public void updateCastSkill() {
-        this.skillComponent.update();
+        if (this.skillComponent instanceof DurationSkillComponent durationSkillComponent) {
+            durationSkillComponent.updatePerTick();
+        }
     }
 }

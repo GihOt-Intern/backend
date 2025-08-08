@@ -12,16 +12,22 @@ public class MageSkill extends SkillComponent {
         super(owner, ability);
     }
 
-
     @Override
-    protected void doUse() {
-        // Implement the specific logic for using a Mage skill
-        // This could involve dealing damage, applying effects, etc.
+    public boolean canUseWhileAttacking() {
+        return false;
     }
 
     @Override
-    public void update() {
-        // Implement any periodic updates needed for the Mage skill
-        // For example, if the skill has a duration or needs to check conditions over time
+    public boolean canUseWhileMoving() {
+        return false;
+    }
+
+
+    @Override
+    protected boolean doUse() {
+        // Implement the specific logic for using a Mage skill
+        // This could involve dealing damage, applying effects, etc.
+    
+        return true; // Indicate that the skill was used successfully
     }
 }

@@ -1,4 +1,4 @@
-package com.server.game.netty.sendObject.troop;
+package com.server.game.netty.sendObject.entity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -18,13 +18,12 @@ import lombok.experimental.FieldDefaults;
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TroopDeathSend implements TLVEncodable{
-    String troopId;
-    short slot;
+public class EntityDeathSend implements TLVEncodable {
+    String entityId;
 
     @Override
     public SendMessageType getType() {
-        return SendMessageType.TROOP_DEATH_SEND;
+        return SendMessageType.ENTITY_DEATH_SEND;
     }
 
     @Override
@@ -33,17 +32,16 @@ public class TroopDeathSend implements TLVEncodable{
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(baos);
 
-            byte[] troopIdBytes = troopId != null ? troopId.getBytes("UTF-8") : new byte[0];
-            int troopIdLength = troopIdBytes.length;
-            dos.writeInt(troopIdLength);
-            if (troopIdLength > 0) {
-                dos.write(troopIdBytes);
+            byte[] entityIdBytes = entityId != null ? entityId.getBytes("UTF-8") : new byte[0];
+            short entityIdLength = (short) (short) entityIdBytes.length;
+            dos.writeShort(entityIdLength);
+            if (entityIdLength > 0) {
+                dos.write(entityIdBytes);
             }
-            dos.writeShort(slot);
 
             return baos.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException("Error encoding TroopDeathSend", e);
+            throw new RuntimeException("Error encoding EntityDeathSend", e);
         }
     }
 

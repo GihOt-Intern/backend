@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
-import com.server.game.model.game.component.attackComponent.SkillReceivable;
+import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.GridCell;
@@ -26,7 +26,7 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageHandler.AnimationMessageHandler;
 import com.server.game.netty.messageHandler.GameStateMessageHandler;
 import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
-import com.server.game.netty.sendObject.respawn.ChampionDeathSend;
+import com.server.game.netty.sendObject.entity.EntityDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnTimeSend;
 import com.server.game.util.Util;
@@ -166,8 +166,8 @@ public class GameStateService {
         }
 
         slotState.setChampionDead();
-        log.info("Champion in gameId: {}, slot: {} has died", gameId,
-                slot);
+        // log.info("Champion in gameId: {}, slot: {} has died", gameId,
+        //         slot);
         
         // Clear all attack targets that were targeting this dead champion
         // attackTargetingService.clearTargetsAttackingChampion(gameId, slot);
@@ -180,11 +180,19 @@ public class GameStateService {
     }
 
     private void sendChampionDeathMessage(String gameId, short slot) {
-        ChampionDeathSend deathMessage = new ChampionDeathSend(slot);
+        String championId = this.getStringIdBySlotId(gameId, slot);
+        if (championId == null) {
+            log.warn("Could not find champion ID for gameId: {}, slot: {}", gameId, slot);
+            return;
+        }
+        
+        EntityDeathSend deathMessage = new EntityDeathSend(championId);
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
         if (channel != null) {
             channel.writeAndFlush(deathMessage);
-            log.info("Sent champion death message for gameId: {}, slot: {}", gameId, slot);
+            //log.info("Sent champion death message for gameId: {}, slot: {}, championId: {}", gameId, slot, championId);
+        } else {
+            log.warn("No channel found for gameId: {} when sending champion death message", gameId);
         }
     }
 
@@ -202,8 +210,8 @@ public class GameStateService {
         Channel playerChannel = ChannelManager.getChannelByGameIdAndSlot(gameId, slot);
         if (playerChannel != null) {
             playerChannel.writeAndFlush(respawnMessage);
-            log.info("Scheduled respawn for gameId: {}, slot: {} in {} seconds", 
-                    gameId, slot, respawnTime);
+            // log.info("Scheduled respawn for gameId: {}, slot: {} in {} seconds", 
+            //         gameId, slot, respawnTime);
         } else {
             log.warn("No channel found for gameId: {}, slot: {}", gameId, slot);
         }
@@ -245,15 +253,16 @@ public class GameStateService {
 
         // Reset the state
         slotState.setChampionRevive();
-        slotState.setCurrentHP(maxHealth);
+        champion.setCurrentHP(maxHealth);
+        champion.setCurrentPosition(initialPosition);
 
         // TODO: reset position state
 
 
-        log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
+        // log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
 
         //Send message
-        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slot, initialPosition, rotateAngle, maxHealth);
+        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slotState.getChampion().getStringId(), initialPosition, rotateAngle, maxHealth);
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
         if (channel != null) {
             channel.writeAndFlush(respawnSend);
@@ -290,7 +299,7 @@ public class GameStateService {
     public void cleanupGameState(String gameId) {
         GameState removed = gameCoordinator.popGameState(gameId);
         if (removed != null) {
-            log.info("Cleaned up game state for gameId: {} with {} players", gameId, removed.getNumPlayers());
+            // log.info("Cleaned up game state for gameId: {} with {} players", gameId, removed.getNumPlayers());
         }
     }
     
@@ -371,8 +380,8 @@ public class GameStateService {
 
         slotState.setChampionRevive();
 
-        log.info("Reset health for gameId: {}, slot: {} from {} to {} (max)", 
-                gameId, slot, oldHP, slotState.getCurrentHP());
+        // log.info("Reset health for gameId: {}, slot: {} from {} to {} (max)", 
+        //         gameId, slot, oldHP, slotState.getCurrentHP());
         return true;
     }
 
@@ -420,7 +429,7 @@ public class GameStateService {
     public void incrementTick(String gameId) {
         GameState gameState = this.getGameStateById(gameId);
         if (gameState == null) {
-            log.info("Game state not found for gameId: {}", gameId);
+            // log.info("Game state not found for gameId: {}", gameId);
             return;
         }
 
@@ -428,111 +437,143 @@ public class GameStateService {
         // log.info("Incremented game tick for gameId: {}, current tick: {}", gameId, gameState.getCurrentTick());
     }
 
-
-    public GridCell getGridCellByEntity(GameState gameState, Entity entity) {
-        if (gameState == null || entity == null) {
-            log.warn("Invalid parameters for getting grid cell by entity");
-            return null;
-        }
-        
-        return gameState.getEntity2Grid().get(entity);
-    }
-
     public Set<Entity> getEntitiesByGridCell(GameState gameState, GridCell gridCell) {
         if (gameState == null || gridCell == null) {
-            log.warn("Invalid parameters for getting entities by grid cell");
+            // log.info("Invalid parameters for getting entities by grid cell");
             return null;
         }
         
         return gameState.getGrid2Entity().get(gridCell);
     }
 
-    private void updateEntity2Grid(GameState gameState, Entity entity, GridCell gridCell) {
-        if (gameState == null || entity == null || gridCell == null) {
-            log.warn("Invalid parameters for updating entity to grid cell mapping");
-            return;
-        }
+    // private void popEntityFromGridCell(Entity entity) {
+    //     // if (gameState == null || entity == null || gridCell == null) {
+    //     //     log.info("Invalid parameters for popping entity from grid cell");
+    //     //     if (gridCell == null) {
+    //     //         log.info("Grid cell is null");
+    //     //     }
+    //     //     return;
+    //     // }
+    //     // Set<Entity> entities = this.getEntitiesByGridCell(gameState, gridCell);
+    //     // if (entities != null) {
+    //     //     entities.remove(entity);
+    //     //     log.info("Removed entity {} from grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
+    //     // } else {
+    //     //     // log.warn("No entities found in grid cell {} for gameId: {}", gridCell, gameState.getGameId());
+    //     // }
+    //     // if (entities == null || entities.isEmpty()) {
+    //     //     gameState.getGrid2Entity().remove(gridCell);
+    //     //     log.info("Removed empty grid cell {} from gameId: {}", gridCell, gameState.getGameId());
+    //     // }
+
+    //     GameState gameState = entity.getGameState();
+    //     for (GridCell gridCell : gameState.getGrid2Entity().keySet()) {
+    //         Set<Entity> entities = gameState.getGrid2Entity().get(gridCell);
+    //         if (entities != null) {
+    //             // if entity is in this grid cell, remove it
+    //             // if not, remove(entity) will do nothing
+    //             entities.remove(entity);
+    //             if (entities.isEmpty()) {
+    //                 gameState.getGrid2Entity().remove(gridCell);
+    //                 log.info("Removed empty grid cell {} from gameId: {}", gridCell, gameState.getGameId());
+    //             }
+    //         }
+    //     }
+    // }
+
+    // private void pushEntityToGridCell(GameState gameState, GridCell gridCell, Entity entity) {
+    //     if (gameState == null || gridCell == null || entity == null) {
+    //         log.info("Invalid parameters for pushing entity to grid cell");
+    //         if (gameState == null) {
+    //             log.info("Game state is null");
+    //         }
+    //         if (gridCell == null) {
+    //             log.info("Grid cell is null");
+    //         }
+    //         if (entity == null) {
+    //             log.info("Entity is null");
+    //         }
+    //         return;
+    //     }
         
-        gameState.getEntity2Grid().put(entity, gridCell);
-        log.debug("Updated entity {} to grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
-    }
+    //     gameState.getGrid2Entity().computeIfAbsent(gridCell, k -> ConcurrentHashMap.newKeySet()).add(entity);
+    //     log.debug("Pushed entity {} to grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
+    // }
 
-    private void popEntityFromGridCell(GameState gameState, Entity entity, GridCell gridCell) {
-        if (gameState == null || entity == null || gridCell == null) {
-            log.warn("Invalid parameters for popping entity from grid cell");
-            return;
-        }
-        Set<Entity> entities = this.getEntitiesByGridCell(gameState, gridCell);
-        if (entities != null) {
-            entities.remove(entity);
-            log.debug("Removed entity {} from grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
-        } else {
-            // log.warn("No entities found in grid cell {} for gameId: {}", gridCell, gameState.getGameId());
-        }
-        if (entities == null || entities.isEmpty()) {
-            gameState.getGrid2Entity().remove(gridCell);
-            log.debug("Removed empty grid cell {} from gameId: {}", gridCell, gameState.getGameId());
-        }
-    }
 
-    private void pushEntityToGridCell(GameState gameState, GridCell gridCell, Entity entity) {
-        if (gameState == null || gridCell == null || entity == null) {
-            log.warn("Invalid parameters for pushing entity to grid cell");
-            return;
-        }
+    // private void updateGridCell2Entity(GameState gameState, GridCell gridCell, Entity entity) {
+    //     if (gameState == null || gridCell == null || entity == null) {
+    //         log.info("Invalid parameters for updating grid cell to entity mapping");
+    //         return;
+    //     }
         
-        gameState.getGrid2Entity().computeIfAbsent(gridCell, k -> ConcurrentHashMap.newKeySet()).add(entity);
-        log.debug("Pushed entity {} to grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
-    }
+    //     GridCell newGridCell = entity.getCurrentGridCell();
 
-
-    private void updateGridCell2Entity(GameState gameState, GridCell gridCell, Entity entity) {
-        if (gameState == null || gridCell == null || entity == null) {
-            log.warn("Invalid parameters for updating grid cell to entity mapping");
-            return;
-        }
-        
-        GridCell oldGridCell = this.getGridCellByEntity(gameState, entity);
-
-        if (oldGridCell != null) { // Entity was already in map at old grid cell
-            if (oldGridCell.equals(gridCell)) {
-                log.debug("Entity {} is already in grid cell {}, no update needed", entity, gridCell);
-                return; // No change needed
-            }
+    //     if (oldGridCell != null) { // Entity was already in map at old grid cell
+    //         log.info("oldGridCell: {}, new gridCell: {}", oldGridCell, gridCell);
+    //         if (oldGridCell.equals(gridCell)) {
+    //             log.info("Entity {} is already in grid cell {}, no update needed", entity, gridCell);
+    //             return; // No change needed
+    //         }
             
-            // Overwrite the entity's old grid cell by the new one
-            this.updateEntity2Grid(gameState, entity, gridCell);
+    //         // Remove entity in old grid cell's set
+    //         this.popEntityFromGridCell(gameState, entity, oldGridCell);
+    //     }
 
-            // Remove entity in old grid cell's set
-            this.popEntityFromGridCell(gameState, entity, oldGridCell);
+    //     // Update the entity to the new grid cell
+    //     this.pushEntityToGridCell(gameState, oldGridCell, entity);
+        
+    //     log.info("Updated entity {} from old grid cell {} to new grid cell {}",
+    //             entity, oldGridCell, gridCell);
+    // }
+
+
+    // called before update Entity's current position 
+    public void removeEntityFromGridCellMapping(Entity entity) {
+        if (entity == null) {
+            log.warn("Invalid entity for removing from grid cell mapping");
+            return;
         }
 
-        // Update the entity to the new grid cell
-        this.pushEntityToGridCell(gameState, oldGridCell, entity);
-        
-        log.debug("Updated entity {} from old grid cell {} to new grid cell {}",
-                entity, oldGridCell, gridCell);
+        GridCell oldGridCell = entity.getCurrentGridCell();
+        if (oldGridCell == null) {
+            log.warn("Entity {} has no current grid cell, cannot remove from mapping", entity.getStringId());
+            return;
+        }
 
-        log.debug("Updated grid cell {} to entity {} in gameId: {}", gridCell, entity, gameState.getGameId());
+        GameState gameState = entity.getGameState();
+        gameState.getGrid2Entity().computeIfPresent(oldGridCell, (cell, entities) -> {
+            entities.remove(entity);
+            // log.info("Removed entity {} from grid cell {}", entity.getStringId(), cell);
+
+            if (entities.isEmpty()) {
+                gameState.getGrid2Entity().remove(cell);
+                // log.info("Removed empty grid cell {} from gameId: {}", cell, gameState.getGameId());
+            }
+            return entities; // no need
+        });
     }
 
 
     /**
      * Update the entity-grid cell mapping for an entity in the game state
+     * Called after the entity's current position is updated
      * @param gameState The game state to update
      * @param entity The entity to update
      */
-    public void updateEntityGridCellMapping(GameState gameState, Entity entity) {
-        if (gameState == null || entity == null) {
+    public void addEntityToGridCellMapping(Entity entity) {
+        if (entity == null) {
             log.warn("Invalid parameters for updating entity grid cell mapping");
             return;
         }
 
-        Vector2 newPosition = entity.getCurrentPosition();
-        GridCell gridCell = gameState.toGridCell(newPosition);
+        GridCell newGridCell = entity.getCurrentGridCell();
+
+        // log.info("Updating entity, new position: {} to grid cell {}", 
+                // entity.getCurrentPosition(), newGridCell);
         
-        // Update the grid cell for the entity
-        this.updateGridCell2Entity(gameState, gridCell, entity);
+        GameState gameState = entity.getGameState();
+        gameState.getGrid2Entity().computeIfAbsent(newGridCell, k -> ConcurrentHashMap.newKeySet()).add(entity);        
     }
 
 
@@ -606,11 +647,11 @@ public class GameStateService {
         return res;
     }
 
-    public Set<SkillReceivable> getSkillReceivableEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
+    public Set<SkillReceiver> getSkillReceiverEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
         Set<Entity> entities = this.getEnemiesInScope(gameState, scope, slotState);
         return entities.stream()
-            .filter(entity -> entity instanceof SkillReceivable)
-            .map(SkillReceivable.class::cast)
+            .filter(entity -> entity instanceof SkillReceiver)
+            .map(SkillReceiver.class::cast)
             .collect(Collectors.toSet());
     }
 

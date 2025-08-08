@@ -55,5 +55,6 @@ public class CastSkillMessageHandler {
 
 
         castSkillService.setCastSkill(castSkillContext);
+        log.info("Cast skill message received for entity {}: {}", entityStringId, castSkillContext);
     }
 } 

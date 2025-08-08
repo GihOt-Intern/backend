@@ -15,6 +15,7 @@ import com.server.game.util.ThetaStarPathfinder;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,6 +48,11 @@ public class MoveContext {
     }
 
     public void setPath(List<GridCell> path) {
+        if (path == null || path.isEmpty()) {
+            this.path = null;
+            return;
+        }
+        
         this.path = new PathComponent(path);
 
         // TODO: try pop out the first cell
@@ -72,8 +78,8 @@ public class MoveContext {
         GridCell startCell = gameState.toGridCell(mover.getCurrentPosition());
         GridCell targetCell = gameState.toGridCell(targetPoint);
         GameMapGrid gameMapGrid = gameState.getGameMapGrid();
-        log.info("Setting move target for entity {}: from {} to {}", mover.getStringId(), mover.getCurrentPosition(), targetPoint);
-        log.info("Calculating path for entity {} from cell {} to cell {}", mover.getStringId(), startCell, targetCell);
+        // log.info("Setting move target for entity {}: from {} to {}", mover.getStringId(), mover.getCurrentPosition(), targetPoint);
+        // log.info("Calculating path for entity {} from cell {} to cell {}", mover.getStringId(), startCell, targetCell);
 
         List<GridCell> path = ThetaStarPathfinder.findPath(gameMapGrid, startCell, targetCell);
         if (path == null || path.isEmpty()) {
@@ -93,6 +99,7 @@ public class MoveContext {
 
     //****** INNER CLASS *****//
     public static class PathComponent {
+        @Getter
         private List<GridCell> path;
         private int index;
 

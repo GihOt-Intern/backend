@@ -1,10 +1,11 @@
-package com.server.game.netty.sendObject.respawn;
+package com.server.game.netty.sendObject.troop;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
-import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.UnicastTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.messageEnum.SendMessageType;
 
@@ -17,12 +18,13 @@ import lombok.experimental.FieldDefaults;
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ChampionDeathSend implements TLVEncodable {
-    short championSlot;
+public class TroopCooldownSend implements TLVEncodable {
+    short troopType;
+    short cooldownTime;
 
     @Override
     public SendMessageType getType() {
-        return SendMessageType.CHAMPION_DEATH_SEND;
+        return SendMessageType.TROOP_SPAWN_COOLDOWN_SEND;
     }
 
     @Override
@@ -31,16 +33,17 @@ public class ChampionDeathSend implements TLVEncodable {
         DataOutputStream dos = new DataOutputStream(baos);
 
         try {
-            dos.writeShort(championSlot);
-            dos.flush();
-            return baos.toByteArray();
-        } catch (Exception e) {
-            throw new RuntimeException("Error encoding ChampionDeathSend", e);
+            dos.writeShort(troopType);
+            dos.writeShort(cooldownTime);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        return baos.toByteArray();
     }
 
     @Override
     public SendTarget getSendTarget(Channel channel) {
-        return new AMatchBroadcastTarget(channel);
+        return new UnicastTarget(channel);
     }
 }

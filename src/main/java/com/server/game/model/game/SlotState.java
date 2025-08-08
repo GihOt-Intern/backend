@@ -22,14 +22,20 @@ public class SlotState {
     // which have already had @Delegate annotations.
     private Champion champion;
 
+    private Set<Tower> towers;
+
+    private Burg burg;
+
     @Delegate
-    private GoldComponent goldComponent;
+    private final GoldComponent goldComponent;
 
     private final Set<TroopInstance2> troops;
 
-    public SlotState(Short slot, Champion champion, Vector2 initialPosition, Integer initialGold) {
+    public SlotState(Short slot, Champion champion, Set<Tower> towers, Burg bug, Integer initialGold) {
         this.slot = slot;
         this.champion = champion;
+        this.towers = (towers != null) ? towers : new HashSet<>();
+        this.burg = bug;
         this.goldComponent = new GoldComponent(initialGold);
         this.troops = new HashSet<>();
     }

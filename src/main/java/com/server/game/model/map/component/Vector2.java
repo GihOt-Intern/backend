@@ -1,5 +1,6 @@
 package com.server.game.model.map.component;
 
+import java.util.Vector;
 
 public record Vector2(float x, float y) {
 
@@ -15,6 +16,10 @@ public record Vector2(float x, float y) {
 
     public Vector2 multiply(float scalar) { return new Vector2(x * scalar, y * scalar); }
 
+    public float dot(Vector2 other) {
+        return x * other.x + y * other.y;
+    }
+
     public Vector2 normalize() {
         float length = this.length();
         if (length == 0) {
@@ -25,6 +30,10 @@ public record Vector2(float x, float y) {
 
     public float length() {
         return (float) Math.sqrt(x * x + y * y);
+    }
+    
+    public float lengthSquared() {
+        return (float) (x * x + y * y);
     }
 
 
@@ -37,6 +46,15 @@ public record Vector2(float x, float y) {
                rectCenter.y() - length / 2 <= this.y && this.y <= rectCenter.y() + length / 2;
     }
 
+    public Vector2 directionTo(Vector2 other) {
+        return other.subtract(this).normalize();
+    }
+
+    // in radians
+    public float getRotateDegree() {
+        Vector2 origin = new Vector2(1, 0); // Reference vector (1, 0)
+        return (float) Math.acos(this.dot(origin) / (this.length() * origin.length()));
+    }
 
     @Override
     public String toString() {

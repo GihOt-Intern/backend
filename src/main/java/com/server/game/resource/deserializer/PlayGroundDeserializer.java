@@ -10,6 +10,7 @@ public class PlayGroundDeserializer extends AbstractSizedObjectDeserializer<Play
 
     @Override
     public PlayGround deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        return parse(p, sized -> new PlayGround(sized.id(), sized.position(), sized.width(), sized.length()));
+        return parse(p.getCodec().readTree(p), 
+        sized -> new PlayGround(sized.id(), sized.position(), sized.width(), sized.length()));
     }
 }

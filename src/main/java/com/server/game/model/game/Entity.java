@@ -8,16 +8,20 @@ import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
+import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.MoveContext;
+import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 
 import lombok.experimental.Delegate;
+import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
 
 // abstract class to represent an entity in the game
 // (Champion, Troop, Tower, Burg)
 @Getter
+@Slf4j
 public abstract class Entity implements Attackable {
 
     protected String stringId;
@@ -25,20 +29,14 @@ public abstract class Entity implements Attackable {
     @Delegate
     protected GameState gameState;
 
-    @Delegate
-    private MovingComponent movingComponent;
+
 
     private final Map<Class<?>, Object> components = new HashMap<>();
 
-    public Entity(String stringId, SlotState ownerSlot, GameState gameState,
-        Vector2 initPosition, float ownerSpeed) {
+    public Entity(String stringId, SlotState ownerSlot, GameState gameState) {
         this.stringId = stringId;
         this.ownerSlot = ownerSlot;
         this.gameState = gameState;
-        this.movingComponent = new MovingComponent(this, initPosition, ownerSpeed);
-
-
-        this.addComponent(MovingComponent.class, movingComponent);
     }
 
     // Concrete classes have to implement this method to add all their components
@@ -69,10 +67,10 @@ public abstract class Entity implements Attackable {
         return components.containsKey(clazz);
     }
 
-    public void setMoveContext(MoveContext ctx) {
+    public boolean setMoveContext(MoveContext ctx) {
         if (hasComponent(MovingComponent.class)) {
-            getComponent(MovingComponent.class).setMoveContext(ctx);
-            System.out.println(">>> [Log in Entity.setMoveContext] Move context set: " + ctx);
+            // System.out.println(">>> [Log in Entity.setMoveContext] Move context set: " + ctx);
+            return getComponent(MovingComponent.class).setMoveContext(ctx);
         } else {
             throw new UnsupportedOperationException("Entity does not have MovingComponent");
         }
@@ -87,29 +85,30 @@ public abstract class Entity implements Attackable {
         return 0; // Default value if no attribute component is present
     }
     
-    public void setMoveTargetPoint(Vector2 targetPoint) {
-        if (hasComponent(MovingComponent.class)) {
-            getComponent(MovingComponent.class).setMoveTargetPoint(targetPoint);
-            System.out.println(">>> [Log in Entity.setMoveTargetPoint] Move target point set: " + targetPoint);
-        } else {
-            throw new UnsupportedOperationException("Entity does not have MovingComponent");
-        }
-    }
+    // public void setMoveTargetPoint(Vector2 targetPoint) {
+    //     if (hasComponent(MovingComponent.class)) {
+    //         getComponent(MovingComponent.class).setMoveTargetPoint(targetPoint);
+    //         System.out.println(">>> [Log in Entity.setMoveTargetPoint] Move target point set: " + targetPoint);
+    //     } else {
+    //         throw new UnsupportedOperationException("Entity does not have MovingComponent");
+    //     }
+    // }
 
     public void setStopMoving() {
         if (hasComponent(MovingComponent.class)) {
             getComponent(MovingComponent.class).setMoveContext(null);
-            System.out.println(">>> [Log in Entity.setStopMoving] Stopped moving.");
+            // System.out.println(">>> [Log in Entity.setStopMoving] Stopped moving.");
         } else {
             throw new UnsupportedOperationException("Entity does not have MovingComponent");
         }
     }
 
-    public void performMoveAndBroadcast() {
+    public boolean performMoveAndBroadcast() {
         if (hasComponent(MovingComponent.class)) {
-            getComponent(MovingComponent.class).performMoveAndBroadcast();
+            return getComponent(MovingComponent.class).performMoveAndBroadcast();
         } else {
-            throw new UnsupportedOperationException("Entity does not have MovingComponent");
+            log.debug("Entity {} does not have MovingComponent, cannot perform move.", this.stringId);
+            return false;
         }
     }
     
@@ -128,6 +127,14 @@ public abstract class Entity implements Attackable {
         }
         System.out.println("Entity does not have AttackComponent, returning false for isAttacking.");
         return false; // Default value if no attack component is present
+    }
+    
+    public void stopAttacking() {
+        if (hasComponent(AttackComponent.class)) {
+            getComponent(AttackComponent.class).stopAttacking();
+        } else {
+            System.out.println("Entity does not have AttackComponent, cannot stop attacking.");
+        }
     }
 
     public boolean inAttackRange() {
@@ -196,7 +203,21 @@ public abstract class Entity implements Attackable {
         if (hasComponent(MovingComponent.class)) {
             return getComponent(MovingComponent.class).getCurrentPosition();
         }
-        System.out.println("Entity does not have MovingComponent, returning null");
+        if (this instanceof Building building) {
+            return building.getPosition();
+        }
+        System.out.println("Entity does not have MovingComponent or not a Building, returning null");
+        return null;
+    }
+
+    public GridCell getCurrentGridCell() {
+        if (hasComponent(MovingComponent.class)) {
+            return gameState.toGridCell(this.getCurrentPosition());
+        }
+        if (this instanceof Building building) {
+            return gameState.toGridCell(building.getPosition());
+        }
+        System.out.println("Entity does not have MovingComponent or not a Building, returning null");
         return null;
     }
 
@@ -220,15 +241,32 @@ public abstract class Entity implements Attackable {
      * it can just call super.afterUpdatePosition().
      */
     public void afterUpdatePosition() {
+
+        // log.info("afterUpdatePosition in Entity called for updating grid cell...");
+
         this.getGameStateService()
-            .updateEntityGridCellMapping(this.gameState, this);
+            .addEntityToGridCellMapping(this);
+
+    }
+    
+    /**
+     * MUST be overridden by subclass.
+     * If subclass has nothing to do after updating position,
+     * it can just call super.beforeUpdatePosition().
+     */
+    public void beforeUpdatePosition() {
+        // log.info("beforeUpdatePosition in Entity called for updating grid cell...");
+
+        this.getGameStateService()
+            .removeEntityFromGridCellMapping(this);
     }
 
     public boolean performAttack() {
         if (hasComponent(AttackComponent.class)) {
             return getComponent(AttackComponent.class).performAttack();
         } else {
-            throw new UnsupportedOperationException("Entity does not have AttackComponent");
+            log.debug("Entity {} does not have AttackComponent, cannot perform attack.", this.stringId);
+            return false; 
         }
     }
 
@@ -240,10 +278,26 @@ public abstract class Entity implements Attackable {
         return true; // Default value if no health component is present
     }
 
+    public boolean isCastingSkill() {
+        if (hasComponent(SkillComponent.class)) {
+            return getComponent(SkillComponent.class).isActive();
+        }
+        return false; // Default value if no skill component is present
+    }
+
+    public boolean canUseSkillWhileAttacking() {
+        if (hasComponent(SkillComponent.class)) {
+            return getComponent(SkillComponent.class).canUseWhileAttacking();
+        }
+        System.out.println("Entity does not have SkillComponent, returning false for canUseSkillWhileAttacking.");
+        return false; // Default value if no skill component is present
+    }
+
+
     public void setAttackContext(AttackContext ctx) {
         if (hasComponent(AttackComponent.class)) {
             getComponent(AttackComponent.class).setAttackContext(ctx);
-            System.out.println(">>> [Log in Entity.setAttackContext] Attack context set: " + ctx);
+            log.info(">>> [Log in Entity.setAttackContext] Attack context set: {}", ctx);
         } else {
             throw new UnsupportedOperationException("Entity does not have AttackComponent");
         }
