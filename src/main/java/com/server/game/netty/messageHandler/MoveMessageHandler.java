@@ -6,6 +6,7 @@ import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.factory.MoveContextFactory;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
+import com.server.game.model.game.TroopInstance2;
 import com.server.game.model.game.context.MoveContext;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.PositionReceive;
@@ -33,6 +34,10 @@ public class MoveMessageHandler {
         GameState gameState = gameStateService.getGameStateById(gameId);
         
         Entity mover = gameStateService.getEntityByStringId(gameState, receiveObject.getStringId());
+        if (receiveObject.getStringId().startsWith("troop")) {
+            ((TroopInstance2) mover).setDefensePosition(receiveObject.getPosition());
+            ((TroopInstance2) mover).setInDefensiveStance(false);
+        }
         
         MoveContext ctx = moveContextFactory.createMoveContext(
             gameState,

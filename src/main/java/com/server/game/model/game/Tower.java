@@ -50,7 +50,4 @@ public final class Tower extends Building {
     protected void addAllComponents() {
         this.addComponent(AttackComponent.class, this.attackComponent);
     }
-
-
-    
 }

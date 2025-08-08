@@ -26,7 +26,7 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageHandler.AnimationMessageHandler;
 import com.server.game.netty.messageHandler.GameStateMessageHandler;
 import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
-import com.server.game.netty.sendObject.respawn.ChampionDeathSend;
+import com.server.game.netty.sendObject.entity.EntityDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnTimeSend;
 import com.server.game.util.Util;
@@ -166,8 +166,8 @@ public class GameStateService {
         }
 
         slotState.setChampionDead();
-        log.info("Champion in gameId: {}, slot: {} has died", gameId,
-                slot);
+        // log.info("Champion in gameId: {}, slot: {} has died", gameId,
+        //         slot);
         
         // Clear all attack targets that were targeting this dead champion
         // attackTargetingService.clearTargetsAttackingChampion(gameId, slot);
@@ -180,11 +180,19 @@ public class GameStateService {
     }
 
     private void sendChampionDeathMessage(String gameId, short slot) {
-        ChampionDeathSend deathMessage = new ChampionDeathSend(slot);
+        String championId = this.getStringIdBySlotId(gameId, slot);
+        if (championId == null) {
+            log.warn("Could not find champion ID for gameId: {}, slot: {}", gameId, slot);
+            return;
+        }
+        
+        EntityDeathSend deathMessage = new EntityDeathSend(championId);
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
         if (channel != null) {
             channel.writeAndFlush(deathMessage);
-            log.info("Sent champion death message for gameId: {}, slot: {}", gameId, slot);
+            //log.info("Sent champion death message for gameId: {}, slot: {}, championId: {}", gameId, slot, championId);
+        } else {
+            log.warn("No channel found for gameId: {} when sending champion death message", gameId);
         }
     }
 
@@ -202,8 +210,8 @@ public class GameStateService {
         Channel playerChannel = ChannelManager.getChannelByGameIdAndSlot(gameId, slot);
         if (playerChannel != null) {
             playerChannel.writeAndFlush(respawnMessage);
-            log.info("Scheduled respawn for gameId: {}, slot: {} in {} seconds", 
-                    gameId, slot, respawnTime);
+            // log.info("Scheduled respawn for gameId: {}, slot: {} in {} seconds", 
+            //         gameId, slot, respawnTime);
         } else {
             log.warn("No channel found for gameId: {}, slot: {}", gameId, slot);
         }
@@ -245,15 +253,16 @@ public class GameStateService {
 
         // Reset the state
         slotState.setChampionRevive();
-        slotState.setCurrentHP(maxHealth);
+        champion.setCurrentHP(maxHealth);
+        champion.setCurrentPosition(initialPosition);
 
         // TODO: reset position state
 
 
-        log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
+        // log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
 
         //Send message
-        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slot, initialPosition, rotateAngle, maxHealth);
+        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slotState.getChampion().getStringId(), initialPosition, rotateAngle, maxHealth);
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
         if (channel != null) {
             channel.writeAndFlush(respawnSend);
@@ -290,7 +299,7 @@ public class GameStateService {
     public void cleanupGameState(String gameId) {
         GameState removed = gameCoordinator.popGameState(gameId);
         if (removed != null) {
-            log.info("Cleaned up game state for gameId: {} with {} players", gameId, removed.getNumPlayers());
+            // log.info("Cleaned up game state for gameId: {} with {} players", gameId, removed.getNumPlayers());
         }
     }
     
@@ -371,8 +380,8 @@ public class GameStateService {
 
         slotState.setChampionRevive();
 
-        log.info("Reset health for gameId: {}, slot: {} from {} to {} (max)", 
-                gameId, slot, oldHP, slotState.getCurrentHP());
+        // log.info("Reset health for gameId: {}, slot: {} from {} to {} (max)", 
+        //         gameId, slot, oldHP, slotState.getCurrentHP());
         return true;
     }
 
@@ -420,7 +429,7 @@ public class GameStateService {
     public void incrementTick(String gameId) {
         GameState gameState = this.getGameStateById(gameId);
         if (gameState == null) {
-            log.info("Game state not found for gameId: {}", gameId);
+            // log.info("Game state not found for gameId: {}", gameId);
             return;
         }
 
@@ -430,7 +439,7 @@ public class GameStateService {
 
     public Set<Entity> getEntitiesByGridCell(GameState gameState, GridCell gridCell) {
         if (gameState == null || gridCell == null) {
-            log.info("Invalid parameters for getting entities by grid cell");
+            // log.info("Invalid parameters for getting entities by grid cell");
             return null;
         }
         
@@ -535,11 +544,11 @@ public class GameStateService {
         GameState gameState = entity.getGameState();
         gameState.getGrid2Entity().computeIfPresent(oldGridCell, (cell, entities) -> {
             entities.remove(entity);
-            // log.info("Removed entity {} from grid cell {}", entity.getStringId(), cell);
+            // // log.info("Removed entity {} from grid cell {}", entity.getStringId(), cell);
 
             if (entities.isEmpty()) {
                 gameState.getGrid2Entity().remove(cell);
-                // log.info("Removed empty grid cell {} from gameId: {}", cell, gameState.getGameId());
+                // // log.info("Removed empty grid cell {} from gameId: {}", cell, gameState.getGameId());
             }
             return entities; // no need
         });
@@ -560,8 +569,8 @@ public class GameStateService {
 
         GridCell newGridCell = entity.getCurrentGridCell();
 
-        // log.info("Updating entity, new position: {} to grid cell {}", 
-        //         entity.getCurrentPosition(), newGridCell);
+        // // log.info("Updating entity, new position: {} to grid cell {}", 
+        //         // entity.getCurrentPosition(), newGridCell);
         
         GameState gameState = entity.getGameState();
         gameState.getGrid2Entity().computeIfAbsent(newGridCell, k -> ConcurrentHashMap.newKeySet()).add(entity);        

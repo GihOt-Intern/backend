@@ -59,6 +59,8 @@ public class MovingComponent {
         if (currentTick - lastAcceptedMoveRequestTick < MIN_UPDATE_INTERVAL_TICK) {
             log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + 
                 lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
+            // log.info(">>> [Log in PositionComponent.setMoveContext] Move request ignored due to rate limiting.");
+            // log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
             return false;
         }
 
@@ -112,7 +114,7 @@ public class MovingComponent {
 
     public void setMoveTargetPoint(Vector2 targetPoint) {
         if (moveContext == null) {
-            System.err.println(">>> [Log in MovingComponent.setMoveTargetPoint] Move context is null, cannot set target point.");
+            // System.err.println(">>> [Log in MovingComponent.setMoveTargetPoint] Move context is null, cannot set target point.");
             return;
         }
 
@@ -161,6 +163,7 @@ public class MovingComponent {
             return false;
         }
 
+
         System.out.println(">>> [Log in MovingComponent.performMove] Performing move...");
 
         float neededMoveDistance = this.distancePerTick;
@@ -175,7 +178,7 @@ public class MovingComponent {
         }
 
         while(this.moveContext.getPath().hasNext()) {
-            System.out.println(">>> [Log in MovingComponent.performMove] Moving to next cell...");
+            // System.out.println(">>> [Log in MovingComponent.performMove] Moving to next cell...");
             GridCell nextCell = this.moveContext.getPath().peekCurrentCell();
             Vector2 positionAtNextCell = this.moveContext.toPosition(nextCell);
             float distanceToNextCell = this.currentPosition.distance(positionAtNextCell);
@@ -195,26 +198,6 @@ public class MovingComponent {
 
                 this.setCurrentPosition(nextPosition);
                 break;
-
-                // Check if move towards the next position is not into a wall
-                // GridCell nextGridCell = this.moveContext.getGameState().toGridCell(nextPosition);
-                // if (this.moveContext.getGameMapGrid().isWalkable(nextGridCell)) {
-                //     this.setCurrentPosition(nextPosition);
-                //     break;
-                // }
-  
-                // log.info(">>> [Log in MovingComponent.performMove] Next position {} is not walkable...", nextPosition);
-                // GridCell walkableCell = this.moveContext.findNearestWalkableCell(nextGridCell);
-                // if (walkableCell == null) {
-                //     log.warn(">>> [Log in MovingComponent.performMove] No walkable cell found near {}, stopping move.", nextGridCell);
-                //     this.moveContext = null; // Stop moving if no walkable cell found
-                //     return false;
-                // }
-
-                // Vector2 walkablePosition = this.moveContext.toPosition(walkableCell);
-                // log.info(">>> [Log in MovingComponent.performMove] Moving to nearest walkable cell {} at position {}", walkableCell, walkablePosition);
-                // this.setCurrentPosition(walkablePosition);
-                // this.moveContext.getPath().popCurrentCell(); // pop the cell from the path
             }
         }
 

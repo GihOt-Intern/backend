@@ -64,6 +64,6 @@ public class MoveService2 {
         for (Entity entity : gameState.getEntities()) {
             entity.setMoveContext(null, true);
         }
-        log.info("Cleared all move targets for game {}", gameState.getGameId());
+        // log.info("Cleared all move targets for game {}", gameState.getGameId());
     }
 }

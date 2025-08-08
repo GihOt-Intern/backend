@@ -74,8 +74,8 @@ public class AttackComponent {
 
     private final boolean inAttackRange(Vector2 targetPosition) {
         float distance = this.owner.getCurrentPosition().distance(targetPosition);
-        System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
-            "distance=" + distance + ", attackRange=" + this.attackRange);
+        // System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
+        //     "distance=" + distance + ", attackRange=" + this.attackRange);
         return distance - 0.1f <= this.attackRange;
     }
 
@@ -104,10 +104,10 @@ public class AttackComponent {
 
 
         if (!this.inAttackRange()) {
-            System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to move to position that reach attack range.");
-            System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
-                ", Target position: " + ctx.getTarget().getCurrentPosition() + 
-                ", Attack range: " + this.attackRange);
+            // System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to move to position that reach attack range.");
+            // System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
+            //     ", Target position: " + ctx.getTarget().getCurrentPosition() + 
+            //     ", Attack range: " + this.attackRange);
 
             // Vector2 ownerPosition = this.owner.getCurrentPosition();
             // Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
@@ -134,8 +134,8 @@ public class AttackComponent {
             return false;  
         }
 
-        System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + 
-            strategy.getClass().getSimpleName());
+        // System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + 
+        //     strategy.getClass().getSimpleName());
 
         // Stop moving before performing the attack
         // is not forced bacause this request is called 
@@ -146,7 +146,7 @@ public class AttackComponent {
         short attakerSlot = this.owner.getOwnerSlot().getSlot();
         short targetSlot = ctx.getTarget().getOwnerSlot().getSlot();
         if (attakerSlot == targetSlot) {
-            System.out.println(">>> [Log in AttackComponent] Cannot attack own troops, skipping attack");
+            // System.out.println(">>> [Log in AttackComponent] Cannot attack own troops, skipping attack");
             return false; // Cannot attack allies
         }
         boolean didAttack = strategy.performAttack(ctx);
