@@ -104,9 +104,6 @@ public abstract class SkillComponent {
 
         this.isActive = true; // Set the skill as active
 
-        // 1. Broadcast skill usage to the game state
-        ctx.getGameStateService().sendCastSkillAnimation(ctx);
-
 
         boolean didUse = this.doUse();
 

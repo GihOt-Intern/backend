@@ -52,27 +52,7 @@ public class AssassinSkill extends SkillComponent {
         );
     }
 
-    @Override
-    protected boolean doUse() {
-        RectShape hitbox = this.getHitbox();
-
-        this.getCastSkillContext().addSkillDamage(this.getDamage());
-
-        Set<SkillReceiver> hitEntities = this.getSkillOwner().getGameStateService()
-            .getSkillReceiverEnemiesInScope(
-                this.getSkillOwner().getGameState(),
-                hitbox, this.getSkillOwner().getOwnerSlot());
-
-        log.info("MeleeSkill hit {} entities in range for champion: {}",
-            hitEntities.size(), this.getSkillOwner().getName());
-
-        hitEntities.stream()
-            .forEach(entity -> {
-                this.getCastSkillContext().setTarget(entity);
-                entity.receiveSkillDamage(this.getCastSkillContext());
-            });
-
-        
+    private final void dash() {
         // Move the champion to the new position after the skill is cast
         // new position is the closest walkable position in the direction of the mouse point
         // to ensure the champion does not get stuck in walls
@@ -87,6 +67,7 @@ public class AssassinSkill extends SkillComponent {
         // Broadcast cast skill event
         float actualDashLength = ownerCurrentPosition.distance(ownerActualNewPosition);
         this.castSkillContext.setSkillLength(actualDashLength);
+
         this.getSkillOwner().getGameStateService()
             .sendCastSkillAnimation(this.castSkillContext);
 
@@ -102,6 +83,34 @@ public class AssassinSkill extends SkillComponent {
             ownerCurrentPosition, ownerActualNewPosition);
         this.skillOwner.setStopMoving(true); 
         this.skillOwner.setCurrentPosition(ownerActualNewPosition);
+    }
+
+    private final void performAOEDamage() {
+    
+        RectShape hitbox = this.getHitbox();
+
+        this.getCastSkillContext().addSkillDamage(this.getDamage());
+
+        Set<SkillReceiver> hitEntities = this.getSkillOwner().getGameStateService()
+            .getSkillReceiverEnemiesInScope(
+                this.getSkillOwner().getGameState(),
+                hitbox, this.getSkillOwner().getOwnerSlot());
+
+        log.info("{} hit {} entities in range for champion: {}",
+            this.getClass().getSimpleName(), hitEntities.size(), this.getSkillOwner().getName());
+
+        hitEntities.stream()
+            .forEach(entity -> {
+                this.getCastSkillContext().setTarget(entity);
+                entity.receiveSkillDamage(this.getCastSkillContext());
+            });
+    }
+
+    @Override
+    protected boolean doUse() {
+
+        this.dash();
+        this.performAOEDamage();
 
         return true;
     }
