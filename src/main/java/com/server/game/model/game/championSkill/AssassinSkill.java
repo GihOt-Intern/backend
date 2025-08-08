@@ -90,6 +90,13 @@ public class AssassinSkill extends SkillComponent {
         this.getSkillOwner().getGameStateService()
             .sendCastSkillAnimation(this.castSkillContext);
 
+        log.info("Assassin dashing, expect position: {}, actual position: {}, expect dash length: {}, actual dash length: {}",
+            ownerNewExpectedPosition,
+            ownerActualNewPosition,
+            DASH_LENGTH,
+            actualDashLength
+        );
+
         // Update the champion's position
         log.info("Dash from {} to {} position", 
             ownerCurrentPosition, ownerActualNewPosition);
