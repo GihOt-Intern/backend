@@ -15,8 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AssassinSkill extends SkillComponent {
 
-    private static final float DASH_LENGTH = 8.0f;
-    private static final float DASH_WIDTH = 2.0f;
+    private static final float DASH_LENGTH = 10.0f;
+    private static final float DASH_WIDTH = 5.0f;
 
     public AssassinSkill(Champion owner, ChampionAbility ability) {
         super(owner, ability);
@@ -42,12 +42,14 @@ public class AssassinSkill extends SkillComponent {
         Vector2 mousePoint = this.getCastSkillContext().getTargetPoint();
         Vector2 direction = ownerPoint.directionTo(mousePoint);
 
-        Vector2 centerPoint = ownerPoint.add(direction.multiply(DASH_LENGTH / 2));
-        
+        float hitboxLength = DASH_LENGTH + 2f;
+
+        Vector2 centerPoint = ownerPoint.add(direction.multiply(hitboxLength / 2));
+
         return new RectShape(
             centerPoint,
             DASH_WIDTH,
-            DASH_LENGTH,
+            hitboxLength,
             direction
         );
     }
@@ -85,9 +87,7 @@ public class AssassinSkill extends SkillComponent {
         this.skillOwner.setCurrentPosition(ownerActualNewPosition);
     }
 
-    private final void performAOEDamage() {
-    
-        RectShape hitbox = this.getHitbox();
+    private final void performAOEDamage(RectShape hitbox) {
 
         this.getCastSkillContext().addSkillDamage(this.getDamage());
 
@@ -108,9 +108,11 @@ public class AssassinSkill extends SkillComponent {
 
     @Override
     protected boolean doUse() {
+        // get hit box before dashing
+        RectShape hitbox = this.getHitbox();
 
         this.dash();
-        this.performAOEDamage();
+        this.performAOEDamage(hitbox);
 
         return true;
     }

@@ -648,6 +648,9 @@ public class GameStateService {
     }
 
     public Set<SkillReceiver> getSkillReceiverEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
+
+        log.info("Hitbox: {}", scope);
+
         Set<Entity> entities = this.getEnemiesInScope(gameState, scope, slotState);
         return entities.stream()
             .filter(entity -> entity instanceof SkillReceiver)

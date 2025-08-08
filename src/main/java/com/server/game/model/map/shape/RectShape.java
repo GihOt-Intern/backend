@@ -2,6 +2,9 @@ package com.server.game.model.map.shape;
 
 import com.server.game.model.map.component.Vector2;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class RectShape extends Shape {
     private float width;
     private float length;
@@ -23,6 +26,12 @@ public class RectShape extends Shape {
 
     @Override
     public boolean contains(Vector2 point) {
+
+        log.info("Hitbox: center={}, direction={}, width={}, length={}",
+            this.center, this.direction, this.width, this.length);
+
+        log.info("Point={}", point);
+        
         Vector2 toPoint = point.subtract(center); // vector từ center đến point
 
         Vector2 dir = direction.normalize(); // trục chính
