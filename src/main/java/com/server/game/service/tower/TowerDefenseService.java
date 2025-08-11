@@ -59,8 +59,9 @@ public class TowerDefenseService {
         // First, look for troops (highest priority)
         Optional<Entity> troopTarget = gameState.getEntities().stream()
             .filter(Entity::isAlive)
+            .filter(e -> e.getOwnerSlot() != null)
             .filter(e -> e.getOwnerSlot().getSlot() != tower.getOwnerSlot().getSlot()) // Is an enemy
-            .filter(e -> e.getStringId().startsWith("troop_")) // Is a troop
+            .filter(e -> e.getStringId().startsWith("troop")) // Is a troop
             .filter(e -> tower.distanceToEntityBoundary(e) <= tower.getAttackComponent().getAttackRange())
             .min(Comparator.comparing(e -> tower.distanceToEntityBoundary(e)));
 
@@ -71,6 +72,7 @@ public class TowerDefenseService {
         // If no troops found, look for champions
         return gameState.getEntities().stream()
             .filter(Entity::isAlive)
+            .filter(e -> e.getOwnerSlot() != null) // Thêm kiểm tra null
             .filter(e -> e.getOwnerSlot().getSlot() != tower.getOwnerSlot().getSlot()) // Is an enemy
             .filter(e -> e.getStringId().startsWith("champion_")) // Is a champion
             .filter(e -> tower.distanceToEntityBoundary(e) <= tower.getAttackComponent().getAttackRange())

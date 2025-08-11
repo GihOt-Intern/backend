@@ -81,7 +81,7 @@ public class GameLogicScheduler {
                 goldService.autoIncreaseGold(gameState);
 
             } catch (Exception e) {
-                log.error("Error in game logic loop for game: {}", gameState.getGameId(), e);
+                // log.error("Error in game logic loop for game: {}", gameState.getGameId(), e);
             }
         }
     }

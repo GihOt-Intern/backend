@@ -40,16 +40,13 @@ public final class Tower extends Building {
         this.length = towerDB.getLength();
         this.rotate = towerDB.getRotate();
 
-        // Get MoveService2 from Spring context
-        MoveService2 moveService = SpringContextHolder.getBean(MoveService2.class);
-
         this.attackComponent = new AttackComponent(
             this,
             100, // Example damage
             1.0f, // Example attack speed
-            5.0f, // Example attack range
+            15.0f, // Example attack range
             new TowerAttackStrategy(),
-            moveService
+            null
         );
     }
 
@@ -64,6 +61,8 @@ public final class Tower extends Building {
 
         if (this.getCurrentHP() <= 0) {
             ctx.getGameStateService().sendTowerDeathMessage(ctx.getGameId(), this);
+            ctx.getGameState().getEntities().remove(this);
+            this.setAttackContext(null);
             return true;
         }
 
@@ -72,7 +71,6 @@ public final class Tower extends Building {
 
     @Override
     protected void addAllComponents() {
-        super.addAllComponents(); // Add components from Building class
         this.addComponent(AttackComponent.class, this.attackComponent);
     }
     

@@ -135,14 +135,14 @@ public final class Burg extends Building {
             }
         }
 
-        for(Entity entity : entitiesToRemove) {
-            gameState.removeEntity(entity);
-        }
-
         ctx.getGameStateService().sendEntitiesRemoved(
             ctx.getGameId(), removedEntityIds, ctx.getTimestamp());
         
         ownerSlot.setEliminated(true);
+
+        for(Entity entity : entitiesToRemove) {
+            gameState.removeEntity(entity);
+        }
 
         int remainingBurgs = 0;
         short lastAliveBurgSlot = -1;

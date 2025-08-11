@@ -5,8 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,10 +35,10 @@ public class UserController {
     @GetMapping("/all")
     public  ResponseEntity<ApiResponse<List<GetUserResponse>>> getAllUsers() {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        System.out.println(authentication.getName() + " is accessing the user list");
-        System.out.println("User roles: " + authentication.getAuthorities());
+        // System.out.println(authentication.getName() + " is accessing the user list");
+        // System.out.println("User roles: " + authentication.getAuthorities());
 
         List<User> users = userService.getAllUsers();
         List<GetUserResponse> usersResponse = users.stream()

@@ -34,8 +34,8 @@ public class GoldService {
             return;
         }
         if (!gameState.inGoldMineGenerationTick()) {
-            log.info("Not in gold mine generation tick, skipping gold mine generation. Current tick: {}, next generation tick: {}",
-                gameState.getCurrentTick(), gameState.getNextGoldMineGenerationTick());
+            // log.info("Not in gold mine generation tick, skipping gold mine generation. Current tick: {}, next generation tick: {}",
+            //     gameState.getCurrentTick(), gameState.getNextGoldMineGenerationTick());
             return;
         }
 
