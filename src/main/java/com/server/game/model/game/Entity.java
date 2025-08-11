@@ -193,8 +193,8 @@ public abstract class Entity implements Attackable {
             AttackComponent attackComponent = getComponent(AttackComponent.class);
             if (attackComponent.getAttackContext() != null && 
                 attackComponent.getAttackContext().getTarget() != null) {
-                Vector2 targetPosition = attackComponent.getAttackContext().getTarget().getCurrentPosition();
-                return this.getCurrentPosition().distance(targetPosition) - attackComponent.getAttackRange();
+                Entity targetEntity = attackComponent.getAttackContext().getTarget();
+                return this.distanceTo(targetEntity) - attackComponent.getAttackRange();
             }
         }
         System.out.println("Entity does not have AttackComponent or target, returning default distance=999999f.");
