@@ -25,7 +25,6 @@ public abstract class SkillComponent {
     protected long lastUsedTick;
 
     protected CastSkillContext castSkillContext = null;
-    protected boolean isActive = false;
 
     public SkillComponent(Champion owner, ChampionAbility ability) {
         this.skillOwner = owner;
@@ -45,10 +44,6 @@ public abstract class SkillComponent {
         this.castSkillContext = ctx;
     }
 
-
-    public final boolean isActive() {
-        return this.isActive;
-    }
 
     public abstract boolean canUseWhileAttacking();
     public abstract boolean canUseWhileMoving();
@@ -83,16 +78,36 @@ public abstract class SkillComponent {
             return false;
         }
 
+        if (this.skillOwner.isMoving() && !this.canUseWhileMoving()) {
+            // cast skill is higher priority than moving, so we stop moving
+            log.info("Champion {} is moving and received a skill use request, stopping movement.",
+                this.skillOwner.getName());
+
+            this.skillOwner.setStopMoving(true);
+        }
+
+        if (this.skillOwner.isAttacking() && !this.canUseWhileAttacking()) {
+            // cast skill is higher priority than attack, so we stop the attack
+            log.info("Champion {} is attacking and received a skill use request, stopping attack.",
+                this.skillOwner.getName());
+
+            this.skillOwner.stopAttacking();
+        }
+
         this.setCastSkillContext(ctx);
         log.info("Set skill context: {}", ctx);
 
-        this.isActive = true; // Set the skill as active
 
-        // 1. Broadcast skill usage to the game state
-        ctx.getGameStateService().sendCastSkillAnimation(ctx);
+        boolean didUse = this.doUse();
 
+        if (!didUse) {
+            log.error("Something wrong makes Skill {} failed to use for champion {} at tick {}",
+                this.name, this.skillOwner.getName(), currentTick);
+            return false;
+        }
 
-        this.doUse();
+        log.info("Skill {} used successfully for champion {} at tick {}",
+            this.name, this.skillOwner.getName(), currentTick);
 
         lastUsedTick = currentTick;
         return true;

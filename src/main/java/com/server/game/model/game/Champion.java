@@ -7,7 +7,6 @@ import com.server.game.model.game.attackStrategy.ChampionAttackStrategy;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
-import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
 import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
@@ -30,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Slf4j
-public final class Champion extends SkillReceiver {
+public final class Champion extends SkillReceiverEntity {
 
     final ChampionEnum championEnum;
     final String name;
@@ -98,30 +97,30 @@ public final class Champion extends SkillReceiver {
 
     @Override
     public void beforeUpdatePosition() {
-        log.info("Call beforeUpdatePosition for champion, call super method...");
+        // log.info("Call beforeUpdatePosition for champion, call super method...");
         super.beforeUpdatePosition();
     }
 
 
     @Override
     public void afterUpdatePosition() {
-        log.info("Call afterUpdatePosition for champion, check in playground and call super method...");
+        // log.info("Call afterUpdatePosition for champion, check in playground and call super method...");
 
-        this.checkInPlayGround();
+        this.checkInPlayground();
 
         super.afterUpdatePosition();
 
     }
 
-    private void checkInPlayGround() {
+    private void checkInPlayground() {
 
-        boolean nextInPlayGround = this.checkInPlayGround(
-            this.getGameState().getGameMap().getPlayGround());
+        boolean nextInPlayground = this.checkInPlayground(
+            this.getGameState().getGameMap().getPlayground());
 
         // System.out.println(">>> [Log in Champion.checkInPlayGround] " + this.stringId + " nextInPlayGround: " +
         //     nextInPlayGround + ", current inPlayGround: " + this.isInPlayground());
 
-        if (nextInPlayGround != this.isInPlayground()) {
+        if (nextInPlayground != this.isInPlayground()) {
             this.toggleInPlaygroundFlag(); // Toggle the state
         
             this.getGameStateService()
@@ -178,8 +177,9 @@ public final class Champion extends SkillReceiver {
         this.skillComponent.use(ctx);
     }
 
-    public void updateCastSkill() {
+    public void updateDurationSkill() {
         if (this.skillComponent instanceof DurationSkillComponent durationSkillComponent) {
+            // log.info("Updating duration skill for champion: {}", this.getName());
             durationSkillComponent.updatePerTick();
         }
     }

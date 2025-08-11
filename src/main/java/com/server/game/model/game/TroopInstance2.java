@@ -4,7 +4,6 @@ import com.server.game.model.game.attackStrategy.TroopAttackStrategy;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
-import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.component.attributeComponent.TroopAttributeComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
@@ -26,18 +25,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TroopInstance2 extends SkillReceiver {
-
-    // This field below is inherited from Entity
-    // private final String stringId; 
+public class TroopInstance2 extends SkillReceiverEntity {
 
     final TroopEnum troopEnum;
-
-    // Three fields below have been inherited from Entity
-    // private final short ownerSlot;
-    // private final GameState gameState;
-
-    Vector2 targetPosition;
 
     @Delegate
     final TroopAttributeComponent attributeComponent;
@@ -47,9 +37,6 @@ public class TroopInstance2 extends SkillReceiver {
     final HealthComponent healthComponent;
     @Delegate
     final AttackComponent attackComponent;
-    
-    // private String currentTargetId; // Can be another troop instance ID or player slot as string
-    private Entity stickEntity; // Can be another troop instance or champion
 
     Vector2 defensePosition;
     float defenseRange;
@@ -110,6 +97,28 @@ public class TroopInstance2 extends SkillReceiver {
     public void beforeUpdatePosition() {
         super.beforeUpdatePosition();
     }
+
+    @Override
+    public void afterUpdatePosition() {
+        // Check if troop is in defensive stance and has moved outside defense range
+        if (inDefensiveStance && defensePosition != null && !isWithinOwnDefenseRange()) {
+            // If troop has no target or target is no longer valid, return to defense position
+            if (defensiveTarget == null || !defensiveTarget.isAlive() || !isWithinDefenseRange(defensiveTarget)) {
+                // Clear any current attack and return to defense position
+                this.attackComponent.setAttackContext(null);
+                this.defensiveTarget = null;
+                
+                // Set movement back to defense position
+                // Note: We need access to MoveService2 to do this properly
+                // This will be handled by DefensiveStanceService in the next tick
+                log.trace("Troop {} is outside defense range. Will return to defense position {} in next tick.", 
+                    stringId, defensePosition);
+            }
+        }
+        
+        super.afterUpdatePosition();
+    }
+
     /**
      * Updates the defense position. This does NOT automatically enable defensive stance.
      * Defensive stance should be managed separately based on context availability.
@@ -145,12 +154,12 @@ public class TroopInstance2 extends SkillReceiver {
     /**
      * Checks if the troop has any active manual commands (move or attack contexts)
      */
-public boolean hasActiveManualCommands() {
-    // Only consider it manual if it's not a defensive action
-    boolean hasManualAttack = this.attackComponent.isAttacking() && !inDefensiveStance;
-    boolean hasManualMove = this.movingComponent.isMoving() && !inDefensiveStance;
-    return hasManualAttack || hasManualMove;
-}
+    public boolean hasActiveManualCommands() {
+        // Only consider it manual if it's not a defensive action
+        boolean hasManualAttack = this.attackComponent.isAttacking() && !inDefensiveStance;
+        boolean hasManualMove = this.movingComponent.isMoving() && !inDefensiveStance;
+        return hasManualAttack || hasManualMove;
+    }
 
     /**
      * Automatically enable defensive stance if no manual commands are active
@@ -182,26 +191,7 @@ public boolean hasActiveManualCommands() {
         return true; // Indicate that the attack was received successfully
     }
 
-    @Override
-    public void afterUpdatePosition() {
-        // Check if troop is in defensive stance and has moved outside defense range
-        if (inDefensiveStance && defensePosition != null && !isWithinOwnDefenseRange()) {
-            // If troop has no target or target is no longer valid, return to defense position
-            if (defensiveTarget == null || !defensiveTarget.isAlive() || !isWithinDefenseRange(defensiveTarget)) {
-                // Clear any current attack and return to defense position
-                this.attackComponent.setAttackContext(null);
-                this.defensiveTarget = null;
-                
-                // Set movement back to defense position
-                // Note: We need access to MoveService2 to do this properly
-                // This will be handled by DefensiveStanceService in the next tick
-                log.trace("Troop {} is outside defense range. Will return to defense position {} in next tick.", 
-                    stringId, defensePosition);
-            }
-        }
-        
-        super.afterUpdatePosition();
-    }
+    
 
     @Override
     public void receiveSkillDamage(CastSkillContext ctx) {

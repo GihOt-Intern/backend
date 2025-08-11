@@ -12,8 +12,9 @@ import com.server.game.service.attack.AttackService;
 import com.server.game.service.castSkill.CastSkillService;
 import com.server.game.service.defense.DefensiveStanceService;
 import com.server.game.service.gameState.GameStateService;
-import com.server.game.service.goldGeneration.GoldGenerationService;
+import com.server.game.service.goldGeneration.GoldService;
 import com.server.game.service.move.MoveService2;
+import com.server.game.service.tower.TowerDefenseService;
 import com.server.game.service.troop.TroopManager;
 
 import io.netty.channel.Channel;
@@ -31,9 +32,10 @@ public class GameLogicScheduler {
     MoveService2 moveService;
     AttackService attackService;
     CastSkillService castSkillService;
-    GoldGenerationService goldGenerationService;
+    GoldService goldService;
     GameStateService gameStateService;
     DefensiveStanceService defensiveStanceService;
+    TowerDefenseService towerDefenseService;
     TroopManager troopManager;
     
     /**
@@ -48,11 +50,6 @@ public class GameLogicScheduler {
                 // Update game tick
                 gameStateService.incrementTick(gameState.getGameId());
 
-
-                // troopManager.updateTroopMovements(gameState.getGameId(), 0.05f);
-                // Set new positions for all troops
-                //troopManager.updateTroopMovements(gameState.getGameId(), 0.05f);
-
                 // Process attack targeting and continuous combat
                 attackService.processAttacks(gameState);
 
@@ -62,8 +59,9 @@ public class GameLogicScheduler {
                 // Update movement positions
                 moveService.updatePositions(gameState);
 
+                castSkillService.updateDurationSkills(gameState);
 
-                castSkillService.updateCastSkills(gameState);
+                goldService.randomlyGenerateGoldMine(gameState);
 
             } catch (Exception e) {
                 log.error("Error in game logic loop for game: {}", gameState.getGameId(), e);
@@ -80,7 +78,7 @@ public class GameLogicScheduler {
     public void goldGenerationLoop() {
         for (GameState gameState : gameStateService.getAllActiveGameStates()) {
             try {
-                goldGenerationService.generateGold(gameState.getGameId());
+                goldService.autoIncreaseGold(gameState);
 
             } catch (Exception e) {
                 log.error("Error in game logic loop for game: {}", gameState.getGameId(), e);
@@ -98,6 +96,7 @@ public class GameLogicScheduler {
         for (GameState gameState : gameStateService.getAllActiveGameStates()) {
             try {
                 defensiveStanceService.updateDefensiveStances(gameState);
+                towerDefenseService.updateTowerDefenses(gameState);
                 // TODO: Add slower update systems here
                 // - Resource generation
                 // - AI decision making

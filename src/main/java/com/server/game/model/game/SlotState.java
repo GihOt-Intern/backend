@@ -5,33 +5,43 @@ import java.util.Set;
 
 import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.GoldComponent;
-import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Delegate;
+import lombok.experimental.FieldDefaults;
 
 
 @Data
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SlotState {
-    private Short slot;
+    final Short slot;
+
+    final GameState gameState;
 
     // Cannot use @Delegate here because Champion has heathComponent and attributeComponent
     // which have already had @Delegate annotations.
-    private Champion champion;
+    Champion champion;
 
-    private Set<Tower> towers;
+    Set<Tower> towers;
 
-    private Burg burg;
+    Burg burg;
+
+    @Getter @Setter
+    private boolean eliminated = false;
 
     @Delegate
-    private final GoldComponent goldComponent;
+    final GoldComponent goldComponent;
 
-    private final Set<TroopInstance2> troops;
+    final Set<TroopInstance2> troops;
 
-    public SlotState(Short slot, Champion champion, Set<Tower> towers, Burg bug, Integer initialGold) {
+    public SlotState(GameState gameState, Short slot, Champion champion, Set<Tower> towers, Burg bug, Integer initialGold) {
+        this.gameState = gameState;
         this.slot = slot;
         this.champion = champion;
         this.towers = (towers != null) ? towers : new HashSet<>();

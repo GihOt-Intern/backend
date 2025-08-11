@@ -1,6 +1,5 @@
 package com.server.game.model.map.component;
 
-import java.util.Vector;
 
 public record Vector2(float x, float y) {
 
@@ -50,11 +49,11 @@ public record Vector2(float x, float y) {
         return other.subtract(this).normalize();
     }
 
-    // in radians
-    public float getRotateDegree() {
-        Vector2 origin = new Vector2(1, 0); // Reference vector (1, 0)
-        return (float) Math.acos(this.dot(origin) / (this.length() * origin.length()));
-    }
+    // // in radians
+    // public float getRotateDegree() {
+    //     Vector2 origin = new Vector2(1, 0); // Reference vector (1, 0)
+    //     return (float) Math.acos(this.dot(origin) / (this.length() * origin.length()));
+    // }
 
     @Override
     public String toString() {

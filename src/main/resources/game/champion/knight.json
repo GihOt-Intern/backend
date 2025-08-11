@@ -13,6 +13,6 @@
   },
   "ability": {    
     "name": "Shadow Dash",
-    "cool_down": 8.0
+    "cool_down": 1.0
   }
 }

@@ -139,4 +139,15 @@ public class Util {
         dis.readFully(bytes);
         return Util.bytesToString(bytes);
     }
+
+    public static boolean randomBoolean() {
+        return Math.random() < 0.5;
+    }
+
+    public static int randomFloat(Float min, Float max) {
+        if (min > max) {
+            throw new IllegalArgumentException("Min must be less than or equal to Max");
+        }
+        return (int)(Math.random() * (max - min + 1) + min);
+    }
 }

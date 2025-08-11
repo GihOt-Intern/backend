@@ -11,7 +11,6 @@ import com.server.game.annotation.customAnnotation.ReceiveType;
 import com.server.game.netty.tlv.interf4ce.TLVDecodable;
 import com.server.game.netty.tlv.messageEnum.ReceiveMessageType;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

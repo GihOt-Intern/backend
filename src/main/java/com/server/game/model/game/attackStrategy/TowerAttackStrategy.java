@@ -5,6 +5,10 @@ import com.server.game.model.game.context.AttackContext;
 public class TowerAttackStrategy implements AttackStrategy {
     @Override
     public boolean performAttack(AttackContext ctx) {
-        return true; // Placeholder for tower attack logic
+
+        // 1. First send attack animation of the attacker
+        ctx.getGameStateService().sendAttackAnimation(ctx);
+
+        return ctx.getTarget().receiveAttack(ctx);
     }
 }

@@ -1,56 +1,54 @@
-package com.server.game.netty.sendObject;
+package com.server.game.netty.sendObject.entity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.List;
 
-import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
+import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.tlv.interf4ce.TLVEncodable;
 import com.server.game.netty.tlv.messageEnum.SendMessageType;
 
 import io.netty.channel.Channel;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-
 
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CastSkillSend implements TLVEncodable {
-    String casterId;
-    Vector2 mousePosition; // Caster's mouse position
-    Vector2 newChampionPosition; // Caster's new position after casting
-    float skillLength;
+public class EntitiesRemovedSend implements TLVEncodable {
+    List<String> entityIds;
     long timestamp;
 
     @Override
     public SendMessageType getType() {
-        return SendMessageType.CAST_SKILL_SEND;
+        return SendMessageType.ENTITIES_REMOVED;
     }
 
     @Override
-    public byte[] encode() { // only return the [value] part of the TLV message
+    public byte[] encode() {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(baos);
 
-            dos.writeUTF(casterId);
-            dos.writeFloat(mousePosition.x());
-            dos.writeFloat(mousePosition.y());
-            dos.writeFloat(newChampionPosition.x());
-            dos.writeFloat(newChampionPosition.y());
-            dos.writeFloat(skillLength);
+            dos.writeShort(entityIds.size());
+
+            for(String id : entityIds) {
+                byte[] idBytes = id.getBytes();
+                dos.writeShort(idBytes.length);
+                dos.write(idBytes);
+            }
+
             dos.writeLong(timestamp);
 
             return baos.toByteArray();
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot encode " + this.getClass().getSimpleName(), e);
+        } catch (IOException e) {
+            throw new RuntimeException("Error encoding EntitiesRemovedSend", e);
         }
     }
-
 
     @Override
     public SendTarget getSendTarget(Channel channel) {

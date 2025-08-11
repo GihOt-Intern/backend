@@ -10,10 +10,12 @@ import com.server.game.factory.SlotStateFactory;
 import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMap;
+import com.server.game.resource.model.GameMap.Playground;
 import com.server.game.resource.model.GameMapGrid;
 import com.server.game.resource.model.SlotInfo;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.util.ChampionEnum;
+import com.server.game.util.Util;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,10 +24,12 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GameState {
-    String gameId;
-    GameMap gameMap;
-    GameMapGrid gameMapGrid;
+    final String gameId;
+    final GameMap gameMap;
+    final GameMapGrid gameMapGrid;
+
     long currentTick = 0;
+    long nextGoldMineGenerationTick = Util.seconds2GameTick(10f); // TODO: adjust this value based on game design
 
     final Map<Short, SlotState> slotStates = new ConcurrentHashMap<>();
     final Map<String, Entity> stringId2Entity = new ConcurrentHashMap<>();
@@ -53,6 +57,15 @@ public class GameState {
         }
 
         this.gameStateService = gameStateService;
+    }
+
+    public boolean inGoldMineGenerationTick() {
+        return this.currentTick >= this.nextGoldMineGenerationTick;
+    }
+
+    public void updateNextGoldMineGenerationTick() {
+        this.nextGoldMineGenerationTick = this.currentTick + Util.seconds2GameTick(
+            this.getGameMap().getGoldMineGenerationIntervalSeconds());
     }
 
 
@@ -163,6 +176,10 @@ public class GameState {
         return stringId2Entity.get(stringId);
     }
 
+    public Playground getPlayground() {
+        return gameMap.getPlayground();
+    }
+
     public Integer getInitialGold() {
         return gameMap.getInitialGoldEachSlot();
     }
@@ -188,42 +205,56 @@ public class GameState {
         Vector2 origin = gameMapGrid.getOrigin(); // (-100; 30)
         float cellSize = gameMapGrid.getCellSize();
 
-        int col = (int) ((position.x() - origin.x()) / cellSize);
-        int row = (int) ((origin.y() - position.y()) / cellSize); // flip Y axis
+        float relativeX = position.x() - origin.x();
+        float relativeY = origin.y() - position.y(); // flip Y axis
+
+        int col = (int) (relativeX / cellSize);
+        int row = (int) (relativeY / cellSize);
+
+        // Kẹp giá trị để đảm bảo nó luôn nằm trong phạm vi hợp lệ của grid
+        col = Math.max(0, Math.min(col, gameMapGrid.getNCols() - 1));
+        row = Math.max(0, Math.min(row, gameMapGrid.getNRows() - 1));
+
         return new GridCell(row, col);
     }
 
 
     public Integer peekGold(Short slot) {
-        SlotState slotState = slotStates.get(slot);
+        if (slot != null) {
+            SlotState slotState = this.getSlotState(slot);
+            return peekGold(slotState);
+        }
+        return null;
+    }
+    
+    public Integer peekGold(SlotState slotState) {
         if (slotState != null) {
             return slotState.getCurrentGold();
         }
         return null;
     }
 
-    public void addGold(Short slot, Integer amount) {
-        this.setGold(slot, this.peekGold(slot) + amount);
+    public void increaseGoldFor(SlotState slotState, Integer amount) {
+        this.setGold(slotState, this.peekGold(slotState) + amount);
     }
 
-    public void spendGold(Short slot, Integer amount) {
-        Integer currentGold = this.peekGold(slot);
+    public void spendGold(SlotState slotState, Integer amount) {
+        Integer currentGold = this.peekGold(slotState);
         if (currentGold != null && currentGold >= amount) {
-            this.setGold(slot, currentGold - amount);
+            this.setGold(slotState, currentGold - amount);
         } else {
-            System.err.println(">>> [Log in GameState.spendGold] Not enough gold for slot " + slot + ". Current: " + currentGold + ", Required: " + amount);
+            System.err.println(">>> [Log in GameState.spendGold] Not enough gold for slot. Current: " + currentGold + ", Required: " + amount);
         }
     }
 
-    public void setGold(Short slot, Integer newAmount) {
-        SlotState slotState = slotStates.get(slot);
-        if (slotState != null) {
-            slotState.setCurrentGold(newAmount);
-
-            slotState.handleGoldChange(gameId);
+    public void setGold(SlotState slotState, Integer newAmount) {
+        if (slotState == null) {
+            System.err.println(">>> [Log in GameState.setGold] Slot not found in game state for gameId: " + gameId);
             return;
         }
-        System.err.println(">>> [Log in GameState.setGold] Slot " + slot + " not found in game state for gameId: " + gameId);
+        slotState.setCurrentGold(newAmount);
+
+        slotState.handleGoldChange(gameId);
     }
 
     public SlotState getSlotState(short slot) {

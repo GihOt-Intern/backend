@@ -24,6 +24,7 @@ public enum SendMessageType {
     
     IS_IN_PLAYGROUND_SEND((short) 22),
     GOLD_AMOUNT_SEND((short) 23),
+    GOLD_MINE_SPAWN_SEND((short) -23),
 
     CAST_SKILL_SEND((short) 25),
 
@@ -36,6 +37,8 @@ public enum SendMessageType {
     TROOP_SPAWN_SEND((short) 201),
     ENTITY_DEATH_SEND((short) 203), // Unified entity death message for both champions and troops
     TROOP_SPAWN_COOLDOWN_SEND((short) 204),
+    ENTITIES_REMOVED((short) 205),
+    GAME_OVER((short) 206),
 
     HEARTBEAT_SEND((short) 255), // Heartbeat message
 
