@@ -42,7 +42,7 @@ public class SlotStateFactory {
 
         // Initialize the slot state with temporaty null for champion and towers
         // They will be set later after creating the Champion and Towers.
-        SlotState slotState = new SlotState(slot, null, null, null, initialGold);
+        SlotState slotState = new SlotState(gameState, slot, null, null, null, initialGold);
 
 
         // Create the Champion for this slot

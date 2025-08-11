@@ -37,6 +37,7 @@ public class AnimationMessageHandler {
             CastSkillSend skillCastSend = new CastSkillSend(
                 ctx.getCaster().getStringId(),
                 ctx.getTargetPoint(),
+                ctx.getCaster().getCurrentPosition(), // Caster's new position after casting
                 ctx.getSkillLength(),
                 ctx.getTimestamp()
             );

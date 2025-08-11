@@ -45,13 +45,16 @@ public class MoveContext {
         this.mover = mover;
         this.targetPoint = targetPoint;
         this.timestamp = timestamp;
+     
+        this.setPath(this.findPath());
+        log.info("Path found: {}", this.getPath().getPath().toString());
     }
 
     public void setPath(List<GridCell> path) {
-        if (path == null || path.isEmpty()) {
-            this.path = null;
-            return;
-        }
+        // if (path == null || path.isEmpty()) {
+        //     this.path = null;
+        //     return;
+        // }
         
         this.path = new PathComponent(path);
 
@@ -74,7 +77,7 @@ public class MoveContext {
     }
 
     
-    public boolean findPath() {
+    public List<GridCell> findPath() {
         GridCell startCell = gameState.toGridCell(mover.getCurrentPosition());
         GridCell targetCell = gameState.toGridCell(targetPoint);
         GameMapGrid gameMapGrid = gameState.getGameMapGrid();
@@ -86,13 +89,11 @@ public class MoveContext {
             log.warn("Pathfinding failed for entity {}:{} from {} to {}", 
                 gameState.getGameId(), mover.getStringId(), startCell, targetCell);
 
-            // Return early to prevent further processing
-            this.setPath(new ArrayList<>());
-            return false;
+            
+            return new ArrayList<>(); // Return an empty path if pathfinding fails
         }
-        
-        this.setPath(path);
-        return true;
+
+        return path;
     }
     
 

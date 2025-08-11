@@ -18,7 +18,7 @@ public class AuthenticationHandler extends MessageToMessageDecoder<ByteBuf> {
         
         // peek only, do not move the reader index
         short type = buf.getShort(buf.readerIndex());
-        System.out.println(">>> Server received first message from client, type: " + type); 
+        // System.out.println(">>> Server received first message from client, type: " + type); 
         
         // If this first message is not an authentication message, close the channel 
         if (type != ReceiveMessageType.AUTHENTICATION_RECEIVE.getType()) {
@@ -31,7 +31,7 @@ public class AuthenticationHandler extends MessageToMessageDecoder<ByteBuf> {
             return;
         }
 
-        System.out.println(">>> Server received first message is the authentication message, processing...");
+        // System.out.println(">>> Server received first message is the authentication message, processing...");
 
         // Send message to next handler in pipeline, BussinessHandler will catch, dispatch this message
         // and handle authentication later. In authenticate method, if successful, it will remove this handler from the pipeline

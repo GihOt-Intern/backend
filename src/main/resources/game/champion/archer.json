@@ -13,6 +13,6 @@
   },
   "ability": {
     "name": "Piercing Arrow",
-    "cool_down": 12.0
+    "cool_down": 0.0
   }
 }

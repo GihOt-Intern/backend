@@ -3,7 +3,7 @@ package com.server.game.factory;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.component.attackComponent.SkillReceiver;
+import com.server.game.model.game.SkillReceiverEntity;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.gameState.GameStateService;
@@ -31,6 +31,7 @@ public class CastSkillContextFactory {
         GameState gameState = gameStateService.getGameStateById(gameId);
         if (gameState == null) {
             log.info("GameState not found for gameId: {}", gameId);
+            return null;
         }
 
         Champion caster = (Champion) gameState.getEntityByStringId(casterStringId);
@@ -49,10 +50,10 @@ public class CastSkillContextFactory {
             log.info("Target not found: {}", targetEntityId);
         }
 
-        if ((target != null) && !(target instanceof SkillReceiver skillReceiver)) {
+        if ((target != null) && !(target instanceof SkillReceiverEntity)) {
             log.info("Target must be a SkillReceiver");
         }
 
-        return new CastSkillContext(gameState, caster, (SkillReceiver) target, targetPosition, timestamp);
+        return new CastSkillContext(gameState, caster, (SkillReceiverEntity) target, targetPosition, timestamp);
     }
 }

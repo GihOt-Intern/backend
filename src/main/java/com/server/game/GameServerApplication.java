@@ -2,13 +2,13 @@ package com.server.game;
 
 import java.util.TimeZone;
 
-import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.redis.RedisConnectionFailureException;
+// import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import com.server.game.util.RedisUtil;
+// import com.server.game.util.RedisUtil;
 
 import jakarta.annotation.PostConstruct;
 
@@ -16,8 +16,8 @@ import jakarta.annotation.PostConstruct;
 @EnableScheduling
 public class GameServerApplication {
 
-	@Autowired
-	private RedisUtil redisUtil;
+	// @Autowired
+	// private RedisUtil redisUtil;
 
 	public static void main(String[] args) {
 		SpringApplication.run(GameServerApplication.class, args);

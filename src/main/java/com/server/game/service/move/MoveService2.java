@@ -22,9 +22,9 @@ public class MoveService2 {
      * Đặt mục tiêu di chuyển mới cho người chơi
      */
     public void setMove(MoveContext ctx, boolean needStopAttack) {
-        ctx.getMover().setMoveContext(ctx);
-        // log.info("Setting move target for entity {} to position {} at timestamp {}",
-            // ctx.getMover().getStringId(), ctx.getTargetPoint(), ctx.getTimestamp());
+        ctx.getMover().setMoveContext(ctx, false);
+        log.info("Setting move target for entity {} to position {} at timestamp {}",
+            ctx.getMover().getStringId(), ctx.getTargetPoint(), ctx.getTimestamp());
 
         if (needStopAttack) {
             attackService.setStopAttacking(ctx.getMover());
@@ -37,9 +37,9 @@ public class MoveService2 {
         this.setMove(ctx, needStopAttack);
     }
 
-    public void setStopMoving(Entity entity) {
-        entity.setMoveContext(null);
-        // log.info("Stopping move for entity {}", entity.getStringId());
+    public void setStopMoving(Entity entity, boolean isForced) {
+        entity.setMoveContext(null, isForced);
+        log.info("Stopping move for entity {}", entity.getStringId());
     }
 
     /**
@@ -62,7 +62,7 @@ public class MoveService2 {
      */
     public void clearGameMove(GameState gameState) {
         for (Entity entity : gameState.getEntities()) {
-            entity.setMoveContext(null);
+            entity.setMoveContext(null, true);
         }
         // log.info("Cleared all move targets for game {}", gameState.getGameId());
     }

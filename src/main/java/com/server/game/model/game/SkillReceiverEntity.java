@@ -1,14 +1,11 @@
-package com.server.game.model.game.component.attackComponent;
+package com.server.game.model.game;
 
-import com.server.game.model.game.Entity;
-import com.server.game.model.game.GameState;
-import com.server.game.model.game.SlotState;
 import com.server.game.model.game.context.CastSkillContext;
 
-public abstract class SkillReceiver extends Entity {
+public abstract class SkillReceiverEntity extends DependentEntity {
 
-    public SkillReceiver(String id, SlotState ownerSlot, GameState gameState) {
-        super(id, ownerSlot, gameState);
+    public SkillReceiverEntity(String id, SlotState ownerSlot, GameState gameState) {
+        super(id, gameState, ownerSlot);
     }
 
     public abstract void receiveSkillDamage(CastSkillContext ctx);
@@ -29,6 +26,6 @@ public abstract class SkillReceiver extends Entity {
             throw new IllegalArgumentException("Defense must be a positive value");
         }
         // return skillDamage * (100.0f / (100 * myDefense));
-        return 20f;
+        return 10f;
     }
 }

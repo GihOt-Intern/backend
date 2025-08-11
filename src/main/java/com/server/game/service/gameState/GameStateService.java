@@ -17,7 +17,7 @@ import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.Tower;
-import com.server.game.model.game.component.attackComponent.SkillReceiver;
+import com.server.game.model.game.SkillReceiverEntity;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.GridCell;
@@ -167,11 +167,6 @@ public class GameStateService {
         }
 
         slotState.setChampionDead();
-        // log.info("Champion in gameId: {}, slot: {} has died", gameId,
-        //         slot);
-        
-        // Clear all attack targets that were targeting this dead champion
-        // attackTargetingService.clearTargetsAttackingChampion(gameId, slot);
         
         // Notify clients about the death
         sendChampionDeathMessage(gameId, slot);
@@ -289,11 +284,11 @@ public class GameStateService {
         // TODO
     }
 
-    public boolean updateSlotGold(GameState gameState, short slot, int newGold) {
-        gameState.setGold(slot, newGold);
+    public boolean updateSlotGold(GameState gameState, SlotState slotState, int newGold) {
+        gameState.setGold(slotState, newGold);
 
         log.debug("Updated gold for gameId: {}, slot: {} to {}", 
-                gameState.getGameId(), slot, newGold);
+                gameState.getGameId(), slotState.getSlot(), newGold);
         return true;
     }
     
@@ -343,43 +338,6 @@ public class GameStateService {
         return gameCoordinator.getGameState(gameId) != null;
     }
     
-    /**
-     * Get all player states for a game (for debugging/monitoring)
-     */
-    // public Map<Short, PlayerGameState> getAllPlayerStates(String gameId) {
-    //     GameState gameState = gameStates.get(gameId);
-    //     return gameState != null ? gameState.getAllPlayerStates() : new ConcurrentHashMap<>();
-    // }
-    
-    /**
-     * Update multiple game state attributes at once
-     */
-    public boolean updatePlayerGameState(String gameId, short slot, 
-            Integer newHP, Integer newGold, Integer newTroops, Float newSkillCooldown) {
-        GameState gameState = this.getGameStateById(gameId);
-        if (gameState == null) {
-            log.warn("Game state not found for gameId: {}", gameId);
-            return false;
-        }
-
-
-        if (newHP != null) {
-            this.updateChampionHealth(gameState, slot, newHP);
-        }
-        if (newGold != null) {
-            this.updateSlotGold(gameState, slot, newGold);
-        }
-        // if (newTroops != null) {
-        //     playerState.setTroopCount(newTroops);
-        // }
-        if (newSkillCooldown != null) {
-            this.setSkillCooldownDuration(gameState, slot, newSkillCooldown);
-        }
-        
-        log.debug("Updated game state for gameId: {}, slot: {} - HP: {}, Gold: {}, Troops: {}, SkillCD: {}", 
-                gameId, slot, newHP, newGold, newTroops, newSkillCooldown);
-        return true;
-    }
     
     /**
      * Reset player to full health (for respawn/healing abilities)
@@ -394,7 +352,7 @@ public class GameStateService {
         SlotState slotState = gameState.getSlotState(slot);
 
         
-        int oldHP = slotState.getCurrentHP();
+        // int oldHP = slotState.getCurrentHP();
 
         slotState.setChampionRevive();
 
@@ -404,18 +362,17 @@ public class GameStateService {
     }
 
 
-    public void genGold(String gameId) {
-        GameState gameState = this.getGameStateById(gameId);
+    public void autoIncreaseGold4SlotsInPlayground(GameState gameState) {
         if (gameState == null) {
-            log.warn("Game state not found for gameId: {}", gameId);
+            log.warn("Game state is null");
             return;
         }
 
-        Integer goldGeneratedPerSecond = gameState.getGoldGeneratedPerSecond();
+        Integer goldAutoIncreasePerSecond = gameState.getGoldGeneratedPerSecond();
         for (Map.Entry<Short, SlotState> entry : gameState.getSlotStates().entrySet()) {
             SlotState slotState = entry.getValue();
             if (slotState.getChampion().isInPlayground()) {
-                gameState.addGold(slotState.getSlot(), goldGeneratedPerSecond);
+                gameState.increaseGoldFor(slotState, goldAutoIncreasePerSecond);
             }
         }
     }
@@ -464,88 +421,6 @@ public class GameStateService {
         return gameState.getGrid2Entity().get(gridCell);
     }
 
-    // private void popEntityFromGridCell(Entity entity) {
-    //     // if (gameState == null || entity == null || gridCell == null) {
-    //     //     log.info("Invalid parameters for popping entity from grid cell");
-    //     //     if (gridCell == null) {
-    //     //         log.info("Grid cell is null");
-    //     //     }
-    //     //     return;
-    //     // }
-    //     // Set<Entity> entities = this.getEntitiesByGridCell(gameState, gridCell);
-    //     // if (entities != null) {
-    //     //     entities.remove(entity);
-    //     //     log.info("Removed entity {} from grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
-    //     // } else {
-    //     //     // log.warn("No entities found in grid cell {} for gameId: {}", gridCell, gameState.getGameId());
-    //     // }
-    //     // if (entities == null || entities.isEmpty()) {
-    //     //     gameState.getGrid2Entity().remove(gridCell);
-    //     //     log.info("Removed empty grid cell {} from gameId: {}", gridCell, gameState.getGameId());
-    //     // }
-
-    //     GameState gameState = entity.getGameState();
-    //     for (GridCell gridCell : gameState.getGrid2Entity().keySet()) {
-    //         Set<Entity> entities = gameState.getGrid2Entity().get(gridCell);
-    //         if (entities != null) {
-    //             // if entity is in this grid cell, remove it
-    //             // if not, remove(entity) will do nothing
-    //             entities.remove(entity);
-    //             if (entities.isEmpty()) {
-    //                 gameState.getGrid2Entity().remove(gridCell);
-    //                 log.info("Removed empty grid cell {} from gameId: {}", gridCell, gameState.getGameId());
-    //             }
-    //         }
-    //     }
-    // }
-
-    // private void pushEntityToGridCell(GameState gameState, GridCell gridCell, Entity entity) {
-    //     if (gameState == null || gridCell == null || entity == null) {
-    //         log.info("Invalid parameters for pushing entity to grid cell");
-    //         if (gameState == null) {
-    //             log.info("Game state is null");
-    //         }
-    //         if (gridCell == null) {
-    //             log.info("Grid cell is null");
-    //         }
-    //         if (entity == null) {
-    //             log.info("Entity is null");
-    //         }
-    //         return;
-    //     }
-        
-    //     gameState.getGrid2Entity().computeIfAbsent(gridCell, k -> ConcurrentHashMap.newKeySet()).add(entity);
-    //     log.debug("Pushed entity {} to grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
-    // }
-
-
-    // private void updateGridCell2Entity(GameState gameState, GridCell gridCell, Entity entity) {
-    //     if (gameState == null || gridCell == null || entity == null) {
-    //         log.info("Invalid parameters for updating grid cell to entity mapping");
-    //         return;
-    //     }
-        
-    //     GridCell newGridCell = entity.getCurrentGridCell();
-
-    //     if (oldGridCell != null) { // Entity was already in map at old grid cell
-    //         log.info("oldGridCell: {}, new gridCell: {}", oldGridCell, gridCell);
-    //         if (oldGridCell.equals(gridCell)) {
-    //             log.info("Entity {} is already in grid cell {}, no update needed", entity, gridCell);
-    //             return; // No change needed
-    //         }
-            
-    //         // Remove entity in old grid cell's set
-    //         this.popEntityFromGridCell(gameState, entity, oldGridCell);
-    //     }
-
-    //     // Update the entity to the new grid cell
-    //     this.pushEntityToGridCell(gameState, oldGridCell, entity);
-        
-    //     log.info("Updated entity {} from old grid cell {} to new grid cell {}",
-    //             entity, oldGridCell, gridCell);
-    // }
-
-
     // called before update Entity's current position 
     public void removeEntityFromGridCellMapping(Entity entity) {
         if (entity == null) {
@@ -562,11 +437,11 @@ public class GameStateService {
         GameState gameState = entity.getGameState();
         gameState.getGrid2Entity().computeIfPresent(oldGridCell, (cell, entities) -> {
             entities.remove(entity);
-            // log.info("Removed entity {} from grid cell {}", entity.getStringId(), cell);
+            // // log.info("Removed entity {} from grid cell {}", entity.getStringId(), cell);
 
             if (entities.isEmpty()) {
                 gameState.getGrid2Entity().remove(cell);
-                // log.info("Removed empty grid cell {} from gameId: {}", cell, gameState.getGameId());
+                // // log.info("Removed empty grid cell {} from gameId: {}", cell, gameState.getGameId());
             }
             return entities; // no need
         });
@@ -587,8 +462,8 @@ public class GameStateService {
 
         GridCell newGridCell = entity.getCurrentGridCell();
 
-        // log.info("Updating entity, new position: {} to grid cell {}", 
-                // entity.getCurrentPosition(), newGridCell);
+        // // log.info("Updating entity, new position: {} to grid cell {}", 
+        //         // entity.getCurrentPosition(), newGridCell);
         
         GameState gameState = entity.getGameState();
         gameState.getGrid2Entity().computeIfAbsent(newGridCell, k -> ConcurrentHashMap.newKeySet()).add(entity);        
@@ -665,11 +540,14 @@ public class GameStateService {
         return res;
     }
 
-    public Set<SkillReceiver> getSkillReceiverEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
+    public Set<SkillReceiverEntity> getSkillReceiverEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
+
+        log.info("Hitbox: {}", scope);
+
         Set<Entity> entities = this.getEnemiesInScope(gameState, scope, slotState);
         return entities.stream()
-            .filter(entity -> entity instanceof SkillReceiver)
-            .map(SkillReceiver.class::cast)
+            .filter(entity -> entity instanceof SkillReceiverEntity)
+            .map(SkillReceiverEntity.class::cast)
             .collect(Collectors.toSet());
     }
 
@@ -684,7 +562,8 @@ public class GameStateService {
         }
         
         // Send the update message to all players in the game
-        this.playgroundMessageHandler.sendInPlaygroundUpdateMessage(gameState.getGameId(), slot.getSlot(), isInPlayground);
+        this.playgroundMessageHandler.sendInPlaygroundUpdateMessage(
+            gameState.getGameId(), slot.getSlot(), isInPlayground);
     }
 
     public void sendAttackAnimation(AttackContext ctx) {
@@ -697,5 +576,9 @@ public class GameStateService {
 
     public void sendHealthUpdate(String gameId, Entity target, int actualDamage, long timestamp) {
         this.gameStateMessageHandler.sendHealthUpdate(gameId, target, actualDamage, timestamp);
+    }
+
+    public void sendGoldMineSpawnMessage(String gameId, boolean isSmallGoldMine, Vector2 position) {
+        this.playgroundMessageHandler.sendGoldMineSpawnMessage(gameId, isSmallGoldMine, position);
     }
 }

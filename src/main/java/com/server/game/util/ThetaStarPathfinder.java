@@ -3,7 +3,9 @@ package com.server.game.util;
 
 import java.util.*;
 
+import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.GridCell;
+import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMapGrid;
 
 public class ThetaStarPathfinder {
@@ -17,12 +19,14 @@ public class ThetaStarPathfinder {
         int cols = grid[0].length;
 
 
-        // Nếu điểm bắt đầu hoặc kết thúc không đi được
-        if (!gameMapGrid.isValid(start) || !gameMapGrid.isValid(end)) {
+        // Nếu điểm bắt đầu hoặc kết thúc không nằm trong lưới -> vô lý -> trả về danh sách rỗng
+        // Nhưng điều này sẽ không xảy ra vì khi chuyển từ Vector2 sang GridCell,
+        // nó đã được đảm bảo kẹp giữa trong phạm vi của lưới
+        if (gameMapGrid.isOutGrid(start) || gameMapGrid.isOutGrid(end)) {
             return Collections.emptyList();
         }
 
-        // Nếu điểm bắt đầu không đi được
+        // Nếu điểm bắt đầu nằm ở ô không đi được
         if (!gameMapGrid.isWalkable(start)) {
             System.out.println(">>> Start point is not walkable");
             GridCell closestWalkable = findClosestWalkablePosition(grid, start);
@@ -34,7 +38,7 @@ public class ThetaStarPathfinder {
             start = closestWalkable;
         }
 
-        // Nếu điểm kết thúc không đi được
+        // Nếu điểm kết thúc nằm ở ô không đi được
         if (!gameMapGrid.isWalkable(end)) {
             System.out.println(">>> End point is not walkable");
             GridCell closestWalkable = findClosestWalkablePosition(grid, end);
@@ -150,6 +154,22 @@ public class ThetaStarPathfinder {
 
         // Không tìm được đường đi đến end ⇒ trả về đường đi gần nhất
         return reconstructPath(closest);
+    }
+
+    public static Vector2 findClosestWalkablePosition(GameState gameState, Vector2 position) {
+        GridCell currentCell = gameState.toGridCell(position);
+        if (gameState.getGameMapGrid().isWalkable(currentCell)) {
+            return position; // Nếu ô hiện tại có thể đi được
+        }
+        GridCell closestWalkable = findClosestWalkablePosition(
+            gameState.getGameMapGrid().getGrid(), currentCell);
+        
+        if (closestWalkable != null) {
+            return gameState.toPosition(closestWalkable);
+        } else {
+            System.out.println(">>> No walkable position found near " + position);
+            return null; // Không tìm thấy ô đi được gần nhất
+        }
     }
 
     private static GridCell findClosestWalkablePosition(boolean[][] grid, GridCell target) {

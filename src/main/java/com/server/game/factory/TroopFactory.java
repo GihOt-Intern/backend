@@ -47,7 +47,7 @@ public class TroopFactory {
             return null;
         }
 
-        if (gameState.peekGold(ownerSlot) < troopDB.getCost()) {
+        if (gameState.peekGold(slotState) < troopDB.getCost()) {
             return null;
         }
 
@@ -58,7 +58,7 @@ public class TroopFactory {
             moveService
         );
 
-        gameState.spendGold(ownerSlot, troopDB.getCost());
+        gameState.spendGold(slotState, troopDB.getCost());
 
         gameStateService.addEntityTo(gameState, troopInstance);
         slotStateService.addTroop(slotState, troopInstance);

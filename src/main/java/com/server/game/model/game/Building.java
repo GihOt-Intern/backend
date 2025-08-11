@@ -14,16 +14,18 @@ import lombok.experimental.FieldDefaults;
 @EqualsAndHashCode(callSuper=false)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
-public abstract class Building extends Entity {
+public abstract class Building extends DependentEntity implements FixedPositionEntity {
 
-    String dbId; // id of the building in the database
+    final String dbId; // id of the building in the database
     final Vector2 position;
 
     @Delegate
     final HealthComponent healthComponent;
 
-    public Building(String stringId, SlotState ownerSlot, GameState gameState, Integer hp, String dbId, Vector2 initPosition) {
-        super(stringId, ownerSlot, gameState);
+    public Building(String stringId, SlotState ownerSlot, GameState gameState,
+        Integer hp, String dbId, Vector2 initPosition) {
+            
+        super(stringId, gameState, ownerSlot);
 
         this.dbId = dbId;
         this.position = initPosition;

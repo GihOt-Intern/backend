@@ -6,10 +6,9 @@ import java.util.Map;
 import org.springframework.lang.Nullable;
 
 import com.server.game.model.game.Champion;
-import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.map.component.Vector2;
+import com.server.game.model.game.SkillReceiverEntity;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -31,7 +30,7 @@ public class CastSkillContext {
     @NotNull
     private long timestamp; 
     @Nullable
-    private SkillReceiver target = null; // Can be null if the skill does not target an entity
+    private SkillReceiverEntity target = null; // Can be null if the skill does not target an entity
     @NotNull
     private Float skillLength = 0.0f; // Length of the skill cast, can be 0 if not applicable
 
@@ -46,7 +45,7 @@ public class CastSkillContext {
     }
     
     public CastSkillContext(
-        GameState gameState, Champion caster, SkillReceiver target, Vector2 targetPoint, long timestamp) {
+        GameState gameState, Champion caster, SkillReceiverEntity target, Vector2 targetPoint, long timestamp) {
         this.gameState = gameState;
         this.caster = caster;
         this.target = target;
