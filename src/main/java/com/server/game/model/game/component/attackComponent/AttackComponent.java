@@ -106,8 +106,6 @@ public class AttackComponent {
         }
 
         
-
-
         if (!this.inAttackRange() && !this.owner.getStringId().startsWith("tower")) {
             // System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to move to position that reach attack range.");
             // System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
@@ -140,11 +138,7 @@ public class AttackComponent {
             // System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
         
         // Use the strategy to perform the attack
-        // short attakerSlot = this.owner.getOwnerSlot().getSlot();
-        // short targetSlot = ctx.getTarget().getOwnerSlot().getSlot();
-        // if (attakerSlot == targetSlot) {
-        //     return false; // Cannot attack allies
-        // }
+        // .performAttack() has handled to do not attack allies
         boolean didAttack = strategy.performAttack(ctx);
 
         if (ctx.getTarget() == null || !ctx.getTarget().isAlive()) {
