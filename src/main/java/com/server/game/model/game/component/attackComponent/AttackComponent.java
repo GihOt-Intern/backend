@@ -44,18 +44,18 @@ public class AttackComponent {
     public boolean setAttackContext(@Nullable AttackContext ctx) {
 
         if (ctx == null) { // ctx null means forced stop attack
-            System.out.println(">>> [Log in AttackComponent] Setting attack context to null, force stopping attack.");
+            // System.out.println(">>> [Log in AttackComponent] Setting attack context to null, force stopping attack.");
             this.attackContext = null;
             return true;
         }
         
         if (this.owner.isCastingDurationSkill() && !this.owner.canUseSkillWhileAttacking()) {
-            System.out.println(">>> [Log in AttackComponent] Cannot set attack context while casting skill, skipping.");
+            // System.out.println(">>> [Log in AttackComponent] Cannot set attack context while casting skill, skipping.");
             return false;
         }
 
         this.attackContext = ctx;
-        System.out.println(">>> [Log in AttackComponent] Attack context set: " + ctx);
+        // System.out.println(">>> [Log in AttackComponent] Attack context set: " + ctx);
         return true;
     }
 
@@ -98,7 +98,7 @@ public class AttackComponent {
 
     public final boolean inAttackRange() {
         if (this.attackContext == null || this.attackContext.getTarget() == null) {
-            System.out.println(">>> [Log in AttackComponent] Attack context or target is null, cannot check attack range.");
+            // System.out.println(">>> [Log in AttackComponent] Attack context or target is null, cannot check attack range.");
             return false;
         }
         return inAttackRange(this.attackContext.getTarget());

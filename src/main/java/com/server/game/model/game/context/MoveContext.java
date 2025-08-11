@@ -47,7 +47,7 @@ public class MoveContext {
         this.timestamp = timestamp;
      
         this.setPath(this.findPath());
-        log.info("Path found: {}", this.getPath().getPath().toString());
+        // log.info("Path found: {}", this.getPath().getPath().toString());
     }
 
     public void setPath(List<GridCell> path) {

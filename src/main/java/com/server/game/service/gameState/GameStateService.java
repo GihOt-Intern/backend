@@ -216,6 +216,7 @@ public class GameStateService {
         EntitiesRemovedSend entitiesRemovedSend = new EntitiesRemovedSend(removedEntityIds, timestamp);
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
         if (channel != null) {
+            log.info("Sending remove entities");
             channel.writeAndFlush(entitiesRemovedSend);
             // log.info("Sent entities removed message for gameId: {}", gameId);
         } else {
@@ -227,6 +228,7 @@ public class GameStateService {
         GameOverSend gameOverSend = new GameOverSend(winnerSlot);
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
         if (channel != null) {
+            log.info("Sending game over message for gameId: {}, winnerSlot: {}", gameId, winnerSlot);
             channel.writeAndFlush(gameOverSend);
             // log.info("Sent game over message for gameId: {}, winnerSlot: {}", gameId, winnerSlot);
         } else {
