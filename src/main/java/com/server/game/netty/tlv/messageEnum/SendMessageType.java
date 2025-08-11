@@ -37,6 +37,8 @@ public enum SendMessageType {
     TROOP_SPAWN_SEND((short) 201),
     ENTITY_DEATH_SEND((short) 203), // Unified entity death message for both champions and troops
     TROOP_SPAWN_COOLDOWN_SEND((short) 204),
+    ENTITIES_REMOVED((short) 205),
+    GAME_OVER((short) 206),
 
     HEARTBEAT_SEND((short) 255), // Heartbeat message
 

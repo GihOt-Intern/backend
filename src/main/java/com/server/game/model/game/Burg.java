@@ -127,5 +127,37 @@ public final class Burg extends Building {
 
         List<String> removedEntityIds = new ArrayList<>();
         List<Entity> entitiesToRemove = new ArrayList<>();
+
+        for(Entity entity : gameState.getEntities()) {
+            if (entity.getOwnerSlot().getSlot() == destroyedSlot) {
+                removedEntityIds.add(entity.getStringId());
+                entitiesToRemove.add(entity);
+            }
+        }
+
+        for(Entity entity : entitiesToRemove) {
+            gameState.removeEntity(entity);
+        }
+
+        ctx.getGameStateService().sendEntitiesRemoved(
+            ctx.getGameId(), removedEntityIds, ctx.getTimestamp());
+        
+        ownerSlot.setEliminated(true);
+
+        int remainingBurgs = 0;
+        short lastAliveBurgSlot = -1;
+
+        for(Entity entity : gameState.getEntities()) {
+            if (entity instanceof Burg && entity.isAlive()) {
+                remainingBurgs++;
+                lastAliveBurgSlot = entity.getOwnerSlot().getSlot();
+            }
+        }
+
+        if (remainingBurgs == 1) {
+            ctx.getGameStateService().sendGameOver(
+                ctx.getGameId(), lastAliveBurgSlot, ctx.getTimestamp()
+            );
+        }
     }
 }
