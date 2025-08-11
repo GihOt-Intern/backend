@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.GoldMine;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.SkillReceiverEntity;
 import com.server.game.model.game.context.AttackContext;
@@ -167,11 +166,6 @@ public class GameStateService {
         }
 
         slotState.setChampionDead();
-        // log.info("Champion in gameId: {}, slot: {} has died", gameId,
-        //         slot);
-        
-        // Clear all attack targets that were targeting this dead champion
-        // attackTargetingService.clearTargetsAttackingChampion(gameId, slot);
         
         // Notify clients about the death
         sendChampionDeathMessage(gameId, slot);
@@ -408,88 +402,6 @@ public class GameStateService {
         
         return gameState.getGrid2Entity().get(gridCell);
     }
-
-    // private void popEntityFromGridCell(Entity entity) {
-    //     // if (gameState == null || entity == null || gridCell == null) {
-    //     //     log.info("Invalid parameters for popping entity from grid cell");
-    //     //     if (gridCell == null) {
-    //     //         log.info("Grid cell is null");
-    //     //     }
-    //     //     return;
-    //     // }
-    //     // Set<Entity> entities = this.getEntitiesByGridCell(gameState, gridCell);
-    //     // if (entities != null) {
-    //     //     entities.remove(entity);
-    //     //     log.info("Removed entity {} from grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
-    //     // } else {
-    //     //     // log.warn("No entities found in grid cell {} for gameId: {}", gridCell, gameState.getGameId());
-    //     // }
-    //     // if (entities == null || entities.isEmpty()) {
-    //     //     gameState.getGrid2Entity().remove(gridCell);
-    //     //     log.info("Removed empty grid cell {} from gameId: {}", gridCell, gameState.getGameId());
-    //     // }
-
-    //     GameState gameState = entity.getGameState();
-    //     for (GridCell gridCell : gameState.getGrid2Entity().keySet()) {
-    //         Set<Entity> entities = gameState.getGrid2Entity().get(gridCell);
-    //         if (entities != null) {
-    //             // if entity is in this grid cell, remove it
-    //             // if not, remove(entity) will do nothing
-    //             entities.remove(entity);
-    //             if (entities.isEmpty()) {
-    //                 gameState.getGrid2Entity().remove(gridCell);
-    //                 log.info("Removed empty grid cell {} from gameId: {}", gridCell, gameState.getGameId());
-    //             }
-    //         }
-    //     }
-    // }
-
-    // private void pushEntityToGridCell(GameState gameState, GridCell gridCell, Entity entity) {
-    //     if (gameState == null || gridCell == null || entity == null) {
-    //         log.info("Invalid parameters for pushing entity to grid cell");
-    //         if (gameState == null) {
-    //             log.info("Game state is null");
-    //         }
-    //         if (gridCell == null) {
-    //             log.info("Grid cell is null");
-    //         }
-    //         if (entity == null) {
-    //             log.info("Entity is null");
-    //         }
-    //         return;
-    //     }
-        
-    //     gameState.getGrid2Entity().computeIfAbsent(gridCell, k -> ConcurrentHashMap.newKeySet()).add(entity);
-    //     log.debug("Pushed entity {} to grid cell {} in gameId: {}", entity, gridCell, gameState.getGameId());
-    // }
-
-
-    // private void updateGridCell2Entity(GameState gameState, GridCell gridCell, Entity entity) {
-    //     if (gameState == null || gridCell == null || entity == null) {
-    //         log.info("Invalid parameters for updating grid cell to entity mapping");
-    //         return;
-    //     }
-        
-    //     GridCell newGridCell = entity.getCurrentGridCell();
-
-    //     if (oldGridCell != null) { // Entity was already in map at old grid cell
-    //         log.info("oldGridCell: {}, new gridCell: {}", oldGridCell, gridCell);
-    //         if (oldGridCell.equals(gridCell)) {
-    //             log.info("Entity {} is already in grid cell {}, no update needed", entity, gridCell);
-    //             return; // No change needed
-    //         }
-            
-    //         // Remove entity in old grid cell's set
-    //         this.popEntityFromGridCell(gameState, entity, oldGridCell);
-    //     }
-
-    //     // Update the entity to the new grid cell
-    //     this.pushEntityToGridCell(gameState, oldGridCell, entity);
-        
-    //     log.info("Updated entity {} from old grid cell {} to new grid cell {}",
-    //             entity, oldGridCell, gridCell);
-    // }
-
 
     // called before update Entity's current position 
     public void removeEntityFromGridCellMapping(Entity entity) {

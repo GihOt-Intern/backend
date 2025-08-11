@@ -1,10 +1,7 @@
 package com.server.game.netty.messageHandler;
 
-import java.util.Vector;
-
 import org.springframework.stereotype.Component;
 
-import com.server.game.model.game.GoldMine;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.GoldAmountSend;

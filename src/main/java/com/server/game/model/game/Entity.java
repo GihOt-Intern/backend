@@ -211,10 +211,10 @@ public abstract class Entity implements Attackable {
         if (hasComponent(MovingComponent.class)) {
             return gameState.toGridCell(this.getCurrentPosition());
         }
-        if (this instanceof Building building) {
-            return gameState.toGridCell(building.getPosition());
+        if (this instanceof FixedPositionEntity fixedPositionEntity) {
+            return gameState.toGridCell(fixedPositionEntity.getPosition());
         }
-        System.out.println("Entity does not have MovingComponent or not a Building, returning null");
+        System.out.println("Entity does not have MovingComponent or not a FixedPositionEntity, returning null");
         return null;
     }
 

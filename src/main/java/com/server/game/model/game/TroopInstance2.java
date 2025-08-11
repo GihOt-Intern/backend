@@ -4,7 +4,6 @@ import com.server.game.model.game.attackStrategy.TroopAttackStrategy;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
-import com.server.game.model.game.SkillReceiverEntity;
 import com.server.game.model.game.component.attributeComponent.TroopAttributeComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
