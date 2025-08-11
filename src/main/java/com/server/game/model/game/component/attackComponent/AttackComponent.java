@@ -140,7 +140,7 @@ public class AttackComponent {
         // Stop moving before performing the attack
         // is not forced bacause this request is called 
         moveService.setStopMoving(this.owner, true);
-        System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
+        // System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
         
         // Use the strategy to perform the attack
         short attakerSlot = this.owner.getOwnerSlot().getSlot();

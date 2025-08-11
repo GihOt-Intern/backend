@@ -4,11 +4,12 @@ import com.server.game.model.map.component.Vector2;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
 public abstract class Shape {
-
+    @Setter
     protected Vector2 center;
 
     public abstract boolean intersects(Vector2 thisPos, Shape other, Vector2 otherPos);

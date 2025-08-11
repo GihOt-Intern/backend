@@ -47,8 +47,13 @@ public abstract class DurationSkillComponent extends SkillComponent {
         this.getSkillOwner().getGameStateService()
             .sendCastSkillAnimation(castSkillContext);
 
+        this.createHitbox(); // Optional method to create hitbox
+
         return true;
     }
+
+    // optional method to create hitbox, can be overridden by subclasses
+    protected void createHitbox() {}
 
     public final boolean updatePerTick() {
         if (!this.isActive) { 
@@ -86,6 +91,9 @@ public abstract class DurationSkillComponent extends SkillComponent {
             // Skill is still active, but no damage this tick
             log.info("Skill: not in damage tick, current tick: {}, nextDamageTick: {}", 
                 currentTick, nextDamageTick);
+
+            this.doUpdatePerTick(); // Optional method to update per tick
+
             return true; // Continue to update
         }
 
@@ -95,5 +103,7 @@ public abstract class DurationSkillComponent extends SkillComponent {
         return true;
     }
 
+    // Optional methods to be overridden by subclasses
+    protected void doUpdatePerTick() {}
     protected abstract boolean performAtCorrectTick(); // Nếu có skill cần xử lý theo thời gian
 }
