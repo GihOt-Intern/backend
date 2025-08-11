@@ -2,7 +2,6 @@ package com.server.game.model.game.attackStrategy;
 
 import org.springframework.stereotype.Component;
 
-import com.server.game.model.game.SlotState;
 import com.server.game.model.game.context.AttackContext;
 
 import lombok.extern.slf4j.Slf4j;

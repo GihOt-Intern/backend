@@ -14,7 +14,6 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.deserializer.PlaygroundDeserializer;
 import com.server.game.resource.model.SlotInfo.BurgDB;

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import com.server.game.factory.GoldMineFactory;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.GoldMine;
-import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMap.Playground;
 import com.server.game.service.gameState.GameStateService;

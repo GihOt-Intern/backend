@@ -1,11 +1,8 @@
 package com.server.game.model.game;
 
-import java.util.HashMap;
-import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
-import lombok.experimental.Delegate;
 
 // abstract class to represent an entity that depends on a slot state
 // (Champion, Troop, Tower, Burg)

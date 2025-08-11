@@ -6,7 +6,6 @@ import java.util.UUID;
 import com.server.game.model.game.attackStrategy.TowerAttackStrategy;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.context.AttackContext;
-import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.SlotInfo.TowerDB;
 
 import lombok.AccessLevel;
