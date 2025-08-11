@@ -7,7 +7,6 @@ import com.server.game.model.game.Entity;
 import com.server.game.model.game.attackStrategy.AttackStrategy;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.util.Util;
-import com.server.game.model.map.component.Vector2;
 import com.server.game.service.move.MoveService2;
 
 import lombok.Getter;
@@ -71,8 +70,26 @@ public class AttackComponent {
         return currentTick >= this.nextAttackTick;
     }
 
-    private final boolean inAttackRange(Vector2 targetPosition) {
-        float distance = this.owner.getCurrentPosition().distance(targetPosition);
+    private final boolean inAttackRange(Entity target) {
+        if (target == null) {
+            return false;
+        }
+        
+        float distance;
+        
+        // If owner is a Building (Tower/Burg), use boundary distance
+        if (this.owner instanceof com.server.game.model.game.Building) {
+            com.server.game.model.game.Building ownerBuilding = (com.server.game.model.game.Building) this.owner;
+            distance = ownerBuilding.distanceToEntityBoundary(target);
+        } else if (target instanceof com.server.game.model.game.Building) {
+            // Entity to Building - use building's distanceToEntityBoundary with owner position
+            com.server.game.model.game.Building targetBuilding = (com.server.game.model.game.Building) target;
+            distance = targetBuilding.distanceToEntityBoundary(this.owner);
+        } else {
+            // Entity to Entity (use center-point distance)
+            distance = this.owner.getCurrentPosition().distance(target.getCurrentPosition());
+        }
+        
         // System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
         //     "distance=" + distance + ", attackRange=" + this.attackRange);
         return distance - 0.1f <= this.attackRange;
@@ -83,7 +100,7 @@ public class AttackComponent {
             System.out.println(">>> [Log in AttackComponent] Attack context or target is null, cannot check attack range.");
             return false;
         }
-        return inAttackRange(this.attackContext.getTarget().getCurrentPosition());
+        return inAttackRange(this.attackContext.getTarget());
     }
 
 
@@ -102,7 +119,7 @@ public class AttackComponent {
         
 
 
-        if (!this.inAttackRange()) {
+        if (!this.inAttackRange() && !this.owner.getStringId().startsWith("tower")) {
             // System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to move to position that reach attack range.");
             // System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
             //     ", Target position: " + ctx.getTarget().getCurrentPosition() + 
@@ -137,8 +154,10 @@ public class AttackComponent {
         //     strategy.getClass().getSimpleName());
 
         // Stop moving before performing the attack
-        moveService.setStopMoving(this.owner);
-        // System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
+        if (!this.owner.getStringId().startsWith("tower")) {
+            moveService.setStopMoving(this.owner);
+        }
+            // System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
         
         // Use the strategy to perform the attack
         short attakerSlot = this.owner.getOwnerSlot().getSlot();

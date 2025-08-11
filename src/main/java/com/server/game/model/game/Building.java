@@ -37,4 +37,10 @@ public abstract class Building extends Entity {
     protected void addAllComponents() {
         this.addComponent(HealthComponent.class, this.healthComponent);
     }
+    
+    /**
+     * Abstract method to calculate distance to another entity's boundary
+     * Each building type should implement this based on their dimensions
+     */
+    public abstract float distanceToEntityBoundary(Entity other);
 }

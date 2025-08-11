@@ -14,6 +14,7 @@ import com.server.game.service.defense.DefensiveStanceService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.goldGeneration.GoldGenerationService;
 import com.server.game.service.move.MoveService2;
+import com.server.game.service.tower.TowerDefenseService;
 import com.server.game.service.troop.TroopManager;
 
 import io.netty.channel.Channel;
@@ -34,6 +35,7 @@ public class GameLogicScheduler {
     GoldGenerationService goldGenerationService;
     GameStateService gameStateService;
     DefensiveStanceService defensiveStanceService;
+    TowerDefenseService towerDefenseService;
     TroopManager troopManager;
     
     /**
@@ -98,6 +100,7 @@ public class GameLogicScheduler {
         for (GameState gameState : gameStateService.getAllActiveGameStates()) {
             try {
                 defensiveStanceService.updateDefensiveStances(gameState);
+                towerDefenseService.updateTowerDefenses(gameState);
                 // TODO: Add slower update systems here
                 // - Resource generation
                 // - AI decision making

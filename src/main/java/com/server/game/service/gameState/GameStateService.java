@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
+import com.server.game.model.game.Tower;
 import com.server.game.model.game.component.attackComponent.SkillReceiver;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
@@ -193,6 +194,23 @@ public class GameStateService {
             //log.info("Sent champion death message for gameId: {}, slot: {}, championId: {}", gameId, slot, championId);
         } else {
             log.warn("No channel found for gameId: {} when sending champion death message", gameId);
+        }
+    }
+
+    public void sendTowerDeathMessage(String gameId, Tower tower) {
+        String towerId = tower.getStringId();
+        if (towerId == null) {
+            log.warn("Could not find tower ID for gameId: {}", gameId);
+            return;
+        }
+
+        EntityDeathSend deathMessage = new EntityDeathSend(towerId);
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null) {
+            channel.writeAndFlush(deathMessage);
+            //log.info("Sent tower death message for gameId: {}, towerId: {}", gameId, towerId);
+        } else {
+            log.warn("No channel found for gameId: {} when sending tower death message", gameId);
         }
     }
 
