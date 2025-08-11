@@ -3,6 +3,7 @@ package com.server.game.model.game.component.attackComponent;
 
 import org.springframework.lang.Nullable;
 
+import com.server.game.model.game.Building;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.attackStrategy.AttackStrategy;
 import com.server.game.model.game.context.AttackContext;
@@ -79,33 +80,14 @@ public class AttackComponent {
     }
 
     private final boolean inAttackRange(Entity target) {
-        if (target == null) {
-            return false;
-        }
-        
-        float distance;
-        
-        // If owner is a Building (Tower/Burg), use boundary distance
-        if (this.owner instanceof com.server.game.model.game.Building) {
-            com.server.game.model.game.Building ownerBuilding = (com.server.game.model.game.Building) this.owner;
-            distance = ownerBuilding.distanceToEntityBoundary(target);
-        } else if (target instanceof com.server.game.model.game.Building) {
-            // Entity to Building - use building's distanceToEntityBoundary with owner position
-            com.server.game.model.game.Building targetBuilding = (com.server.game.model.game.Building) target;
-            distance = targetBuilding.distanceToEntityBoundary(this.owner);
-        } else {
-            // Entity to Entity (use center-point distance)
-            distance = this.owner.getCurrentPosition().distance(target.getCurrentPosition());
-        }
-        
-        // System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
-        //     "distance=" + distance + ", attackRange=" + this.attackRange);
+        // .distanceTo(Entity) method in Entity has handled distance calculating
+        // of all instances cases of subclasses
+        Float distance = this.owner.distanceTo(target);
         return distance - 0.1f <= this.attackRange;
     }
 
     public final boolean inAttackRange() {
         if (this.attackContext == null || this.attackContext.getTarget() == null) {
-            // System.out.println(">>> [Log in AttackComponent] Attack context or target is null, cannot check attack range.");
             return false;
         }
         return inAttackRange(this.attackContext.getTarget());

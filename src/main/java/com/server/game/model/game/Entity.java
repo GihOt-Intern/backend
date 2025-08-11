@@ -265,8 +265,35 @@ public abstract class Entity implements Attackable {
     }
 
     public final float distanceTo(Entity other) {
-        return this.getComponent(MovingComponent.class)
-            .distanceTo(other.getCurrentPosition());
+
+        Vector2 myPosition = this.getCurrentPosition();
+        // For non-building entities (troops, champions), their dimensions are treated as zero
+        Float myWidth = 0f;
+        Float myLength = 0f;
+
+        if (this instanceof Building myBuilding) {
+            myWidth = myBuilding.getWidth();
+            myLength = myBuilding.getLength();
+        }
+
+        Vector2 otherPosition = other.getCurrentPosition();
+        // For non-building entities (troops, champions), their dimensions are treated as zero
+        Float otherWidth = 0f;
+        Float otherLength = 0f;
+
+        if (other instanceof Building otherBuilding) {
+            otherWidth = otherBuilding.getWidth();
+            otherLength = otherBuilding.getLength();
+        }
+
+        float dx = Math.max(0, 
+            Math.abs(myPosition.x() - otherPosition.x()) - 
+                (myWidth + otherWidth) / 2);
+        float dy = Math.max(0, 
+            Math.abs(myPosition.y() - otherPosition.y()) - 
+                (myLength + otherLength) / 2);
+
+        return (float) Math.sqrt(dx * dx + dy * dy);
     }
 
 
