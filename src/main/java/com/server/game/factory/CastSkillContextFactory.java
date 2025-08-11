@@ -3,7 +3,7 @@ package com.server.game.factory;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.SkillReceiverEntity;
+import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.gameState.GameStateService;
@@ -50,10 +50,10 @@ public class CastSkillContextFactory {
             log.info("Target not found: {}", targetEntityId);
         }
 
-        if ((target != null) && !(target instanceof SkillReceiverEntity)) {
-            log.info("Target must be a SkillReceiver");
+        if ((target != null) && !(target instanceof SkillReceivable)) {
+            log.info("Target must be a SkillReceivable");
         }
 
-        return new CastSkillContext(gameState, caster, (SkillReceiverEntity) target, targetPosition, timestamp);
+        return new CastSkillContext(gameState, caster, (SkillReceivable) target, targetPosition, timestamp);
     }
 }

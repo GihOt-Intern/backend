@@ -29,10 +29,16 @@ public class GameMap {
     String name;
     Integer initialGoldEachSlot;
     Integer goldGeneratedPerSecond;
+
+    Integer smallGoldMineInitialHP;
+    Integer largeGoldMineInitialHP;
+
     Integer smallGoldMineCapacity;
     Integer largeGoldMineCapacity;
+
     Float smallGoldMineExploitSeconds;
     Float largeGoldMineExploitSeconds;
+
     Float goldMineGenerationIntervalSeconds;
     Integer towerHP;
     Integer burgHP;
@@ -48,6 +54,8 @@ public class GameMap {
         @JsonProperty("map_name") String name,
         @JsonProperty("initial_gold_each_slot") int initialGoldEachSlot,
         @JsonProperty("gold_generated_per_second") int goldGeneratedPerSecond,
+        @JsonProperty("small_gold_mine_initial_hp") Integer smallGoldMineInitialHP,
+        @JsonProperty("large_gold_mine_initial_hp") Integer largeGoldMineInitialHP,
         @JsonProperty("small_gold_mine_capacity") Integer smallGoldMineCapacity,
         @JsonProperty("large_gold_mine_capacity") Integer largeGoldMineCapacity,
         @JsonProperty("small_gold_mine_exploit_seconds") Float smallGoldMineExploitSeconds,
@@ -62,10 +70,16 @@ public class GameMap {
         this.name = name;
         this.initialGoldEachSlot = initialGoldEachSlot;
         this.goldGeneratedPerSecond = goldGeneratedPerSecond;
+
+        this.smallGoldMineInitialHP = smallGoldMineInitialHP;
+        this.largeGoldMineInitialHP = largeGoldMineInitialHP;
+
         this.smallGoldMineCapacity = smallGoldMineCapacity;
         this.largeGoldMineCapacity = largeGoldMineCapacity;
+        
         this.smallGoldMineExploitSeconds = smallGoldMineExploitSeconds;
         this.largeGoldMineExploitSeconds = largeGoldMineExploitSeconds;
+        
         this.goldMineGenerationIntervalSeconds = goldMineGenerationIntervalSeconds;
 
         this.towerHP = towerHP;
@@ -137,4 +151,6 @@ public class GameMap {
         System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
         return null;
     }
+
+    
 }

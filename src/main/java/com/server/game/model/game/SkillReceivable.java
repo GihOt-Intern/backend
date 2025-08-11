@@ -2,15 +2,12 @@ package com.server.game.model.game;
 
 import com.server.game.model.game.context.CastSkillContext;
 
-public abstract class SkillReceiverEntity extends DependentEntity {
+public interface SkillReceivable {
 
-    public SkillReceiverEntity(String id, SlotState ownerSlot, GameState gameState) {
-        super(id, gameState, ownerSlot);
-    }
+    void receiveSkillDamage(CastSkillContext ctx);
+    Integer getDefense();
 
-    public abstract void receiveSkillDamage(CastSkillContext ctx);
-
-    protected final float calculateActualDamage(CastSkillContext ctx) {
+    default float calculateActualDamage(CastSkillContext ctx) {
         Float skillDamage = ctx.getSkillDamage();
         if (skillDamage == null || skillDamage < 0) {
             throw new IllegalArgumentException("Skill damage must be a non-negative value");

@@ -218,6 +218,11 @@ public class GameState {
         return new GridCell(row, col);
     }
 
+    public boolean isWalkable(Vector2 position) {
+        GridCell cell = toGridCell(position);
+        return gameMapGrid.isWalkable(cell);
+    }
+
 
     public Integer peekGold(Short slot) {
         if (slot != null) {
@@ -247,6 +252,14 @@ public class GameState {
         }
     }
 
+    public void increaseGold(SlotState slotState, Integer amount) {
+        this.setGold(slotState, slotState.getCurrentGold() + amount);
+    }
+    
+    public void decreaseGold(SlotState slotState, Integer amount) {
+        this.setGold(slotState, slotState.getCurrentGold() - amount);
+    }
+
     public void setGold(SlotState slotState, Integer newAmount) {
         if (slotState == null) {
             System.err.println(">>> [Log in GameState.setGold] Slot not found in game state for gameId: " + gameId);
@@ -254,7 +267,12 @@ public class GameState {
         }
         slotState.setCurrentGold(newAmount);
 
-        slotState.handleGoldChange(gameId);
+        this.handleGoldChange(slotState);
+    }
+
+    public void handleGoldChange(SlotState slotState) {
+        this.getGameStateService()
+            .sendGoldChangeMessage(gameId, slotState.getSlot(), slotState.getCurrentGold());
     }
 
     public SlotState getSlotState(short slot) {

@@ -18,7 +18,7 @@ import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.Tower;
-import com.server.game.model.game.SkillReceiverEntity;
+import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.map.component.GridCell;
@@ -302,7 +302,9 @@ public class GameStateService {
         // log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
 
         //Send message
-        ChampionRespawnSend respawnSend = new ChampionRespawnSend(slotState.getChampion().getStringId(), initialPosition, rotateAngle, maxHealth);
+        ChampionRespawnSend respawnSend = new ChampionRespawnSend(
+            slotState.getChampion().getStringId(), 
+            initialPosition, rotateAngle, maxHealth);
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
         if (channel != null) {
             channel.writeAndFlush(respawnSend);
@@ -310,28 +312,6 @@ public class GameStateService {
 
         // TODO
     }
-
-    public boolean updateSlotGold(GameState gameState, SlotState slotState, int newGold) {
-        gameState.setGold(slotState, newGold);
-
-        log.debug("Updated gold for gameId: {}, slot: {} to {}", 
-                gameState.getGameId(), slotState.getSlot(), newGold);
-        return true;
-    }
-    
-
-    private void setSkillCooldownDuration(GameState gameState, short slot, float cooldown) {
-        SlotState slotState = gameState.getSlotState(slot);
-        if (slotState != null) {
-            slotState.getChampion().setCooldown(cooldown);
-            log.debug("Set skill cooldown for gameId: {}, slot: {} to {}", 
-                    gameState.getGameId(), slot, cooldown);
-        } else {
-            log.warn("Slot state not found for gameId: {}, slot: {}", 
-                    gameState.getGameId(), slot);
-        }
-    }
-
 
     /**
      * Clean up game state when game ends
@@ -365,29 +345,6 @@ public class GameStateService {
         return gameCoordinator.getGameState(gameId) != null;
     }
     
-    
-    /**
-     * Reset player to full health (for respawn/healing abilities)
-     */
-    public boolean resetPlayerHealth(String gameId, short slot) {
-        GameState gameState = this.getGameStateById(gameId);
-        if (gameState == null) {
-            log.warn("Game state not found for gameId: {}", gameId);
-            return false;
-        }
-
-        SlotState slotState = gameState.getSlotState(slot);
-
-        
-        // int oldHP = slotState.getCurrentHP();
-
-        slotState.setChampionRevive();
-
-        // log.info("Reset health for gameId: {}, slot: {} from {} to {} (max)", 
-        //         gameId, slot, oldHP, slotState.getCurrentHP());
-        return true;
-    }
-
 
     public void autoIncreaseGold4SlotsInPlayground(GameState gameState) {
         if (gameState == null) {
@@ -428,15 +385,12 @@ public class GameStateService {
         return stats.toString();
     }
 
-    public void incrementTick(String gameId) {
-        GameState gameState = this.getGameStateById(gameId);
+    public void incrementTick(GameState gameState) {
         if (gameState == null) {
-            // log.info("Game state not found for gameId: {}", gameId);
             return;
         }
 
         gameState.incrementTick();
-        // log.info("Incremented game tick for gameId: {}, current tick: {}", gameId, gameState.getCurrentTick());
     }
 
     public Set<Entity> getEntitiesByGridCell(GameState gameState, GridCell gridCell) {
@@ -550,7 +504,7 @@ public class GameStateService {
     public Set<Entity> getEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
         Set<Entity> res = this.getEntitiesInScope(gameState, scope);
         for (Entity entity : res) {
-            if (entity.getOwnerSlot().equals(slotState)) {
+            if (slotState.equals(entity.getOwnerSlot())) {
                 res.remove(entity);
             }
         }
@@ -560,22 +514,29 @@ public class GameStateService {
     public Set<Entity> getAlliesInScope(GameState gameState, Shape scope, SlotState slotState) {
         Set<Entity> res = this.getEntitiesInScope(gameState, scope);
         for (Entity entity : res) {
-            if (!entity.getOwnerSlot().equals(slotState)) {
+            if (!slotState.equals(entity.getOwnerSlot())) {
                 res.remove(entity);
             }
         }
         return res;
     }
 
-    public Set<SkillReceiverEntity> getSkillReceiverEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
-
-        log.info("Hitbox: {}", scope);
-
+    public Set<SkillReceivable> getSkillReceivableEnemiesInScope(GameState gameState, Shape scope, SlotState slotState) {
         Set<Entity> entities = this.getEnemiesInScope(gameState, scope, slotState);
         return entities.stream()
-            .filter(entity -> entity instanceof SkillReceiverEntity)
-            .map(SkillReceiverEntity.class::cast)
+            .filter(entity -> entity instanceof SkillReceivable)
+            .map(SkillReceivable.class::cast)
             .collect(Collectors.toSet());
+    }
+
+    public void stopChampionsAttackingTo(GameState gameState, Entity entity) {
+        Set<Champion> champions = gameState.getChampions();
+        for (Champion champion : champions) {
+            Entity attackTarget = champion.getAttackTarget();
+            if (entity.equals(attackTarget)) {
+                champion.stopAttacking();
+            }
+        }
     }
 
     public void sendPositionUpdate(GameState gameState, Entity mover) {
@@ -605,7 +566,15 @@ public class GameStateService {
         this.gameStateMessageHandler.sendHealthUpdate(gameId, target, actualDamage, timestamp);
     }
 
-    public void sendGoldMineSpawnMessage(String gameId, boolean isSmallGoldMine, Vector2 position) {
-        this.playgroundMessageHandler.sendGoldMineSpawnMessage(gameId, isSmallGoldMine, position);
+    public void sendGoldChangeMessage(String gameId, short slot, int newGold) {
+        this.playgroundMessageHandler.sendGoldChangeMessage(gameId, slot, newGold);
+    }
+
+    public void sendGoldMineSpawnMessage(String gameId, String goldMineId, boolean isSmallGoldMine, Vector2 position, int initHP) {
+        this.playgroundMessageHandler.sendGoldMineSpawnMessage(gameId, goldMineId, isSmallGoldMine, position, initHP);
+    }
+    
+    public void sendEntityDeathMessage(GameState gameState, String entityId) {
+        this.gameStateMessageHandler.sendEntityDeath(gameState.getGameId(), entityId);
     }
 }

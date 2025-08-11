@@ -59,6 +59,13 @@ public class AttackComponent {
         return true;
     }
 
+    public Entity getAttackTarget() {
+        if (this.attackContext != null) {
+            return this.attackContext.getTarget();
+        }
+        return null;
+    }
+
     public boolean isAttacking() {
         return this.attackContext != null && this.attackContext.getTarget() != null;
     }
@@ -72,33 +79,14 @@ public class AttackComponent {
     }
 
     private final boolean inAttackRange(Entity target) {
-        if (target == null) {
-            return false;
-        }
-        
-        float distance;
-        
-        // If owner is a Building (Tower/Burg), use boundary distance
-        if (this.owner instanceof com.server.game.model.game.Building) {
-            com.server.game.model.game.Building ownerBuilding = (com.server.game.model.game.Building) this.owner;
-            distance = ownerBuilding.distanceToEntityBoundary(target);
-        } else if (target instanceof com.server.game.model.game.Building) {
-            // Entity to Building - use building's distanceToEntityBoundary with owner position
-            com.server.game.model.game.Building targetBuilding = (com.server.game.model.game.Building) target;
-            distance = targetBuilding.distanceToEntityBoundary(this.owner);
-        } else {
-            // Entity to Entity (use center-point distance)
-            distance = this.owner.getCurrentPosition().distance(target.getCurrentPosition());
-        }
-        
-        // System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
-        //     "distance=" + distance + ", attackRange=" + this.attackRange);
+        // .distanceTo(Entity) method in Entity has handled distance calculating
+        // of all instances cases of subclasses
+        Float distance = this.owner.distanceTo(target);
         return distance - 0.1f <= this.attackRange;
     }
 
     public final boolean inAttackRange() {
         if (this.attackContext == null || this.attackContext.getTarget() == null) {
-            // System.out.println(">>> [Log in AttackComponent] Attack context or target is null, cannot check attack range.");
             return false;
         }
         return inAttackRange(this.attackContext.getTarget());
@@ -118,8 +106,6 @@ public class AttackComponent {
         }
 
         
-
-
         if (!this.inAttackRange() && !this.owner.getStringId().startsWith("tower")) {
             // System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to move to position that reach attack range.");
             // System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
@@ -136,13 +122,6 @@ public class AttackComponent {
             // moveService.setMove(this.owner, newPosition, false);
 
             moveService.setMove(this.owner, ctx.getTarget().getCurrentPosition(), false);
-
-            // If attacker is a troop (prefix = "troop_"), set the move position
-            // if (this.owner.getStringId().startsWith("troop_")) {
-            //     System.out.println(">>> [Log in AttackComponent] Setting move position for troop: " + this.owner.getStringId());
-            // } else {
-            //     moveService.setMove(this.owner, newPosition, false);
-            // }
             return false;
         }
 
@@ -151,8 +130,6 @@ public class AttackComponent {
             return false;  
         }
 
-        // System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + 
-        //     strategy.getClass().getSimpleName());
 
         // Stop moving before performing the attack
         if (!this.owner.getStringId().startsWith("tower")) {
@@ -161,12 +138,7 @@ public class AttackComponent {
             // System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
         
         // Use the strategy to perform the attack
-        short attakerSlot = this.owner.getOwnerSlot().getSlot();
-        short targetSlot = ctx.getTarget().getOwnerSlot().getSlot();
-        if (attakerSlot == targetSlot) {
-            // System.out.println(">>> [Log in AttackComponent] Cannot attack own troops, skipping attack");
-            return false; // Cannot attack allies
-        }
+        // .performAttack() has handled to do not attack allies
         boolean didAttack = strategy.performAttack(ctx);
 
         if (ctx.getTarget() == null || !ctx.getTarget().isAlive()) {

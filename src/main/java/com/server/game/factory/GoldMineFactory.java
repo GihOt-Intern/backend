@@ -37,7 +37,11 @@ public class GoldMineFactory {
         ? gameState.getGameMap().getSmallGoldMineCapacity() 
         : gameState.getGameMap().getLargeGoldMineCapacity();
 
-        GoldMine goldMine = new GoldMine(gameState, goldCapacity, position);
+        Integer initHP = isSmallGoldMine 
+        ? gameState.getGameMap().getSmallGoldMineInitialHP() 
+        : gameState.getGameMap().getLargeGoldMineInitialHP();
+
+        GoldMine goldMine = new GoldMine(gameState, goldCapacity, initHP, position);
         gameStateService.addEntityTo(gameState, goldMine);
         
         return goldMine;

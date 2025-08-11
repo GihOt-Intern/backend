@@ -76,14 +76,6 @@ public class MovingComponent {
         return true;
     }
 
-    public void setMoveTargetPoint(Vector2 targetPoint) {
-        if (moveContext == null) {
-            return;
-        }
-
-        // Update the target point in the move context
-        moveContext.setTargetPoint(targetPoint);
-    }
 
     public void toggleInPlaygroundFlag(){
         this.inPlayground = !this.inPlayground;

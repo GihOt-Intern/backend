@@ -37,18 +37,8 @@ public class AttackService {
     }
 
     private void processAttackOf(Entity attacker) {
-
         // Perform the attack
         attacker.performAttack();
-
-        // if(!didAttack) { return; }
-        
-        // AttackContext ctx = attacker.getAttackContext();
-        // // After performing the attack, check if the target is still alive
-        // if (!ctx.getTarget().isAlive()) {
-        //     log.debug("Target {} is dead, removing attack context for entity {}", ctx.getTarget().getStringId(), attacker.getStringId());
-        //     attacker.setStopMoving();
-        // }
     }
 
     public void setStopAttacking(Entity entity) {

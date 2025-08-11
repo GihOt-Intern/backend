@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public class ChampionAttributeComponent extends AttributeComponent {
-    protected float resourceClaimingSpeed;
+    protected int goldMineDamage;
 
-    public ChampionAttributeComponent(int defense, float resourceClaimingSpeed) {
+    public ChampionAttributeComponent(int defense, int goldMineDamage) {
         super(defense);
-        this.resourceClaimingSpeed = resourceClaimingSpeed;
+        this.goldMineDamage = goldMineDamage;
     }
 }

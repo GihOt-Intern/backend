@@ -19,7 +19,7 @@ import lombok.experimental.FieldDefaults;
 //     "move_speed": 6.5,
 //     "attack_speed": 0.6,
 //     "attack_range": 1.0,
-//     "resource_claiming_speed": 4.0
+//     "gold_mine_damage": 2
 //   },
 //   "ability": {
 //     "name": "Wizard's Skill name",
@@ -54,8 +54,8 @@ public class ChampionDB {
         float attackSpeed;
         @JsonProperty("attack_range")
         float attackRange;
-        @JsonProperty("resource_claiming_speed")
-        float resourceClaimingSpeed;
+        @JsonProperty("gold_mine_damage")
+        int goldMineDamage;
     }
 
 

@@ -1,10 +1,11 @@
-package com.server.game.service.goldGeneration;
+package com.server.game.service.gold;
 
 
 import org.springframework.stereotype.Service;
 
 import com.server.game.factory.GoldMineFactory;
 import com.server.game.model.game.GameState;
+import com.server.game.model.game.GoldMine;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMap.Playground;
 import com.server.game.service.gameState.GameStateService;
@@ -44,20 +45,25 @@ public class GoldService {
         Vector2 playgroundCenter = playground.getPosition();
         Float playgroundLength = playground.getLength();
         Float playgroundWidth = playground.getWidth();
-        Vector2 randomGoldMinePosition = new Vector2(
-            Util.randomFloat(
-                playgroundCenter.x() - (playgroundLength / 2), 
-                playgroundCenter.x() + (playgroundLength / 2)),
-            Util.randomFloat(
-                playgroundCenter.y() - (playgroundWidth / 2), 
-                playgroundCenter.y() + (playgroundWidth / 2))
-        );
+
+        Vector2 randomGoldMinePosition = null;
         
+        do {
+            randomGoldMinePosition = new Vector2(
+                Util.randomFloat(
+                    playgroundCenter.x() - (playgroundLength / 2), 
+                    playgroundCenter.x() + (playgroundLength / 2)),
+                Util.randomFloat(
+                    playgroundCenter.y() - (playgroundWidth / 2), 
+                    playgroundCenter.y() + (playgroundWidth / 2))
+            );
+        } while (!gameState.isWalkable(randomGoldMinePosition));
+
         // this method already push the gold mine to gameState's entities list
-        goldMineFactory.createGoldMine(gameState, isSmallGoldMine, randomGoldMinePosition);
+        GoldMine goldMine = goldMineFactory.createGoldMine(gameState, isSmallGoldMine, randomGoldMinePosition);
 
         gameState.getGameStateService()
-            .sendGoldMineSpawnMessage(gameState.getGameId(), isSmallGoldMine, randomGoldMinePosition);
+            .sendGoldMineSpawnMessage(gameState.getGameId(), goldMine.getStringId(), isSmallGoldMine, randomGoldMinePosition, goldMine.getInitialHP());
 
         gameState.updateNextGoldMineGenerationTick();
     }       

@@ -3,7 +3,7 @@ package com.server.game.model.game.championSkill;
 import java.util.Set;
 
 import com.server.game.model.game.Champion;
-import com.server.game.model.game.SkillReceiverEntity;
+import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.model.map.shape.RectShape;
@@ -97,8 +97,8 @@ public class AssassinSkill extends SkillComponent {
 
         this.getCastSkillContext().addSkillDamage(this.getDamage());
 
-        Set<SkillReceiverEntity> hitEntities = this.getSkillOwner().getGameStateService()
-            .getSkillReceiverEnemiesInScope(
+        Set<SkillReceivable> hitEntities = this.getSkillOwner().getGameStateService()
+            .getSkillReceivableEnemiesInScope(
                 this.getSkillOwner().getGameState(),
                 hitbox, this.getSkillOwner().getOwnerSlot());
 

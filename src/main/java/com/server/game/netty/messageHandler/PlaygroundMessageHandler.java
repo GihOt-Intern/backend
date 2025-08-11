@@ -33,10 +33,10 @@ public class PlaygroundMessageHandler {
         }
     }
 
-    public void sendGoldMineSpawnMessage(String gameId, boolean isSmallGoldMine, Vector2 position) {
+    public void sendGoldMineSpawnMessage(String gameId, String goldMineId, boolean isSmallGoldMine, Vector2 position, int initHP) {
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
         if (channel != null) {
-            GoldMineSpawnSend goldMineSpawnSend = new GoldMineSpawnSend(position, isSmallGoldMine);
+            GoldMineSpawnSend goldMineSpawnSend = new GoldMineSpawnSend(goldMineId, position, isSmallGoldMine, initHP);
             channel.writeAndFlush(goldMineSpawnSend);
             log.info("Sending gold mine spawn message for gameId: {}, goldMine: {}", gameId, goldMineSpawnSend);
         }

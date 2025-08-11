@@ -6,9 +6,11 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.server.game.factory.AttackContextFactory;
+import com.server.game.model.game.Champion;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.Tower;
+import com.server.game.model.game.TroopInstance2;
 import com.server.game.service.attack.AttackService;
 
 import lombok.RequiredArgsConstructor;
@@ -61,9 +63,9 @@ public class TowerDefenseService {
             .filter(Entity::isAlive)
             .filter(e -> e.getOwnerSlot() != null)
             .filter(e -> e.getOwnerSlot().getSlot() != tower.getOwnerSlot().getSlot()) // Is an enemy
-            .filter(e -> e.getStringId().startsWith("troop")) // Is a troop
-            .filter(e -> tower.distanceToEntityBoundary(e) <= tower.getAttackComponent().getAttackRange())
-            .min(Comparator.comparing(e -> tower.distanceToEntityBoundary(e)));
+            .filter(e -> e instanceof TroopInstance2)
+            .filter(e -> tower.distanceTo(e) <= tower.getAttackComponent().getAttackRange())
+            .min(Comparator.comparing(e -> tower.distanceTo(e)));
 
         if (troopTarget.isPresent()) {
             return troopTarget;
@@ -74,8 +76,8 @@ public class TowerDefenseService {
             .filter(Entity::isAlive)
             .filter(e -> e.getOwnerSlot() != null) // Thêm kiểm tra null
             .filter(e -> e.getOwnerSlot().getSlot() != tower.getOwnerSlot().getSlot()) // Is an enemy
-            .filter(e -> e.getStringId().startsWith("champion_")) // Is a champion
-            .filter(e -> tower.distanceToEntityBoundary(e) <= tower.getAttackComponent().getAttackRange())
-            .min(Comparator.comparing(e -> tower.distanceToEntityBoundary(e)));
+            .filter(e -> e instanceof Champion)
+            .filter(e -> tower.distanceTo(e) <= tower.getAttackComponent().getAttackRange())
+            .min(Comparator.comparing(e -> tower.distanceTo(e)));
     }
 }

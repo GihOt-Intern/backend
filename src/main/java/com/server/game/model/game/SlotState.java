@@ -3,9 +3,7 @@ package com.server.game.model.game;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.GoldComponent;
-import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -89,14 +87,6 @@ public class SlotState {
     public void setChampionRevive() {
         this.setCurrentHP(this.getMaxHP());
     }
-
-    // TODO: do not use SpringContextHolder 
-    public void handleGoldChange(String gameId) {
-        PlaygroundMessageHandler playGroundHandler = 
-            SpringContextHolder.getBean(PlaygroundMessageHandler.class);
-        playGroundHandler.sendGoldChangeMessage(gameId, this.slot, this.getCurrentGold());
-    }
-
 
     public void addTroopInstance(TroopInstance2 troopInstance){
         this.troops.add(troopInstance);
