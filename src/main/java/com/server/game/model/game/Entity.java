@@ -67,7 +67,7 @@ public abstract class Entity implements Attackable {
         if (this instanceof DependentEntity dependentEntity) {
             return dependentEntity.getOwnerSlot();
         }
-        log.info("Entity does not have an owner slot, returning null.");
+        // log.info("Entity does not have an owner slot, returning null.");
         return null;
     }
 

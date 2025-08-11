@@ -23,8 +23,8 @@ public class MoveService2 {
      */
     public void setMove(MoveContext ctx, boolean needStopAttack) {
         ctx.getMover().setMoveContext(ctx, false);
-        log.info("Setting move target for entity {} to position {} at timestamp {}",
-            ctx.getMover().getStringId(), ctx.getTargetPoint(), ctx.getTimestamp());
+        // log.info("Setting move target for entity {} to position {} at timestamp {}",
+            // ctx.getMover().getStringId(), ctx.getTargetPoint(), ctx.getTimestamp());
 
         if (needStopAttack) {
             attackService.setStopAttacking(ctx.getMover());

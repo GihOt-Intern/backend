@@ -8,6 +8,8 @@ import com.server.game.model.game.component.GoldComponent;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
 
@@ -27,6 +29,9 @@ public class SlotState {
     Set<Tower> towers;
 
     Burg burg;
+
+    @Getter @Setter
+    private boolean eliminated = false;
 
     @Delegate
     final GoldComponent goldComponent;

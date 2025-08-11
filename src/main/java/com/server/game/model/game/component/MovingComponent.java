@@ -51,8 +51,8 @@ public class MovingComponent {
         }
 
         if (currentTick - lastAcceptedMoveRequestTick < MIN_UPDATE_INTERVAL_TICK) {
-            log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + 
-                lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
+            // log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + 
+            //     lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
             // log.info(">>> [Log in PositionComponent.setMoveContext] Move request ignored due to rate limiting.");
             // log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
             return false;
@@ -127,7 +127,7 @@ public class MovingComponent {
         }
 
 
-        System.out.println(">>> [Log in MovingComponent.performMove] Performing move...");
+        // System.out.println(">>> [Log in MovingComponent.performMove] Performing move...");
 
         float neededMoveDistance = this.distancePerTick;
 

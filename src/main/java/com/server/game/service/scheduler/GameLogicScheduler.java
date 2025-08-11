@@ -14,6 +14,7 @@ import com.server.game.service.defense.DefensiveStanceService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.gold.GoldService;
 import com.server.game.service.move.MoveService2;
+import com.server.game.service.tower.TowerDefenseService;
 import com.server.game.service.troop.TroopManager;
 
 import io.netty.channel.Channel;
@@ -34,6 +35,7 @@ public class GameLogicScheduler {
     GoldService goldService;
     GameStateService gameStateService;
     DefensiveStanceService defensiveStanceService;
+    TowerDefenseService towerDefenseService;
     TroopManager troopManager;
     
     /**
@@ -79,7 +81,7 @@ public class GameLogicScheduler {
                 goldService.autoIncreaseGold(gameState);
 
             } catch (Exception e) {
-                log.error("Error in game logic loop for game: {}", gameState.getGameId(), e);
+                // log.error("Error in game logic loop for game: {}", gameState.getGameId(), e);
             }
         }
     }
@@ -94,6 +96,7 @@ public class GameLogicScheduler {
         for (GameState gameState : gameStateService.getAllActiveGameStates()) {
             try {
                 defensiveStanceService.updateDefensiveStances(gameState);
+                towerDefenseService.updateTowerDefenses(gameState);
                 // TODO: Add slower update systems here
                 // - Resource generation
                 // - AI decision making

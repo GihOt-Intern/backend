@@ -1,6 +1,7 @@
 package com.server.game.service.gameState;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
+import com.server.game.model.game.Tower;
 import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
@@ -26,6 +28,8 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.messageHandler.AnimationMessageHandler;
 import com.server.game.netty.messageHandler.GameStateMessageHandler;
 import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
+import com.server.game.netty.sendObject.GameOverSend;
+import com.server.game.netty.sendObject.entity.EntitiesRemovedSend;
 import com.server.game.netty.sendObject.entity.EntityDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnTimeSend;
@@ -188,6 +192,47 @@ public class GameStateService {
             //log.info("Sent champion death message for gameId: {}, slot: {}, championId: {}", gameId, slot, championId);
         } else {
             log.warn("No channel found for gameId: {} when sending champion death message", gameId);
+        }
+    }
+
+    public void sendTowerDeathMessage(String gameId, Tower tower) {
+        String towerId = tower.getStringId();
+        if (towerId == null) {
+            log.warn("Could not find tower ID for gameId: {}", gameId);
+            return;
+        }
+
+        EntityDeathSend deathMessage = new EntityDeathSend(towerId);
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null) {
+            channel.writeAndFlush(deathMessage);
+            //log.info("Sent tower death message for gameId: {}, towerId: {}", gameId, towerId);
+        } else {
+            log.warn("No channel found for gameId: {} when sending tower death message", gameId);
+        }
+    }
+
+    public void sendEntitiesRemoved(String gameId, List<String> removedEntityIds, long timestamp) {
+        EntitiesRemovedSend entitiesRemovedSend = new EntitiesRemovedSend(removedEntityIds, timestamp);
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null) {
+            log.info("Sending remove entities");
+            channel.writeAndFlush(entitiesRemovedSend);
+            // log.info("Sent entities removed message for gameId: {}", gameId);
+        } else {
+            log.warn("No channel found for gameId: {} when sending entities removed message", gameId);
+        }
+    }
+
+    public void sendGameOver(String gameId, short winnerSlot, long timestamp) {
+        GameOverSend gameOverSend = new GameOverSend(winnerSlot);
+        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        if (channel != null) {
+            log.info("Sending game over message for gameId: {}, winnerSlot: {}", gameId, winnerSlot);
+            channel.writeAndFlush(gameOverSend);
+            // log.info("Sent game over message for gameId: {}, winnerSlot: {}", gameId, winnerSlot);
+        } else {
+            log.warn("No channel found for gameId: {} when sending game over message", gameId);
         }
     }
 

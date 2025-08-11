@@ -7,7 +7,6 @@ import com.server.game.model.game.Entity;
 import com.server.game.model.game.attackStrategy.AttackStrategy;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.util.Util;
-import com.server.game.model.map.component.Vector2;
 import com.server.game.service.move.MoveService2;
 
 import lombok.Getter;
@@ -45,18 +44,18 @@ public class AttackComponent {
     public boolean setAttackContext(@Nullable AttackContext ctx) {
 
         if (ctx == null) { // ctx null means forced stop attack
-            System.out.println(">>> [Log in AttackComponent] Setting attack context to null, force stopping attack.");
+            // System.out.println(">>> [Log in AttackComponent] Setting attack context to null, force stopping attack.");
             this.attackContext = null;
             return true;
         }
         
         if (this.owner.isCastingDurationSkill() && !this.owner.canUseSkillWhileAttacking()) {
-            System.out.println(">>> [Log in AttackComponent] Cannot set attack context while casting skill, skipping.");
+            // System.out.println(">>> [Log in AttackComponent] Cannot set attack context while casting skill, skipping.");
             return false;
         }
 
         this.attackContext = ctx;
-        System.out.println(">>> [Log in AttackComponent] Attack context set: " + ctx);
+        // System.out.println(">>> [Log in AttackComponent] Attack context set: " + ctx);
         return true;
     }
 
@@ -79,8 +78,26 @@ public class AttackComponent {
         return currentTick >= this.nextAttackTick;
     }
 
-    private final boolean inAttackRange(Vector2 targetPosition) {
-        float distance = this.owner.getCurrentPosition().distance(targetPosition);
+    private final boolean inAttackRange(Entity target) {
+        if (target == null) {
+            return false;
+        }
+        
+        float distance;
+        
+        // If owner is a Building (Tower/Burg), use boundary distance
+        if (this.owner instanceof com.server.game.model.game.Building) {
+            com.server.game.model.game.Building ownerBuilding = (com.server.game.model.game.Building) this.owner;
+            distance = ownerBuilding.distanceToEntityBoundary(target);
+        } else if (target instanceof com.server.game.model.game.Building) {
+            // Entity to Building - use building's distanceToEntityBoundary with owner position
+            com.server.game.model.game.Building targetBuilding = (com.server.game.model.game.Building) target;
+            distance = targetBuilding.distanceToEntityBoundary(this.owner);
+        } else {
+            // Entity to Entity (use center-point distance)
+            distance = this.owner.getCurrentPosition().distance(target.getCurrentPosition());
+        }
+        
         // System.out.println(">>> [Log in AttackComponent] Checking attack range: " + 
         //     "distance=" + distance + ", attackRange=" + this.attackRange);
         return distance - 0.1f <= this.attackRange;
@@ -88,10 +105,10 @@ public class AttackComponent {
 
     public final boolean inAttackRange() {
         if (this.attackContext == null || this.attackContext.getTarget() == null) {
-            System.out.println(">>> [Log in AttackComponent] Attack context or target is null, cannot check attack range.");
+            // System.out.println(">>> [Log in AttackComponent] Attack context or target is null, cannot check attack range.");
             return false;
         }
-        return inAttackRange(this.attackContext.getTarget().getCurrentPosition());
+        return inAttackRange(this.attackContext.getTarget());
     }
 
 
@@ -108,7 +125,23 @@ public class AttackComponent {
         }
 
         
-        if (!this.inAttackRange()) {
+
+
+        if (!this.inAttackRange() && !this.owner.getStringId().startsWith("tower")) {
+            // System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to move to position that reach attack range.");
+            // System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
+            //     ", Target position: " + ctx.getTarget().getCurrentPosition() + 
+            //     ", Attack range: " + this.attackRange);
+
+            // Vector2 ownerPosition = this.owner.getCurrentPosition();
+            // Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
+            
+            // Vector2 direction = targetPosition.subtract(ownerPosition).normalize();
+            // Vector2 newPosition = ownerPosition.add(
+            //     direction.multiply(owner.getDistanceNeededToReachAttackRange()));
+
+            // moveService.setMove(this.owner, newPosition, false);
+
             moveService.setMove(this.owner, ctx.getTarget().getCurrentPosition(), false);
             return false;
         }
@@ -120,8 +153,10 @@ public class AttackComponent {
 
 
         // Stop moving before performing the attack
-        // is not forced bacause this request is called 
-        moveService.setStopMoving(this.owner, true);
+        if (!this.owner.getStringId().startsWith("tower")) {
+            moveService.setStopMoving(this.owner, false);
+        }
+            // System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
         
         // Use the strategy to perform the attack
         // short attakerSlot = this.owner.getOwnerSlot().getSlot();

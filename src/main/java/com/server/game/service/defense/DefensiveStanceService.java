@@ -99,6 +99,7 @@ public class DefensiveStanceService {
     private Optional<Entity> findNearestEnemyInDetectionRange(TroopInstance2 troop, GameState gameState) {
         return gameState.getEntities().stream()
             .filter(Entity::isAlive)
+            .filter(e -> e.getOwnerSlot() != null) // Ensure entity has an owner slot
             .filter(e -> e.getOwnerSlot().getSlot() != troop.getOwnerSlot().getSlot()) // Is an enemy
             .filter(e -> troop.getCurrentPosition().distance(e.getCurrentPosition()) <= troop.getDetectionRange())
             .min(Comparator.comparing(e -> troop.getCurrentPosition().distance(e.getCurrentPosition())));
