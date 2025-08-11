@@ -5,6 +5,7 @@ import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
+import lombok.experimental.Delegate;
 
 // abstract class to represent an entity that depends on a slot state
 // (Champion, Troop, Tower, Burg)
@@ -14,11 +15,24 @@ public abstract class DependentEntity extends Entity {
 
     protected final SlotState ownerSlot;
 
-    private final Map<Class<?>, Object> components = new HashMap<>();
-
     public DependentEntity(String stringId, GameState gameState, SlotState ownerSlot) {
         super(stringId, gameState);
         this.ownerSlot = ownerSlot;
     }
 
+    public int getCurrentGold() {
+        return this.ownerSlot.getCurrentGold();
+    }
+
+    @Override
+    public void increaseGold(int amount) {
+        // must increase gold through gameState to ensure proper handling 
+        this.ownerSlot.getGameState().increaseGold(this.ownerSlot, amount);
+    }
+
+    @Override
+    public void decreaseGold(int amount) {
+        // must decrease gold through gameState to ensure proper handling
+        this.ownerSlot.getGameState().decreaseGold(this.ownerSlot, amount);
+    }
 }

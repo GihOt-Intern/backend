@@ -25,7 +25,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TroopInstance2 extends SkillReceiverEntity {
+public class TroopInstance2 extends DependentEntity implements SkillReceivable {
 
     final TroopEnum troopEnum;
 
@@ -45,7 +45,7 @@ public class TroopInstance2 extends SkillReceiverEntity {
 
     public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot, MoveService2 moveService) {
         super("troop_" + UUID.randomUUID().toString(),
-            ownerSlot, gameState);
+            gameState, ownerSlot);
 
         this.troopEnum = TroopEnum.fromShort(troopDB.getId());
 
@@ -183,9 +183,8 @@ public class TroopInstance2 extends SkillReceiverEntity {
         ctx.getGameStateService().sendHealthUpdate(ctx.getGameId(), ctx.getTarget(), ctx.getActualDamage(), System.currentTimeMillis());
 
         // Check if troop died and handle death logic
-        if (this.getCurrentHP() <= 0) {
-            // Note: TroopManager.checkAndHandleAllTroopDeaths() will handle the cleanup in the next game tick
-            log.info("Troop {} has died and will be cleaned up in next game tick", this.getStringId());
+        if (!this.isAlive()) {
+            this.handleDeath(ctx.getAttacker());
         }
 
         return true; // Indicate that the attack was received successfully
@@ -208,9 +207,14 @@ public class TroopInstance2 extends SkillReceiverEntity {
                 stringId, actualDamage, this.getCurrentHP());
 
         // Check if troop died and handle death logic
-        if (this.getCurrentHP() <= 0) {
-            // Note: TroopManager.checkAndHandleAllTroopDeaths() will handle the cleanup in the next game tick
-            log.info("Troop {} has died and will be cleaned up in next game tick", this.getStringId());
+        if (!this.isAlive()) {
+            this.handleDeath(ctx.getCaster());
         }
+    }
+
+    @Override
+    protected void handleDeath(Entity killer) {
+        // Note: TroopManager.checkAndHandleAllTroopDeaths() will handle the cleanup in the next game tick
+        log.info("Troop {} has died and will be cleaned up in next game tick", this.getStringId());
     }
 }

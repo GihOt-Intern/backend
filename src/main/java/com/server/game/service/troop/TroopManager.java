@@ -49,13 +49,8 @@ public class TroopManager {
     /**
      * Remove a troop instance (when it dies or is manually removed)
      */
-    public boolean removeTroop(String gameId, String troopInstanceId) {
-        GameState gameState = gameStateService.getGameStateById(gameId);
-        if (gameState == null) {
-            log.warn("Game state not found for game ID: {}", gameId);
-            return false;
-        }
-        Entity troopInstance = gameStateService.getEntityByStringId(gameId, troopInstanceId);
+    public boolean removeTroop(GameState gameState, String troopInstanceId) {
+        Entity troopInstance = gameStateService.getEntityByStringId(gameState, troopInstanceId);
         if (troopInstance == null || !(troopInstance instanceof TroopInstance2)) {
             log.warn("Troop instance not found for ID: {}", troopInstanceId);
             return false;
@@ -118,13 +113,7 @@ public class TroopManager {
      * Check if a troop has died and handle death logic
      * @return true if troop died, false otherwise
      */
-    public boolean checkAndHandleTroopDeath(String gameId, String troopInstanceId) {
-        GameState gameState = gameStateService.getGameStateById(gameId);
-        if (gameState == null) {
-            log.warn("Game state not found for game ID: {}", gameId);
-            return false;
-        }
-
+    public boolean checkAndHandleTroopDeath(GameState gameState, String troopInstanceId) {
         Entity troopEntity = gameStateService.getEntityByStringId(gameState, troopInstanceId);
         if (troopEntity == null || !(troopEntity instanceof TroopInstance2)) {
             log.warn("Troop instance not found for ID: {}", troopInstanceId);
@@ -136,13 +125,13 @@ public class TroopManager {
             return false; // Troop is still alive
         }
 
-        log.info("Troop {} has died in game {}", troopInstanceId, gameId);
+        log.info("Troop {} has died in game {}", troopInstanceId, gameState.getGameId());
 
         // Remove the troop from the game state
-        this.removeTroop(gameId, troopInstanceId);
+        this.removeTroop(gameState, troopInstanceId);
 
         // Send death message to all clients
-        this.sendTroopDeathMessage(gameId, troopInstanceId);
+        this.sendTroopDeathMessage(gameState.getGameId(), troopInstanceId);
 
         return true;
     }
@@ -151,13 +140,7 @@ public class TroopManager {
      * Check all troops in a game for deaths and handle them
      * This is more efficient than checking troops one by one
      */
-    public void checkAndHandleAllTroopDeaths(String gameId) {
-        GameState gameState = gameStateService.getGameStateById(gameId);
-        if (gameState == null) {
-            log.warn("Game state not found for game ID: {}", gameId);
-            return;
-        }
-
+    public void checkAndHandleAllTroopDeaths(GameState gameState) {
         // Collect all dead troops to avoid concurrent modification
         var deadTroops = gameState.getEntities().stream()
             .filter(entity -> entity.getStringId().startsWith("troop_"))
@@ -168,14 +151,14 @@ public class TroopManager {
         // Process each dead troop
         for (String troopId : deadTroops) {
             try {
-                this.checkAndHandleTroopDeath(gameId, troopId);
+                this.checkAndHandleTroopDeath(gameState, troopId);
             } catch (Exception e) {
-                log.error("Error processing death for troop {} in game {}: {}", troopId, gameId, e.getMessage(), e);
+                log.error("Error processing death for troop {} in game {}: {}", troopId, gameState.getGameId(), e.getMessage(), e);
             }
         }
 
         if (!deadTroops.isEmpty()) {
-            log.info("Processed {} troop deaths in game {}", deadTroops.size(), gameId);
+            log.info("Processed {} troop deaths in game {}", deadTroops.size(), gameState.getGameId());
         }
     }
 

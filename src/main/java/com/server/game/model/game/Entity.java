@@ -8,6 +8,7 @@ import com.server.game.model.game.component.MovingComponent;
 import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
+import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
 import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.model.game.context.AttackContext;
@@ -29,8 +30,6 @@ public abstract class Entity implements Attackable {
     @Delegate
     protected final GameState gameState;
 
-
-
     private final Map<Class<?>, Object> components = new HashMap<>();
 
     public Entity(String stringId, GameState gameState) {
@@ -39,15 +38,11 @@ public abstract class Entity implements Attackable {
     }
 
     // Concrete classes have to implement this method to add all their components
-    // to the Map above. This method must be called in the constructor of the concrete class.
+    // to the Map above. This method must be called in the constructor of the concrete classes.
     protected abstract void addAllComponents();
 
-    // protected <T> void addComponent(Class<T> clazz, T component) {
-    //     components.put(clazz, component);
-    // }
-
     // Add a component to the entity, also adds it to all its superclasses and interfaces
-    protected <T> void addComponent(Class<T> clazz, T component) {
+    protected final <T> void addComponent(Class<T> clazz, T component) {
     Class<?> current = clazz;
     while (current != null && current != Object.class) {
         components.put(current, component);
@@ -58,13 +53,15 @@ public abstract class Entity implements Attackable {
     }
 }
 
-    public <T> T getComponent(Class<T> clazz) {
+    public final <T> T getComponent(Class<T> clazz) {
         return clazz.cast(components.get(clazz));
     }
 
-    protected boolean hasComponent(Class<?> clazz) {
+    protected final boolean hasComponent(Class<?> clazz) {
         return components.containsKey(clazz);
     }
+
+    protected abstract void handleDeath(Entity killer);
 
     public SlotState getOwnerSlot() {
         if (this instanceof DependentEntity dependentEntity) {
@@ -72,6 +69,14 @@ public abstract class Entity implements Attackable {
         }
         log.info("Entity does not have an owner slot, returning null.");
         return null;
+    }
+
+    public boolean isAllies(Entity other) {
+        if (this.getOwnerSlot() != null && other.getOwnerSlot() != null) {
+            return this.getOwnerSlot().getSlot() == other.getOwnerSlot().getSlot();
+        }
+        log.info("One of the entities does not have an owner slot, returning false for isAllies.");
+        return false; // Default value if no owner slot is present
     }
 
     public boolean setMoveContext(MoveContext ctx, boolean isForced) {
@@ -109,6 +114,39 @@ public abstract class Entity implements Attackable {
         }
     }
     
+    public int getGoldMineDamage() {
+        if (hasComponent(ChampionAttributeComponent.class)) {
+            return getComponent(ChampionAttributeComponent.class).getGoldMineDamage();
+        }
+        System.out.println("Entity does not have AttackComponent, returning default gold mine damage=0.");
+        return 0; // Default value if no attack component is present
+    }
+
+    public void increaseGold(int amount) {
+        if (this instanceof DependentEntity dependentEntity) {
+            dependentEntity.increaseGold(amount);
+            log.info("Entity {} increased gold by {}, new total: {}", this.stringId, amount, dependentEntity.getCurrentGold());
+            return;
+        }
+        log.warn("Entity {} is not a DependentEntity, cannot increase gold.", this.stringId);
+    }
+    
+    public void decreaseGold(int amount) {
+        if (this instanceof DependentEntity dependentEntity) {
+            dependentEntity.decreaseGold(amount);
+            log.info("Entity {} decreased gold by {}, new total: {}", this.stringId, amount, dependentEntity.getCurrentGold());
+            return;
+        }
+        log.warn("Entity {} is not a DependentEntity, cannot decrease gold.", this.stringId);
+    }
+
+    public int peekGold() {
+        if (this instanceof DependentEntity dependentEntity) {
+            return dependentEntity.getCurrentGold();
+        }
+        log.warn("Entity {} is not a DependentEntity, cannot peek gold.", this.stringId);
+        return 0; // Default value if not a DependentEntity
+    }
 
     public float getAttackRange() {
         if (hasComponent(AttackComponent.class)) {
@@ -116,6 +154,14 @@ public abstract class Entity implements Attackable {
         }
         System.out.println("Entity does not have AttackComponent, returning default attack range=0.");
         return 0; // Default value if no attack component is present
+    }
+
+    public Entity getAttackTarget() {
+        if (hasComponent(AttackComponent.class)) {
+            return getComponent(AttackComponent.class).getAttackTarget();
+        }
+        System.out.println("Entity does not have AttackComponent, returning null for getAttackTarget.");
+        return null; // Default value if no attack component is present
     }
 
     public boolean isAttacking() {
@@ -171,7 +217,7 @@ public abstract class Entity implements Attackable {
         return 0; // Default value if no attack component is present
     }
 
-    public int getDefense() {
+    public Integer getDefense() {
         if (hasComponent(AttributeComponent.class)) {
             return getComponent(AttributeComponent.class).getDefense();
         }
@@ -200,7 +246,7 @@ public abstract class Entity implements Attackable {
         if (hasComponent(MovingComponent.class)) {
             return getComponent(MovingComponent.class).getCurrentPosition();
         }
-        if (this instanceof FixedPositionEntity fixedPositionEntity) {
+        if (this instanceof HasFixedPosition fixedPositionEntity) {
             return fixedPositionEntity.getPosition();
         }
         System.out.println("Entity does not have MovingComponent or not a FixedPositionEntity, returning null");
@@ -211,7 +257,7 @@ public abstract class Entity implements Attackable {
         if (hasComponent(MovingComponent.class)) {
             return gameState.toGridCell(this.getCurrentPosition());
         }
-        if (this instanceof FixedPositionEntity fixedPositionEntity) {
+        if (this instanceof HasFixedPosition fixedPositionEntity) {
             return gameState.toGridCell(fixedPositionEntity.getPosition());
         }
         System.out.println("Entity does not have MovingComponent or not a FixedPositionEntity, returning null");

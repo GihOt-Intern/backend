@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Slf4j
-public final class Champion extends SkillReceiverEntity {
+public final class Champion extends DependentEntity implements SkillReceivable {
 
     final ChampionEnum championEnum;
     final String name;
@@ -47,19 +47,18 @@ public final class Champion extends SkillReceiverEntity {
     final AttackComponent attackComponent;
 
 
-
     public Champion(ChampionDB championDB, SlotState ownerSlot, GameState gameState,
         SkillFactory skillFactory, MoveService2 moveService) {
 
         super("champion_" + UUID.randomUUID().toString(),
-            ownerSlot, gameState);
+            gameState, ownerSlot);
 
         this.championEnum = ChampionEnum.fromShort(championDB.getId());
         this.name = championDB.getName();
         this.role = championDB.getRole();
         this.attributeComponent = new ChampionAttributeComponent(
             championDB.getStats().getDefense(),
-            championDB.getStats().getResourceClaimingSpeed()
+            championDB.getStats().getGoldMineDamage()
         );
         this.movingComponent = new MovingComponent(
             this,
@@ -132,6 +131,7 @@ public final class Champion extends SkillReceiverEntity {
         }
     }
 
+    
 
     @Override // from Attackable implemented by Entity
     public boolean receiveAttack(AttackContext ctx) {
@@ -146,10 +146,10 @@ public final class Champion extends SkillReceiverEntity {
             ctx.getGameId(), this, actualDamage, ctx.getTimestamp());
 
         // 4. Check if champion died and handle death/respawn logic
-        if (this.getCurrentHP() <= 0) {
-            ctx.getGameStateService().checkAndHandleChampionDeath(
-                ctx.getGameId(), this.getOwnerSlot().getSlot());
-        }
+        if (this.isAlive()) { return true; }
+
+
+        this.handleDeath(ctx.getAttacker());
 
         return true; 
     }
@@ -166,12 +166,27 @@ public final class Champion extends SkillReceiverEntity {
         ctx.getGameStateService().sendHealthUpdate(
             ctx.getGameId(), this, actualDamage, ctx.getTimestamp());
         
-        // 4. Check if champion died and handle death/respawn logic
-        if (this.getCurrentHP() <= 0) {
-            ctx.getGameStateService().checkAndHandleChampionDeath(
-                ctx.getGameId(), this.getOwnerSlot().getSlot());
-        }
+        if (this.isAlive()) { return; }
+        
+        this.handleDeath(ctx.getCaster());
     }
+
+
+    @Override
+    protected void handleDeath(Entity killer) {
+        if (this.isAlive()) { return; }
+        log.info("Champion {} is dead, handling death logic...", this.getName());
+
+        this.getGameStateService().checkAndHandleChampionDeath(
+                this.getGameState().getGameId(), this.getOwnerSlot().getSlot());
+
+
+        Integer stolenGold = Math.round(this.getCurrentGold()*0.3f);
+
+        killer.increaseGold(stolenGold);
+        this.decreaseGold(stolenGold);
+    }
+
 
     public void useSkill(CastSkillContext ctx) {
         this.skillComponent.use(ctx);

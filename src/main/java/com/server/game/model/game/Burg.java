@@ -30,5 +30,9 @@ public final class Burg extends Building {
         throw new UnsupportedOperationException("Unimplemented method 'receiveAttack'");
     }
 
+    @Override
+    protected void handleDeath(Entity killer) {
+        // TODO: put handle death logic of Burg here 
+    }
 
 }

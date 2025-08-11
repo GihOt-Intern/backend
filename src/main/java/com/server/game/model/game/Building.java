@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @EqualsAndHashCode(callSuper=false)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
-public abstract class Building extends DependentEntity implements FixedPositionEntity {
+public abstract class Building extends DependentEntity implements HasFixedPosition {
 
     final String dbId; // id of the building in the database
     final Vector2 position;

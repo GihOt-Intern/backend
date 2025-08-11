@@ -36,6 +36,8 @@ public final class Tower extends Building {
             new TowerAttackStrategy(),
             null
         );
+
+        this.addAllComponents();
     }
 
     @Override
@@ -47,5 +49,10 @@ public final class Tower extends Building {
     @Override
     protected void addAllComponents() {
         this.addComponent(AttackComponent.class, this.attackComponent);
+    }
+
+    @Override
+    protected void handleDeath(Entity killer) {
+        // TODO: put handleDeath logic for Tower here
     }
 }

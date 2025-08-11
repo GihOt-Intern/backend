@@ -60,6 +60,13 @@ public class AttackComponent {
         return true;
     }
 
+    public Entity getAttackTarget() {
+        if (this.attackContext != null) {
+            return this.attackContext.getTarget();
+        }
+        return null;
+    }
+
     public boolean isAttacking() {
         return this.attackContext != null && this.attackContext.getTarget() != null;
     }
@@ -101,31 +108,8 @@ public class AttackComponent {
         }
 
         
-
-
         if (!this.inAttackRange()) {
-            // System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to move to position that reach attack range.");
-            // System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
-            //     ", Target position: " + ctx.getTarget().getCurrentPosition() + 
-            //     ", Attack range: " + this.attackRange);
-
-            // Vector2 ownerPosition = this.owner.getCurrentPosition();
-            // Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
-            
-            // Vector2 direction = targetPosition.subtract(ownerPosition).normalize();
-            // Vector2 newPosition = ownerPosition.add(
-            //     direction.multiply(owner.getDistanceNeededToReachAttackRange()));
-
-            // moveService.setMove(this.owner, newPosition, false);
-
             moveService.setMove(this.owner, ctx.getTarget().getCurrentPosition(), false);
-
-            // If attacker is a troop (prefix = "troop_"), set the move position
-            // if (this.owner.getStringId().startsWith("troop_")) {
-            //     System.out.println(">>> [Log in AttackComponent] Setting move position for troop: " + this.owner.getStringId());
-            // } else {
-            //     moveService.setMove(this.owner, newPosition, false);
-            // }
             return false;
         }
 
@@ -134,21 +118,17 @@ public class AttackComponent {
             return false;  
         }
 
-        // System.out.println(">>> [Log in AttackComponent] Performing attack with strategy: " + 
-        //     strategy.getClass().getSimpleName());
 
         // Stop moving before performing the attack
         // is not forced bacause this request is called 
         moveService.setStopMoving(this.owner, true);
-        // System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
         
         // Use the strategy to perform the attack
-        short attakerSlot = this.owner.getOwnerSlot().getSlot();
-        short targetSlot = ctx.getTarget().getOwnerSlot().getSlot();
-        if (attakerSlot == targetSlot) {
-            // System.out.println(">>> [Log in AttackComponent] Cannot attack own troops, skipping attack");
-            return false; // Cannot attack allies
-        }
+        // short attakerSlot = this.owner.getOwnerSlot().getSlot();
+        // short targetSlot = ctx.getTarget().getOwnerSlot().getSlot();
+        // if (attakerSlot == targetSlot) {
+        //     return false; // Cannot attack allies
+        // }
         boolean didAttack = strategy.performAttack(ctx);
 
         if (ctx.getTarget() == null || !ctx.getTarget().isAlive()) {

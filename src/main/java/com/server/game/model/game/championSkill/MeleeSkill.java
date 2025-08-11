@@ -3,7 +3,7 @@ package com.server.game.model.game.championSkill;
 import java.util.Set;
 
 import com.server.game.model.game.Champion;
-import com.server.game.model.game.SkillReceiverEntity;
+import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 
@@ -49,9 +49,9 @@ public class MeleeSkill extends DurationSkillComponent {
 
         this.getCastSkillContext().addSkillDamage(this.getDamagePerSecond());
 
-        Set<SkillReceiverEntity> hitEntities = this.getSkillOwner().getGameStateService()
-            .getSkillReceiverEnemiesInScope(
-                this.getSkillOwner().getGameState(), 
+        Set<SkillReceivable> hitEntities = this.getSkillOwner().getGameStateService()
+            .getSkillReceivableEnemiesInScope(
+                this.getSkillOwner().getGameState(),
                 hitBox, this.getSkillOwner().getOwnerSlot());
             
         log.info("MeleeSkill hit {} entities in range for champion: {}", 

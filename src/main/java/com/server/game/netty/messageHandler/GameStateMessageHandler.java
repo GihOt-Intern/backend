@@ -8,6 +8,7 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.model.game.GameState;
 import com.server.game.netty.sendObject.PositionSend;
 import com.server.game.netty.sendObject.attack.HealthUpdateSend;
+import com.server.game.netty.sendObject.entity.EntityDeathSend;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,20 @@ public class GameStateMessageHandler {
             System.out.println("[Log in SocketSender#sendHealthUpdate] Sent HealthUpdateSend: " + healthUpdateSend);
         } catch (Exception e) {
             System.err.println("[Log in SocketSender#sendHealthUpdate] Exception in broadcastHealthUpdate: " + e.getMessage());
+        }
+    }
+
+    public void sendEntityDeath(String gameId, String entityId) {
+        try {
+            // Create health update message
+            EntityDeathSend entityDeathSend = new EntityDeathSend(entityId);
+
+            // Get any channel from the game to broadcast the health update
+            Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+            channel.writeAndFlush(entityDeathSend);
+            System.out.println("[Log in sendEntityDeath] Sent entityDeath: " + entityDeathSend);
+        } catch (Exception e) {
+            System.err.println("[Log in SocketSender#sendEntityDeath] Exception in broadcastEntityDeath: " + e.getMessage());
         }
     }
 }

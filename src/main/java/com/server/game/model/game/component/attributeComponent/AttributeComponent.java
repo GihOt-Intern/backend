@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public abstract class AttributeComponent {
-    protected int defense;
+    protected Integer defense;
 }

@@ -12,7 +12,7 @@ import com.server.game.service.attack.AttackService;
 import com.server.game.service.castSkill.CastSkillService;
 import com.server.game.service.defense.DefensiveStanceService;
 import com.server.game.service.gameState.GameStateService;
-import com.server.game.service.goldGeneration.GoldService;
+import com.server.game.service.gold.GoldService;
 import com.server.game.service.move.MoveService2;
 import com.server.game.service.troop.TroopManager;
 
@@ -46,13 +46,13 @@ public class GameLogicScheduler {
             try {
 
                 // Update game tick
-                gameStateService.incrementTick(gameState.getGameId());
+                gameStateService.incrementTick(gameState);
 
                 // Process attack targeting and continuous combat
                 attackService.processAttacks(gameState);
 
                 // Check for troop deaths and handle cleanup
-                troopManager.checkAndHandleAllTroopDeaths(gameState.getGameId());
+                troopManager.checkAndHandleAllTroopDeaths(gameState);
 
                 // Update movement positions
                 moveService.updatePositions(gameState);

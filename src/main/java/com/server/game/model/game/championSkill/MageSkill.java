@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
 
-import com.server.game.model.game.SkillReceiverEntity;
+import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
 
 
@@ -81,9 +81,9 @@ public final class MageSkill extends DurationSkillComponent {
         this.getCastSkillContext().addSkillDamage(
                 this.getDamagePerIntervalSeconds());
 
-        Set<SkillReceiverEntity> hitEntities = this.getSkillOwner().getGameStateService()
-            .getSkillReceiverEnemiesInScope(
-                this.getSkillOwner().getGameState(), 
+        Set<SkillReceivable> hitEntities = this.getSkillOwner().getGameStateService()
+            .getSkillReceivableEnemiesInScope(
+                this.getSkillOwner().getGameState(),
                 hitBoxShape, this.getSkillOwner().getOwnerSlot());
             
         log.info("MageSkill hit {} entities in range at tick for champion: {}", 

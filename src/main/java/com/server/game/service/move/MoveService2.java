@@ -39,7 +39,7 @@ public class MoveService2 {
 
     public void setStopMoving(Entity entity, boolean isForced) {
         entity.setMoveContext(null, isForced);
-        log.info("Stopping move for entity {}", entity.getStringId());
+        // log.info("Stopping move for entity {}", entity.getStringId());
     }
 
     /**

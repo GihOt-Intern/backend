@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.springframework.data.mongodb.core.aggregation.AccumulatorOperators.Min;
+
 import io.netty.channel.Channel;
 
 import com.server.game.model.game.Champion;
@@ -27,7 +29,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
     Float moveSpeed;
     Float attackSpeed;
     Float attackRange;
-    Float resourceClaimingSpeed;
+    Integer goldMineDamage;
     Float skillCooldown;
     Integer initGold;
 
@@ -38,7 +40,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
         this.moveSpeed = champion.getMoveSpeed();
         this.attackSpeed = champion.getAttackSpeed();
         this.attackRange = champion.getAttackRange();
-        this.resourceClaimingSpeed = champion.getResourceClaimingSpeed();
+        this.goldMineDamage = champion.getGoldMineDamage();
         this.skillCooldown = champion.getCooldown();
         this.initGold = initGold;
     }
@@ -61,7 +63,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
             dos.writeFloat(moveSpeed);
             dos.writeFloat(attackSpeed);
             dos.writeFloat(attackRange);
-            dos.writeFloat(resourceClaimingSpeed);
+            dos.writeInt(goldMineDamage);
             dos.writeFloat(skillCooldown);
             dos.writeInt(initGold);
 
