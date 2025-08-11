@@ -1,18 +1,22 @@
 package com.server.game.model.game.component.skillComponent;
 
-import com.server.game.model.game.skill.*;
+import org.springframework.stereotype.Component;
+
+import com.server.game.model.game.Champion;
+import com.server.game.model.game.championSkill.*;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 import com.server.game.util.ChampionEnum;
 
+@Component
 public class SkillFactory {
-    public static SkillComponent createSkillFor(Short championId, ChampionAbility ability) {
-        ChampionEnum championEnum = ChampionEnum.fromShort(championId);
+    public SkillComponent createSkillFor(Champion owner, ChampionAbility ability) {
+        ChampionEnum championEnum = owner.getChampionEnum();
         return switch (championEnum) {
-            case MELEE_AXE                  -> new MeleeSkill(ability);
-            case ASSASSIN_SWORD             -> new AssassinSkill(ability);
-            case MARKSMAN_CROSSBOW          -> new MarksmanSkill(ability);
-            case MAGE_SCEPTER               -> new MageSkill(ability);
-            default -> throw new IllegalArgumentException("Unknown champion: " + championId);
+            case MELEE_AXE                  -> new MeleeSkill(owner, ability);
+            case ASSASSIN_SWORD             -> new AssassinSkill(owner, ability);
+            case MARKSMAN_CROSSBOW          -> new ArcherSkill(owner, ability);
+            case MAGE_SCEPTER               -> new MageSkill(owner, ability);
+            default -> throw new IllegalArgumentException("Unknown champion: " + championEnum);
         };
     }
 }

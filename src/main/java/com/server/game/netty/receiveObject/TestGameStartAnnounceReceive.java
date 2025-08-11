@@ -1,6 +1,7 @@
 package com.server.game.netty.receiveObject;
 
-import java.nio.ByteBuffer;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 
 import org.springframework.stereotype.Component;
 
@@ -23,10 +24,15 @@ public class TestGameStartAnnounceReceive implements TLVDecodable {
     String gameId;
 
     @Override
-    public void decode(ByteBuffer buf) {
-        short gameIdLength = buf.getShort();
-        byte[] gameIdBytes = new byte[gameIdLength];
-        buf.get(gameIdBytes);
-        this.gameId = Util.bytesToString(gameIdBytes);
+    public void decode(byte[] value) {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(value);
+            DataInputStream dis = new DataInputStream(bais);
+
+            this.gameId = Util.readString(dis, Short.class);
+
+        } catch (Exception e) {
+            throw new  RuntimeException("Cannot decode " + this.getClass().getSimpleName(), e);
+        }
     }
 }

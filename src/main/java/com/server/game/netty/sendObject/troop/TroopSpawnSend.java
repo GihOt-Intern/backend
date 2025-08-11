@@ -22,7 +22,8 @@ public class TroopSpawnSend implements TLVEncodable {
     String troopId; // Unique identifier for the troop
     short troopType;
     short ownerSlot;
-    float x, y;
+    float x, y, rotate;
+    int maxHP;
     long timestamp;
 
     @Override
@@ -37,8 +38,8 @@ public class TroopSpawnSend implements TLVEncodable {
 
         try {
             byte[] troopIdBytes = troopId != null ? troopId.getBytes("UTF-8") : new byte[0];
-            int troopIdLength = troopIdBytes.length;
-            dos.writeInt(troopIdLength);
+            short troopIdLength = (short) troopIdBytes.length;
+            dos.writeShort(troopIdLength);
             if (troopIdLength > 0) {
                 dos.write(troopIdBytes);
             }
@@ -46,6 +47,8 @@ public class TroopSpawnSend implements TLVEncodable {
             dos.writeShort(ownerSlot);
             dos.writeFloat(x);
             dos.writeFloat(y);
+            dos.writeFloat(rotate);
+            dos.writeInt(maxHP);
             dos.writeLong(timestamp);
         } catch (IOException e) {
             e.printStackTrace();

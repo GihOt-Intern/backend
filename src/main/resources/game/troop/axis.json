@@ -10,7 +10,7 @@
     "move_speed": 3.5,
     "attack_speed": 1.2,
     "attack_range": 0.8,
-    "detection_range": 5.0,
+    "detection_range": 10.0,
     "cost": 100
   },
   "ability": {

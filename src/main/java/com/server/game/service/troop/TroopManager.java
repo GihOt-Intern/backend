@@ -1,501 +1,195 @@
 package com.server.game.service.troop;
 
-import com.server.game.model.game.SlotState;
+import com.server.game.factory.TroopFactory;
+import com.server.game.model.game.Entity;
+import com.server.game.model.game.GameState;
+import com.server.game.model.game.TroopInstance2;
+import com.server.game.model.game.context.AttackContext;
+import com.server.game.model.game.context.MoveContext;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.resource.service.TroopService;
-import com.server.game.service.attack.AttackTargetingService;
+import com.server.game.netty.ChannelManager;
+import com.server.game.netty.sendObject.entity.EntityDeathSend;
+import com.server.game.service.attack.AttackService;
 import com.server.game.service.gameState.GameStateService;
-import com.server.game.service.troop.TroopInstance.TroopAIState;
+import com.server.game.service.gameState.SlotStateService;
+import com.server.game.factory.AttackContextFactory;
+import com.server.game.factory.MoveContextFactory;
+import com.server.game.service.move.MoveService2;
 import com.server.game.util.TroopEnum;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-
-import com.server.game.netty.ChannelManager;
-import com.server.game.netty.sendObject.pvp.HealthUpdateSend;
-import com.server.game.netty.sendObject.troop.TroopDeathSend;
 
 import io.netty.channel.Channel;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TroopManager {
-    private TroopService troopService;
-    private GameStateService gameStateService;
-    private AttackTargetingService attackTargetingService;
+    private final GameStateService gameStateService;
+    private final SlotStateService slotStateService;
+    private final TroopFactory troopFactory;
 
-    // gameId -> Map<troopInstanceId, TroopInstance>
-    private final Map<String, Map<String, TroopInstance>> gameTroops = new ConcurrentHashMap<>();
+    private final MoveContextFactory moveContextFactory;
+    private final MoveService2 moveService;
+
     
-    // gameId -> Map<ownerSlot, List<troopInstanceId>>
-    private final Map<String, Map<Short, List<String>>> playerTroops = new ConcurrentHashMap<>();
-    
-    /**
-     * Create a new troop instance for a player
+    private final AttackService attackService;
+    private final AttackContextFactory attackContextFactory;
+
+    /** 
+     * Add a troop instance to the game state.
      */
-    public TroopInstance createTroop(String gameId, short ownerSlot, TroopEnum troopType, Vector2 spawnPosition) {
-        // Check if player can afford the troop
-        SlotState slotState = gameStateService.getGameStateById(gameId).getSlotState(ownerSlot);
-
-        if (slotState == null) {
-            log.warn("Cannot create troop: Player state not found for slot {} in game {}", ownerSlot, gameId);
-            return null;
-        }
-        
-        int troopCost = troopService.getTroopCost(troopType);
-        if (slotState.getCurrentGold() < troopCost) {
-            log.warn("Player {} cannot afford troop {} (cost: {}, gold: {})", 
-                    ownerSlot, troopType, troopCost, slotState.getCurrentGold());
-            return null;
-        }
-        
-        // Get troop stats
-        Integer maxHP = troopService.getTroopInitialHP(troopType);
-        if (maxHP == null) {
-            log.error("Failed to get initial HP for troop type: {}", troopType);
-            return null;
-        }
-        
-        // Create troop instance
-        TroopInstance troop = new TroopInstance(gameId, troopType, ownerSlot, spawnPosition, maxHP);
-        
-        // Deduct cost from player
-        slotState.spendGold(troopCost);
-        
-        // Add to game troops
-        gameTroops.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
-                  .put(troop.getTroopInstanceId(), troop);
-        
-        // Add to player troops
-        playerTroops.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
-                   .computeIfAbsent(ownerSlot, k -> new ArrayList<>())
-                   .add(troop.getTroopInstanceId());
-        
-        log.info("Created troop {} of type {} for player {} at position ({}, {}) for {} gold", 
-                troop.getTroopInstanceId(), troopType, ownerSlot, 
-                spawnPosition.x(), spawnPosition.y(), troopCost);
-        
-        return troop;
+    public TroopInstance2 createTroop(String gameId, short ownerSlot, TroopEnum troopType, Vector2 position) {
+        return troopFactory.createTroop(gameId, ownerSlot, troopType, position);
     }
     
     /**
      * Remove a troop instance (when it dies or is manually removed)
      */
     public boolean removeTroop(String gameId, String troopInstanceId) {
-        Map<String, TroopInstance> troops = gameTroops.get(gameId);
-        if (troops == null) {
+        GameState gameState = gameStateService.getGameStateById(gameId);
+        if (gameState == null) {
+            log.warn("Game state not found for game ID: {}", gameId);
             return false;
         }
-        
-        TroopInstance troop = troops.remove(troopInstanceId);
-        if (troop == null) {
+        Entity troopInstance = gameStateService.getEntityByStringId(gameId, troopInstanceId);
+        if (troopInstance == null || !(troopInstance instanceof TroopInstance2)) {
+            log.warn("Troop instance not found for ID: {}", troopInstanceId);
             return false;
         }
-        
-        // Remove from player troops
-        Map<Short, List<String>> playerTroopMap = playerTroops.get(gameId);
-        if (playerTroopMap != null) {
-            List<String> playerTroopList = playerTroopMap.get(troop.getOwnerSlot());
-            if (playerTroopList != null) {
-                playerTroopList.remove(troopInstanceId);
-            }
-        }
-        
-        log.info("Removed troop {} from game {}", troopInstanceId, gameId);
-        return true;
-    }
-    
-    /**
-     * Get all troops in a game
-     */
-    public Collection<TroopInstance> getGameTroops(String gameId) {
-        Map<String, TroopInstance> troops = gameTroops.get(gameId);
-        return troops != null ? troops.values() : Collections.emptyList();
-    }
-    
-    /**
-     * Get troops owned by a specific player
-     */
-    public List<TroopInstance> getPlayerTroops(String gameId, short ownerSlot) {
-        Map<Short, List<String>> playerTroopMap = playerTroops.get(gameId);
-        if (playerTroopMap == null) {
-            return Collections.emptyList();
-        }
-        
-        List<String> troopIds = playerTroopMap.get(ownerSlot);
-        if (troopIds == null) {
-            return Collections.emptyList();
-        }
-        
-        Map<String, TroopInstance> troops = gameTroops.get(gameId);
-        if (troops == null) {
-            return Collections.emptyList();
-        }
-        
-        return troopIds.stream()
-                .map(troops::get)
-                .filter(Objects::nonNull)
-                .filter(TroopInstance::isAlive)
-                .collect(Collectors.toList());
-    }
-    
-    /**
-     * Get a specific troop instance
-     */
-    public TroopInstance getTroop(String gameId, String troopInstanceId) {
-        Map<String, TroopInstance> troops = gameTroops.get(gameId);
-        return troops != null ? troops.get(troopInstanceId) : null;
-    }
-    
-    /**
-     * Get troops within range of a position
-     */
-    public List<TroopInstance> getTroopsInRange(String gameId, Vector2 position, float range) {
-        return getGameTroops(gameId).stream()
-                .filter(TroopInstance::isAlive)
-                .filter(troop -> troop.distanceTo(position) <= range)
-                .collect(Collectors.toList());
-    }
-    
-    /**
-     * Get enemy troops for a specific player
-     */
-    public List<TroopInstance> getEnemyTroops(String gameId, short playerSlot) {
-        return getGameTroops(gameId).stream()
-                .filter(TroopInstance::isAlive)
-                .filter(troop -> troop.getOwnerSlot() != playerSlot)
-                .collect(Collectors.toList());
-    }
-    
-    /**
-     * Get friendly troops for a specific player
-     */
-    public List<TroopInstance> getFriendlyTroops(String gameId, short playerSlot) {
-        return getGameTroops(gameId).stream()
-                .filter(TroopInstance::isAlive)
-                .filter(troop -> troop.getOwnerSlot() == playerSlot)
-                .collect(Collectors.toList());
-    }
-    
-    /**
-     * Find nearest enemy troop to a position
-     */
-    public TroopInstance findNearestEnemyTroop(String gameId, short playerSlot, Vector2 position, float maxRange) {
-        return getEnemyTroops(gameId, playerSlot).stream()
-                .filter(troop -> troop.distanceTo(position) <= maxRange)
-                .min(Comparator.comparing(troop -> troop.distanceTo(position)))
-                .orElse(null);
-    }
-    
-    /**
-     * Find friendly troops needing healing
-     */
-    public List<TroopInstance> findTroopsNeedingHealing(String gameId, short playerSlot, 
-            Vector2 healerPosition, float healRange, float healthThreshold) {
-        return getFriendlyTroops(gameId, playerSlot).stream()
-                .filter(troop -> troop.distanceTo(healerPosition) <= healRange)
-                .filter(troop -> troop.getHealthPercentage() < healthThreshold)
-                .sorted(Comparator.comparing(TroopInstance::getHealthPercentage))
-                .collect(Collectors.toList());
-    }
 
-    
-    /**
-     * Apply damage to a troop and handle death
-     */
-    public boolean applyDamageToTroop(String gameId, String troopInstanceId, int damage) {
-        TroopInstance troop = getTroop(gameId, troopInstanceId);
-        if (troop == null || !troop.isAlive()) {
-            return false;
-        }
+        TroopInstance2 troop = (TroopInstance2) troopInstance;
         
-        troop.takeDamage(damage);
+        // Remove from SlotState first
+        slotStateService.removeTroop(troop.getOwnerSlot(), troop);
         
-        // If troop died, remove it
-        if (!troop.isAlive()) {
-            // Clear all attack targets that were targeting this dead troop
-            attackTargetingService.clearTargetsAttackingTarget(gameId, troopInstanceId);
-            
-            // Notify game state service about troop death
-            broadcastTroopDeath(gameId, troopInstanceId, troop.getOwnerSlot());
-
-            removeTroop(gameId, troopInstanceId);
-            log.info("Troop {} died and was removed from game {}", troopInstanceId, gameId);
-        } else {
-            com.server.game.netty.sendObject.pvp.HealthUpdateSend healthUpdate = new HealthUpdateSend(
-                troopInstanceId,
-                troop.getCurrentHP(),
-                troop.getMaxHP(),
-                damage,
-                System.currentTimeMillis()
-            );
-
-            Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
-            if (channel != null && channel.isActive()) {
-                channel.writeAndFlush(healthUpdate);
-            } else {
-                log.warn("No active channel found for game ID: {}", gameId);
-            }
-        }
+        // Remove from GameState
+        gameStateService.removeEntity(gameState, troopInstance);
         
         return true;
     }
 
-    /**
-     * Broadcast a troop death event
+    /** 
+     * Attack a target
      */
-    private void broadcastTroopDeath(String gameId, String troopInstanceId, short ownerSlot) {
+    public void setAttackTarget(String gameId, String troopInstanceId, String targetId) {
+        GameState gameState = gameStateService.getGameStateById(gameId);
+        Entity troop = gameStateService.getEntityByStringId(gameState, troopInstanceId);
+
+        if (troop instanceof TroopInstance2) {
+            ((TroopInstance2) troop).setInDefensiveStance(false); // Disable defense on manual attack
+        }
+
+        AttackContext attackContext = attackContextFactory.createAttackContext(gameId, troopInstanceId, targetId, System.currentTimeMillis());
+        attackService.setAttack(attackContext);
+    }
+
+    /** 
+     * Set move position for a troop instance
+     */
+    public void setMovePosition(String gameId, String troopInstanceId, Vector2 position) {
+        GameState gameState = gameStateService.getGameStateById(gameId);
+        if (gameState == null) {
+            log.warn("Game state not found for game ID: {}", gameId);
+            return;
+        }
+        Entity troopInstance = gameStateService.getEntityByStringId(gameState, troopInstanceId);
+        if (troopInstance == null) {
+            log.warn("Troop instance not found for ID: {}", troopInstanceId);
+            return;
+        }
+        
+        TroopInstance2 troop = (TroopInstance2) troopInstance;
+        
+        // Update defense position but do NOT enable defensive stance for manual moves
+        troop.updateDefensePosition(position);
+        troop.setInDefensiveStance(false); // Disable defensive stance on manual move
+        
+        MoveContext moveContext = moveContextFactory.createMoveContext(gameState, troopInstance, position, System.currentTimeMillis());
+        moveService.setMove(moveContext, true);
+        
+        log.debug("Manual move set for troop {} to position {}. Defensive stance disabled.", troopInstanceId, position);
+    }
+
+    /**
+     * Check if a troop has died and handle death logic
+     * @return true if troop died, false otherwise
+     */
+    public boolean checkAndHandleTroopDeath(String gameId, String troopInstanceId) {
+        GameState gameState = gameStateService.getGameStateById(gameId);
+        if (gameState == null) {
+            log.warn("Game state not found for game ID: {}", gameId);
+            return false;
+        }
+
+        Entity troopEntity = gameStateService.getEntityByStringId(gameState, troopInstanceId);
+        if (troopEntity == null || !(troopEntity instanceof TroopInstance2)) {
+            log.warn("Troop instance not found for ID: {}", troopInstanceId);
+            return false;
+        }
+
+        TroopInstance2 troop = (TroopInstance2) troopEntity;
+        if (troop.getCurrentHP() > 0) {
+            return false; // Troop is still alive
+        }
+
+        log.info("Troop {} has died in game {}", troopInstanceId, gameId);
+
+        // Remove the troop from the game state
+        this.removeTroop(gameId, troopInstanceId);
+
+        // Send death message to all clients
+        this.sendTroopDeathMessage(gameId, troopInstanceId);
+
+        return true;
+    }
+
+    /**
+     * Check all troops in a game for deaths and handle them
+     * This is more efficient than checking troops one by one
+     */
+    public void checkAndHandleAllTroopDeaths(String gameId) {
+        GameState gameState = gameStateService.getGameStateById(gameId);
+        if (gameState == null) {
+            log.warn("Game state not found for game ID: {}", gameId);
+            return;
+        }
+
+        // Collect all dead troops to avoid concurrent modification
+        var deadTroops = gameState.getEntities().stream()
+            .filter(entity -> entity.getStringId().startsWith("troop_"))
+            .filter(entity -> entity.getCurrentHP() <= 0)
+            .map(Entity::getStringId)
+            .toList();
+
+        // Process each dead troop
+        for (String troopId : deadTroops) {
+            try {
+                this.checkAndHandleTroopDeath(gameId, troopId);
+            } catch (Exception e) {
+                log.error("Error processing death for troop {} in game {}: {}", troopId, gameId, e.getMessage(), e);
+            }
+        }
+
+        if (!deadTroops.isEmpty()) {
+            log.info("Processed {} troop deaths in game {}", deadTroops.size(), gameId);
+        }
+    }
+
+    /**
+     * Send troop death message to all clients in the game
+     */
+    private void sendTroopDeathMessage(String gameId, String troopInstanceId) {
+        EntityDeathSend deathMessage = new EntityDeathSend(troopInstanceId);
         Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
-        if (channel == null || !channel.isActive()) {
-            log.warn("No active channel found for game ID: {}", gameId);
-            return;
-        }
-
-        TroopDeathSend deathMessage = new TroopDeathSend(troopInstanceId, ownerSlot);
-        channel.writeAndFlush(deathMessage);
-    }
-
-    /**
-     * Heal a troop
-     */
-    public boolean healTroop(String gameId, String troopInstanceId, int healAmount) {
-        TroopInstance troop = getTroop(gameId, troopInstanceId);
-        if (troop == null || !troop.isAlive()) {
-            return false;
-        }
-        
-        troop.heal(healAmount);
-        return true;
-    }
-    
-    /**
-     * Move troops for a player (placeholder for future implementation)
-     */
-    public void moveTroops(String gameId, short playerSlot, List<String> troopIds, Vector2 targetPosition) {
-        log.info("Move command received for player {} troops {} to position ({}, {}) - Implementation pending", 
-                playerSlot, troopIds, targetPosition.x(), targetPosition.y());
-        
-        // For now, just set the target position for each troop
-        for (String troopId : troopIds) {
-            TroopInstance troop = getTroop(gameId, troopId);
-            if (troop != null && troop.getOwnerSlot() == playerSlot && troop.isAlive()) {
-                troop.setMoveTarget(targetPosition);
-                troop.setAIState(TroopAIState.MOVING_TO_POSITION);
-
-                // Clear any previous attack target
-                troop.setTargetTroopId(null);
-            }
-        }
-    }
-
-    /**
-     * Move troop to attack a specific target
-     * @param attackerTroopId
-     * @param targetTroopId
-     * @return true if the attack was initiated, false if the troop is not found or not alive
-     */
-    public boolean moveToAttackTarget(String gameId, String attackerTroopId, String targetTroopId) {
-        TroopInstance attacker = getTroop(gameId, attackerTroopId);
-        TroopInstance target = getTroop(gameId, targetTroopId);
-
-        if (attacker == null || target == null || !attacker.isAlive() || !target.isAlive()) {
-            log.debug("Cannot move to attack");
-            return false;
-        }
-
-        boolean isEnemy = attacker.getOwnerSlot() != target.getOwnerSlot();
-        boolean isHealer = attacker.getTroopType() == TroopEnum.HEALER;
-
-        if (!isEnemy && !isHealer) {
-            log.warn("Troop {} cannot attack target {} - not an enemy or healer", attackerTroopId, targetTroopId);
-            return false;
-        }
-
-        // Set the target and update AI state
-        attacker.setTargetTroopId(targetTroopId);
-
-        if (isHealer && !isEnemy) {
-            attacker.setAIState(TroopAIState.HEALING_ALLY);
-            log.debug("Troop {} is healing ally {}", attackerTroopId, targetTroopId);
+        if (channel != null) {
+            channel.writeAndFlush(deathMessage);
+            log.info("Sent troop death message for gameId: {}, troopId: {}", gameId, troopInstanceId);
         } else {
-            attacker.setAIState(TroopAIState.SEEKING);
-            log.debug("Troop {} set to attack enemy {}", attackerTroopId, targetTroopId);
+            log.warn("No channel found for gameId: {} when sending troop death message", gameId);
         }
-
-        // Calculate attack range based on troop type
-        float attackRange = troopService.getTroopAttackRange(attacker.getTroopType());
-        float currentDistance = attacker.distanceTo(target.getPosition());
-
-        if (currentDistance <= attackRange) {
-            attacker.setAIState(isHealer ? TroopAIState.HEALING_ALLY : TroopAIState.ATTACKING);
-            log.debug("Troop {} is within attack range of {}: {}", attackerTroopId, targetTroopId, target);
-            return true;
-        }
-
-        return true;
-    }
-
-    /**
-     * Update troop movements towards their targets
-     * Called periodically by the game logic
-     */
-    public void updateTroopMovements(String gameId, float deltaTime) {
-        Collection<TroopInstance> troops = getGameTroops(gameId);
-
-        for (TroopInstance troop : troops) {
-            if (!troop.isAlive()) continue;
-            
-            switch (troop.getAIState()) {
-                case SEEKING, RETREATING -> updateSeekingMovement(troop, deltaTime);
-                case HEALING_ALLY -> updateHealingMovement(troop, deltaTime);
-                case MOVING_TO_POSITION -> updateDirectMovement(troop, deltaTime);
-                default -> {}
-            }
-        }
-    }
-
-    /**
-     * Update movement for troops seeking enemies
-     */
-    private void updateSeekingMovement(TroopInstance troop, float deltaTime) {
-        String targetId = troop.getTargetTroopId();
-        if (targetId == null) return;
-        
-        TroopInstance target = getTroop(troop.getGameId(), targetId);
-        if (target == null || !target.isAlive()) {
-            // Target is gone, reset to idle
-            troop.setTargetTroopId(null);
-            troop.setAIState(TroopAIState.IDLE);
-            return;
-        }
-        
-        float attackRange = troopService.getTroopAttackRange(troop.getTroopType());
-        float currentDistance = troop.distanceTo(target.getPosition());
-        
-        // If reached attack range, switch to attacking
-        if (currentDistance <= attackRange) {
-            troop.setAIState(TroopAIState.ATTACKING);
-            return;
-        }
-        
-        // Move toward target with appropriate speed
-        float moveSpeed = troopService.getTroopMovementSpeed(troop.getTroopType());
-        troop.moveTowards(target.getPosition(), moveSpeed, deltaTime);
-    }
-
-    /**
-     * Update movement for troops healing allies
-     */
-    private void updateHealingMovement(TroopInstance troop, float deltaTime) {
-        // Similar to seeking, but for healing allies
-        String targetId = troop.getTargetTroopId();
-        if (targetId == null) return;
-        
-        TroopInstance target = getTroop(troop.getGameId(), targetId);
-        if (target == null || !target.isAlive() || target.getHealthPercentage() >= 0.9f) {
-            // Target is gone or fully healed
-            troop.setTargetTroopId(null);
-            troop.setAIState(TroopAIState.IDLE);
-            return;
-        }
-        
-        float healRange = 4.0f; // Healing range
-        float currentDistance = troop.distanceTo(target.getPosition());
-        
-        // If in heal range, stop and heal
-        if (currentDistance <= healRange) {
-            // Stay in healing state but stop moving
-            return;
-        }
-        
-        // Move toward target that needs healing
-        float moveSpeed = troopService.getTroopMovementSpeed(troop.getTroopType());
-        troop.moveTowards(target.getPosition(), moveSpeed, deltaTime);
-    }
-
-    /**
-     * Update movement for troops moving to a position (not targeting)
-     */
-    private void updateDirectMovement(TroopInstance troop, float deltaTime) {
-        Vector2 targetPos = troop.getTargetPosition();
-        if (targetPos == null) {
-            troop.setAIState(TroopAIState.IDLE);
-            return;
-        }
-
-        float moveSpeed = troopService.getTroopMovementSpeed(troop.getTroopType());
-        float arrivalThreshold = 0.5f;
-        
-        // Check if we've arrived at the target position
-        if (troop.distanceTo(targetPos) <= arrivalThreshold) {
-            troop.setMoveTarget(null);
-            troop.setAIState(TroopAIState.IDLE);
-            return;
-        }
-        
-        // Continue moving toward target position
-        troop.moveTowards(targetPos, moveSpeed, deltaTime);
-    }
-    
-    /**
-     * Get troop count for a player
-     */
-    public int getPlayerTroopCount(String gameId, short playerSlot) {
-        return getPlayerTroops(gameId, playerSlot).size();
-    }
-    
-    /**
-     * Clean up all troops for a game
-     */
-    public void cleanupGameTroops(String gameId) {
-        Map<String, TroopInstance> troops = gameTroops.remove(gameId);
-        playerTroops.remove(gameId);
-        
-        if (troops != null) {
-            log.info("Cleaned up {} troops for game {}", troops.size(), gameId);
-        }
-    }
-    
-    /**
-     * Get troop statistics for a game
-     */
-    public String getTroopStatistics(String gameId) {
-        Collection<TroopInstance> troops = getGameTroops(gameId);
-        if (troops.isEmpty()) {
-            return "No troops in game " + gameId;
-        }
-        
-        StringBuilder stats = new StringBuilder();
-        stats.append("Troop Statistics for ").append(gameId).append(":\n");
-        
-        // Group by player
-        Map<Short, List<TroopInstance>> playerTroopGroups = troops.stream()
-                .collect(Collectors.groupingBy(TroopInstance::getOwnerSlot));
-        
-        for (Map.Entry<Short, List<TroopInstance>> entry : playerTroopGroups.entrySet()) {
-            Short playerSlot = entry.getKey();
-            List<TroopInstance> playerTroopList = entry.getValue();
-            
-            stats.append(String.format("  Player %d: %d troops%n", playerSlot, playerTroopList.size()));
-            
-            // Group by troop type
-            Map<TroopEnum, Long> typeCount = playerTroopList.stream()
-                    .collect(Collectors.groupingBy(TroopInstance::getTroopType, Collectors.counting()));
-            
-            for (Map.Entry<TroopEnum, Long> typeEntry : typeCount.entrySet()) {
-                stats.append(String.format("    %s: %d%n", typeEntry.getKey(), typeEntry.getValue()));
-            }
-        }
-        
-        return stats.toString();
     }
 }

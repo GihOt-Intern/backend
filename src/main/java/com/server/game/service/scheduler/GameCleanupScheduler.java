@@ -8,9 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.server.game.model.game.GameState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.service.gameState.GameCoordinator;
-import com.server.game.service.troop.TroopManager;
 
 
 import io.netty.channel.Channel;
@@ -26,12 +26,9 @@ public class GameCleanupScheduler {
     
     @Autowired
     private GameCoordinator gameCoordinator;
-
-    @Autowired
-    private TroopManager troopManager;
     
     // Track when games first become empty (no channels)
-    private final Map<String, Long> emptyGameTimestamps = new ConcurrentHashMap<>();
+    private final Map<GameState, Long> emptyGameTimestamps = new ConcurrentHashMap<>();
     
     // Timeout in milliseconds (30 seconds)
     private static final long CLEANUP_TIMEOUT_MS = 30_000;
@@ -48,32 +45,32 @@ public class GameCleanupScheduler {
         long currentTime = System.currentTimeMillis();
         
         // Get all games that are currently tracked by GameCoordinator
-        Set<String> activeGameIds = gameCoordinator.getAllGameIds();
-        
-        if (activeGameIds.isEmpty()) {
+        Set<GameState> activeGameStates = gameCoordinator.getAllActiveGameStates();
+
+        if (activeGameStates.isEmpty()) {
             return; // No games to check
         }
-        
-        log.debug("Checking {} games for empty channels", activeGameIds.size());
-        
-        for (String gameId : activeGameIds) {
-            Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
+
+        log.debug("Checking {} games for empty channels", activeGameStates.size());
+
+        for (GameState gameState : activeGameStates) {
+            Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameState.getGameId());
             
             if (gameChannels == null || gameChannels.isEmpty()) {
                 // Game has no channels
-                handleEmptyGame(gameId, currentTime);
+                handleEmptyGame(gameState, currentTime);
             } else {
                 // Game has channels, remove from empty tracking if it was there
-                if (emptyGameTimestamps.remove(gameId) != null) {
-                    log.debug("Game {} now has active channels, removed from cleanup tracking", gameId);
+                if (emptyGameTimestamps.remove(gameState) != null) {
+                    log.debug("Game {} now has active channels, removed from cleanup tracking", gameState.getGameId());
                 }
             }
         }
         
         // Clean up tracking for games that no longer exist
-        emptyGameTimestamps.keySet().removeIf(gameId -> {
-            if (!activeGameIds.contains(gameId)) {
-                log.debug("Game {} no longer exists, removing from cleanup tracking", gameId);
+        emptyGameTimestamps.keySet().removeIf(emptyGameState -> {
+            if (!activeGameStates.contains(emptyGameState)) {
+                log.debug("Game {} no longer exists, removing from cleanup tracking", emptyGameState.getGameId());
                 return true;
             }
             return false;
@@ -88,23 +85,23 @@ public class GameCleanupScheduler {
     /**
      * Handle a game that has no active channels
      */
-    private void handleEmptyGame(String gameId, long currentTime) {
-        Long emptyStartTime = emptyGameTimestamps.get(gameId);
+    private void handleEmptyGame(GameState gameState, long currentTime) {
+        Long emptyStartTime = emptyGameTimestamps.get(gameState);
         
         if (emptyStartTime == null) {
             // First time we detected this game as empty
-            emptyGameTimestamps.put(gameId, currentTime);
-            log.debug("Game {} detected as empty, starting cleanup timer", gameId);
+            emptyGameTimestamps.put(gameState, currentTime);
+            log.debug("Game {} detected as empty, starting cleanup timer", gameState.getGameId());
         } else {
             // Check if enough time has passed
             long elapsedTime = currentTime - emptyStartTime;
             if (elapsedTime >= CLEANUP_TIMEOUT_MS) {
                 // Time to clean up this game
-                cleanupGame(gameId);
-                emptyGameTimestamps.remove(gameId);
+                this.cleanupGame(gameState);
+                emptyGameTimestamps.remove(gameState);
             } else {
                 long remainingTime = CLEANUP_TIMEOUT_MS - elapsedTime;
-                log.debug("Game {} will be cleaned up in {}ms", gameId, remainingTime);
+                log.debug("Game {} will be cleaned up in {}ms", gameState.getGameId(), remainingTime);
             }
         }
     }
@@ -112,22 +109,22 @@ public class GameCleanupScheduler {
     /**
      * Clean up a game that has been empty for too long
      */
-    private void cleanupGame(String gameId) {
+    private void cleanupGame(GameState gameState) {
         try {
-            log.info("Cleaning up empty game after {} seconds: {}", CLEANUP_TIMEOUT_MS / 1000, gameId);
-            
+            log.info("Cleaning up empty game after {} seconds: {}", CLEANUP_TIMEOUT_MS / 1000, gameState.getGameId());
+
             // Unregister the game from all schedulers and clean up resources
-            gameCoordinator.unregisterGame(gameId);
-            troopManager.cleanupGameTroops(gameId);
+            gameCoordinator.unregisterGame(gameState.getGameId());
             
+
             // Increment cleanup counter
             totalCleanupsPerformed++;
-            
-            log.info("Successfully cleaned up empty game: {} (total cleanups: {})", gameId, totalCleanupsPerformed);
+
+            log.info("Successfully cleaned up empty game: {} (total cleanups: {})", gameState.getGameId(), totalCleanupsPerformed);
         } catch (Exception e) {
-            log.error("Error cleaning up game: {}", gameId, e);
+            log.error("Error cleaning up game: {}", gameState.getGameId(), e);
             // Remove from tracking even if cleanup failed to prevent repeated attempts
-            emptyGameTimestamps.remove(gameId);
+            emptyGameTimestamps.remove(gameState);
         }
     }
     
@@ -164,20 +161,20 @@ public class GameCleanupScheduler {
     /**
      * Force cleanup of a specific game (for administrative purposes)
      */
-    public boolean forceCleanupGame(String gameId) {
+    public boolean forceCleanupGame(GameState gameState) {
         try {
-            Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameId);
+            Set<Channel> gameChannels = ChannelManager.getChannelsByGameId(gameState.getGameId());
             if (gameChannels != null && !gameChannels.isEmpty()) {
-                log.warn("Force cleanup requested for game {} but it still has {} active channels", 
-                        gameId, gameChannels.size());
+                log.warn("Force cleanup requested for game {} but it still has {} active channels",
+                        gameState.getGameId(), gameChannels.size());
                 return false;
             }
-            
-            log.info("Force cleaning up game: {}", gameId);
-            cleanupGame(gameId);
+
+            log.info("Force cleaning up game: {}", gameState.getGameId());
+            cleanupGame(gameState);
             return true;
         } catch (Exception e) {
-            log.error("Error in force cleanup for game: {}", gameId, e);
+            log.error("Error in force cleanup for game: {}", gameState.getGameId(), e);
             return false;
         }
     }
@@ -187,13 +184,14 @@ public class GameCleanupScheduler {
      * This starts the cleanup timer for the game.
      */
     public void notifyGameEmpty(String gameId) {
+        GameState gameState = gameCoordinator.getGameState(gameId);
         long currentTime = System.currentTimeMillis();
         
         // Only start tracking if not already tracking
-        if (!emptyGameTimestamps.containsKey(gameId)) {
-            emptyGameTimestamps.put(gameId, currentTime);
-            log.info("Game {} became empty, starting {} second cleanup timer", 
-                    gameId, CLEANUP_TIMEOUT_MS / 1000);
+        if (!emptyGameTimestamps.containsKey(gameState)) {
+            emptyGameTimestamps.put(gameState, currentTime);
+            log.info("Game {} became empty, starting {} second cleanup timer",
+                    gameState.getGameId(), CLEANUP_TIMEOUT_MS / 1000);
         }
     }
     

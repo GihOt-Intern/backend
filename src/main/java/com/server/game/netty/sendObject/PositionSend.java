@@ -3,10 +3,12 @@ package com.server.game.netty.sendObject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.netty.channel.Channel;
 
+import com.server.game.model.game.Entity;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.sendTargetType.AMatchBroadcastTarget;
@@ -19,11 +21,16 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PositionSend implements TLVEncodable {
-    List<PlayerPositionData> players;
+    List<EntityPositionData> entities;
     long timestamp;
+
+    public PositionSend(String entityId, Vector2 position, float speed, long timestamp) {
+        this.entities = new ArrayList<>();
+        this.entities.add(new EntityPositionData(entityId, position, speed));
+        this.timestamp = timestamp;
+    }
 
     @Override
     public SendMessageType getType() {
@@ -37,20 +44,15 @@ public class PositionSend implements TLVEncodable {
             DataOutputStream dos = new DataOutputStream(baos);
 
             // Write number of players
-            dos.writeShort(players.size());
-            
-            // Write each player's data
-            for (PlayerPositionData player : players) {
-                dos.write(player.encode());
+            dos.writeShort((short) entities.size());
+
+            // Write each entity's data
+            for (EntityPositionData entity : entities) {
+                dos.write(entity.encode());
             }
             
             // Write timestamp
             dos.writeLong(timestamp);
-
-            // ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
-            // Util.printHex(buffer, true);
-            
-            
             
             return baos.toByteArray();
         } catch (IOException e) {
@@ -66,10 +68,16 @@ public class PositionSend implements TLVEncodable {
     // Inner class để lưu trữ dữ liệu vị trí player
     @Data
     @AllArgsConstructor
-    public static class PlayerPositionData {
-        short slot;
+    public static class EntityPositionData {
+        String stringId;
         Vector2 position;
         float speed;
+
+        public EntityPositionData(Entity entity, Vector2 position, float speed) {
+            this.stringId = entity.getStringId();
+            this.position = position;
+            this.speed = speed;
+        }
 
 
         public byte[] encode() {
@@ -77,7 +85,7 @@ public class PositionSend implements TLVEncodable {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 DataOutputStream dos = new DataOutputStream(baos);
 
-                dos.writeShort(slot);
+                dos.writeUTF(stringId); // this method already adds first 2 bytes for byte length
                 dos.writeFloat(position.x());
                 dos.writeFloat(position.y());
                 dos.writeFloat(speed);

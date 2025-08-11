@@ -6,13 +6,13 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
-
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.resource.deserializer.BurgDeserializer;
-import com.server.game.resource.deserializer.TowerDeserializer;
+import com.server.game.resource.deserializer.BurgDBDeserializer;
+import com.server.game.resource.deserializer.TowerDBDeserializer;
 
 import lombok.AccessLevel;
 
@@ -26,8 +26,12 @@ public class SlotInfo {
     short slot;
     @JsonProperty("spawn_position")
     Spawn spawn;
-    Burg burg;
-    List<Tower> towers;
+    @JsonProperty("burg")
+    BurgDB burgDB;
+    @JsonProperty("towers")
+    Set<TowerDB> towersDB;
+    @JsonProperty("minion_positions")
+    List<Vector2> minionPositions;
 
     @Data
     @AllArgsConstructor
@@ -42,23 +46,25 @@ public class SlotInfo {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    @JsonDeserialize(using = BurgDeserializer.class)
-    public static class Burg {
+    @JsonDeserialize(using = BurgDBDeserializer.class)
+    public static class BurgDB {
         String id;
         Vector2 position;
         float width;
         float length;
+        float rotate; 
     }
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    @JsonDeserialize(using = TowerDeserializer.class)
-    public static class Tower {
+    @JsonDeserialize(using = TowerDBDeserializer.class)
+    public static class TowerDB {
         String id;
         Vector2 position;
         float width;
         float length;
+        float rotate; 
     }        
 
     public Vector2 getSpawnPosition() {

@@ -2,22 +2,35 @@ package com.server.game.model.game.component.skillComponent;
 
 
 
+import org.springframework.stereotype.Component;
+
 import com.server.game.model.game.Champion;
+import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 import com.server.game.util.Util;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
+@Component
+@Slf4j
+@EqualsAndHashCode(exclude = "skillOwner")
 public abstract class SkillComponent {
+    protected Champion skillOwner;
     protected String name;
     protected float cooldownSeconds;
     protected long cooldownTick;
     protected long lastUsedTick;
 
-    public SkillComponent(ChampionAbility ability) {
+    protected CastSkillContext castSkillContext = null;
+
+    public SkillComponent(Champion owner, ChampionAbility ability) {
+        this.skillOwner = owner;
         this.name = ability.getName();
         this.cooldownSeconds = ability.getCooldown();
+        
         this.cooldownTick = Util.seconds2GameTick(cooldownSeconds);
         this.lastUsedTick = -cooldownTick; // Initialize to allow immediate use
     }
@@ -26,6 +39,15 @@ public abstract class SkillComponent {
         this.cooldownSeconds = cooldownSeconds;
         this.cooldownTick = Util.seconds2GameTick(cooldownSeconds);
     }
+
+    private final void setCastSkillContext(CastSkillContext ctx) {
+        this.castSkillContext = ctx;
+    }
+
+
+    public abstract boolean canUseWhileAttacking();
+    public abstract boolean canUseWhileMoving();
+
 
     public final float getCooldown() {
         return cooldownSeconds;
@@ -48,17 +70,52 @@ public abstract class SkillComponent {
     // Template method pattern
     // Wrapper method to ensure cooldown is checked before using the skill
     // Concrete subclasses must only implement the doUse method below
-    public final void use(Champion caster, SkillContext context) {
-        long currentTick = context.getCurrentTick();
-        if (!isReady(currentTick)) return;
+    public final boolean use(CastSkillContext ctx) {
+        long currentTick = ctx.getCurrentTick();
+        if (!this.isReady(currentTick)) {
+            log.info("Skill {} is not ready for champion {}. Current tick: {}, Last used tick: {}, Cooldown: {}, remaining: {}",
+                this.name, this.skillOwner.getName(), currentTick, this.lastUsedTick, this.cooldownSeconds, this.getCooldownSecondsRemain(currentTick));
+            return false;
+        }
 
-        doUse(caster, context);
+        if (this.skillOwner.isMoving() && !this.canUseWhileMoving()) {
+            // cast skill is higher priority than moving, so we stop moving
+            log.info("Champion {} is moving and received a skill use request, stopping movement.",
+                this.skillOwner.getName());
+
+            this.skillOwner.setStopMoving(true);
+        }
+
+        if (this.skillOwner.isAttacking() && !this.canUseWhileAttacking()) {
+            // cast skill is higher priority than attack, so we stop the attack
+            log.info("Champion {} is attacking and received a skill use request, stopping attack.",
+                this.skillOwner.getName());
+
+            this.skillOwner.stopAttacking();
+        }
+
+        this.setCastSkillContext(ctx);
+        log.info("Set skill context: {}", ctx);
+
+
+        boolean didUse = this.doUse();
+
+        if (!didUse) {
+            log.error("Something wrong makes Skill {} failed to use for champion {} at tick {}",
+                this.name, this.skillOwner.getName(), currentTick);
+            return false;
+        }
+
+        log.info("Skill {} used successfully for champion {} at tick {}",
+            this.name, this.skillOwner.getName(), currentTick);
 
         lastUsedTick = currentTick;
+        return true;
     }
 
     // Protected access modifier to allow subclasses to implement their specific skill logic
     // but not to be called directly
-    protected abstract void doUse(Champion caster, SkillContext context);
-    public abstract void update(long currentTick); // Nếu có skill cần xử lý theo thời gian
+    protected abstract boolean doUse();
+
+    
 }

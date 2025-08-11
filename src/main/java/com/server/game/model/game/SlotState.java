@@ -1,60 +1,61 @@
 package com.server.game.model.game;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.server.game.config.SpringContextHolder;
 import com.server.game.model.game.component.GoldComponent;
-import com.server.game.model.game.component.PositionComponent;
-import com.server.game.model.map.component.Vector2;
-import com.server.game.netty.handler.PlayGroundHandler;
-import com.server.game.resource.model.GameMap.PlayGround;
+import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Delegate;
+import lombok.experimental.FieldDefaults;
 
 
 @Data
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SlotState {
-    private Short slot;
+    final Short slot;
+
+    final GameState gameState;
 
     // Cannot use @Delegate here because Champion has heathComponent and attributeComponent
     // which have already had @Delegate annotations.
-    private Champion champion;
+    Champion champion;
+
+    Set<Tower> towers;
+
+    Burg burg;
 
     @Delegate
-    private PositionComponent positionComponent;
+    final GoldComponent goldComponent;
 
-    @Delegate
-    private GoldComponent goldComponent;
+    final Set<TroopInstance2> troops;
 
-    private boolean inPlayGround;
-    private boolean isAlive;
-
-    private int troopCount;
-
-    public SlotState(Short slot, Champion champion, Vector2 initialPosition, Integer initialGold) {
+    public SlotState(GameState gameState, Short slot, Champion champion, Set<Tower> towers, Burg bug, Integer initialGold) {
+        this.gameState = gameState;
         this.slot = slot;
         this.champion = champion;
-        this.positionComponent = new PositionComponent(initialPosition);
+        this.towers = (towers != null) ? towers : new HashSet<>();
+        this.burg = bug;
         this.goldComponent = new GoldComponent(initialGold);
-        this.inPlayGround = false;
-        this.isAlive = true;
-
-        this.troopCount = 0; // TODO: add troop component to this class
+        this.troops = new HashSet<>();
     }
 
-
-    public void checkInPlayGround(String gameId, PlayGround playGround) {
-        boolean nextInPlayGround = this.positionComponent.isInPlayGround(playGround);
-        System.out.println(">>> [Log in SlotState.checkInPlayGround] Slot " + slot + " nextInPlayGround: " + nextInPlayGround + ", current inPlayGround: " + this.inPlayGround);
-        if (nextInPlayGround != this.inPlayGround) {
-            this.inPlayGround = !this.inPlayGround; // Toggle the state
-            PlayGroundHandler playGroundHandler =
-                SpringContextHolder.getBean(PlayGroundHandler.class);
-            playGroundHandler.sendInPlayGroundUpdateMessage(gameId, this.slot, this.inPlayGround);
+    public void addTroop(TroopInstance2 troop) {
+        if (troop == null) {
+            System.out.println(">>> [SlotState] Cannot add null troop");
+            return;
         }
+        this.troops.add(troop);
     }
 
+    public boolean isChampionAlive(){
+        return this.champion.isAlive();
+    }
 
     public float getMoveSpeed() {
         return this.champion.getMoveSpeed();
@@ -76,26 +77,34 @@ public class SlotState {
         this.champion.setCurrentHP(hp);
     }
 
-    public void setAlive() {
-        this.isAlive = true;
+    public void setChampionDead() {
+        this.setCurrentHP(0);
     }
 
-    public void setDead() {
-        this.isAlive = false;
+    public void setChampionRevive() {
+        this.setCurrentHP(this.getMaxHP());
     }
 
+    // TODO: do not use SpringContextHolder 
     public void handleGoldChange(String gameId) {
-        PlayGroundHandler playGroundHandler = 
-            SpringContextHolder.getBean(PlayGroundHandler.class);
+        PlaygroundMessageHandler playGroundHandler = 
+            SpringContextHolder.getBean(PlaygroundMessageHandler.class);
         playGroundHandler.sendGoldChangeMessage(gameId, this.slot, this.getCurrentGold());
     }
+
+
+    public void addTroopInstance(TroopInstance2 troopInstance){
+        this.troops.add(troopInstance);
+    }
+
+    public int getTroopCount(){ return this.troops.size(); }
 
     /**
      * Get player status summary
      */
     public String getStatusSummary() {
         return String.format("Slot %d (%s): HP %d/%d, Gold: %d, Troops: %d, Alive: %s",
-                slot, champion.getId(), getCurrentHP(), getMaxHP(), getCurrentGold(), getTroopCount(),
-                isAlive());
+                slot, champion.getChampionEnum(), getCurrentHP(), getMaxHP(), getCurrentGold(), getTroopCount(),
+                champion.isAlive());
     }
 }

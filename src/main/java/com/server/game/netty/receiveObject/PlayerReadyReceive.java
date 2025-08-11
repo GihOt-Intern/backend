@@ -1,7 +1,5 @@
 package com.server.game.netty.receiveObject;
 
-import java.nio.ByteBuffer;
-
 import org.springframework.stereotype.Component;
 
 import com.server.game.annotation.customAnnotation.ReceiveType;
@@ -21,7 +19,7 @@ import lombok.experimental.FieldDefaults;
 public class PlayerReadyReceive implements TLVDecodable {
     // No data, just a signal message
 
-    @Override // must override this method of TLVDecodable interface
-    public void decode(ByteBuffer buffer) { // buffer only contains the [value] part of the TLV message
+    @Override
+    public void decode(byte[] value) {
     }
 }

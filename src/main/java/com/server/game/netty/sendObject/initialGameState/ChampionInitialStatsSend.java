@@ -34,7 +34,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
 
     public ChampionInitialStatsSend(Champion champion, Integer initGold) {
         this.defense = champion.getDefense();
-        this.attack = champion.getAttack();
+        this.attack = champion.getDamage();
         this.moveSpeed = champion.getMoveSpeed();
         this.attackSpeed = champion.getAttackSpeed();
         this.attackRange = champion.getAttackRange();
@@ -68,7 +68,7 @@ public class ChampionInitialStatsSend implements TLVEncodable {
 
             return baos.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException("Cannot encode ChampionInitialHPsSend", e);
+            throw new RuntimeException("Cannot encode ChampionInitialStatsSend", e);
         }
     }
 

@@ -5,9 +5,9 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.deserializer.GameMapGridDeserializer;
-
 
 import lombok.AccessLevel;
 
@@ -28,5 +28,13 @@ public class GameMapGrid {
 
     public Vector2 getOrigin() {
         return cornerA;
+    }
+
+    public boolean isOutGrid(GridCell cell) {
+        return cell.r() < 0 || cell.r() >= nRows || cell.c() < 0 || cell.c() >= nCols;
+    }
+
+    public boolean isWalkable(GridCell cell) {
+        return grid[cell.r()][cell.c()];
     }
 }

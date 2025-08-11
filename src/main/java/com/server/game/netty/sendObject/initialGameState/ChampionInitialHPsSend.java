@@ -21,6 +21,8 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 
+@Deprecated
+@SuppressWarnings("unused")
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)

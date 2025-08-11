@@ -3,34 +3,43 @@ package com.server.game.util;
 
 import java.util.*;
 
+import com.server.game.model.game.GameState;
 import com.server.game.model.map.component.GridCell;
+import com.server.game.model.map.component.Vector2;
+import com.server.game.resource.model.GameMapGrid;
 
 public class ThetaStarPathfinder {
 
     // 4 directions or 8 directions ???
-    private static final int[][] DIRECTIONS = {
-        {-1, 0},  // up
-        {1, 0},   // down
-        {0, -1},  // left
-        {0, 1},   // right
-        {-1, -1}, // diagonal up left
-        {-1, 1},  // diagonal up right
-        {1, -1},  // diagonal down left
-        {1, 1}    // diagonal down right
-    };
+    private static final int[][] DIRECTIONS = Util.EIGHT_DIRECTIONS;
 
-    public static List<GridCell> findPath(boolean[][] grid, GridCell start, GridCell end) {
+    public static List<GridCell> findPath(GameMapGrid gameMapGrid, GridCell start, GridCell end) {
+        boolean[][] grid = gameMapGrid.getGrid();
         int rows = grid.length;
         int cols = grid[0].length;
 
 
-        // Nếu điểm bắt đầu hoặc kết thúc không đi được
-        if (!isValid(start.r(), start.c(), grid) || !isValid(end.r(), end.c(), grid) || !grid[start.r()][start.c()]) {
+        // Nếu điểm bắt đầu hoặc kết thúc không nằm trong lưới -> vô lý -> trả về danh sách rỗng
+        // Nhưng điều này sẽ không xảy ra vì khi chuyển từ Vector2 sang GridCell,
+        // nó đã được đảm bảo kẹp giữa trong phạm vi của lưới
+        if (gameMapGrid.isOutGrid(start) || gameMapGrid.isOutGrid(end)) {
             return Collections.emptyList();
         }
 
-        // Nếu điểm kết thúc không đi được
-        if (!grid[end.r()][end.c()]) {
+        // Nếu điểm bắt đầu nằm ở ô không đi được
+        if (!gameMapGrid.isWalkable(start)) {
+            System.out.println(">>> Start point is not walkable");
+            GridCell closestWalkable = findClosestWalkablePosition(grid, start);
+            if (closestWalkable == null) {
+                System.out.println(">>> No walkable position found near start point");
+                return Collections.emptyList();
+            }
+            System.out.println(">>> Using closest walkable position: " + closestWalkable);
+            start = closestWalkable;
+        }
+
+        // Nếu điểm kết thúc nằm ở ô không đi được
+        if (!gameMapGrid.isWalkable(end)) {
             System.out.println(">>> End point is not walkable");
             GridCell closestWalkable = findClosestWalkablePosition(grid, end);
             if (closestWalkable == null) {
@@ -145,6 +154,22 @@ public class ThetaStarPathfinder {
 
         // Không tìm được đường đi đến end ⇒ trả về đường đi gần nhất
         return reconstructPath(closest);
+    }
+
+    public static Vector2 findClosestWalkablePosition(GameState gameState, Vector2 position) {
+        GridCell currentCell = gameState.toGridCell(position);
+        if (gameState.getGameMapGrid().isWalkable(currentCell)) {
+            return position; // Nếu ô hiện tại có thể đi được
+        }
+        GridCell closestWalkable = findClosestWalkablePosition(
+            gameState.getGameMapGrid().getGrid(), currentCell);
+        
+        if (closestWalkable != null) {
+            return gameState.toPosition(closestWalkable);
+        } else {
+            System.out.println(">>> No walkable position found near " + position);
+            return null; // Không tìm thấy ô đi được gần nhất
+        }
     }
 
     private static GridCell findClosestWalkablePosition(boolean[][] grid, GridCell target) {

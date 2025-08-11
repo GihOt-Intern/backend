@@ -18,7 +18,8 @@ public class PongSend implements TLVEncodable {
 
     public PongSend() {
         this.timestamp = System.currentTimeMillis();
-        System.out.println("PongSend: timestamp: " + timestamp);
+        // System.out.println("PongSend: timestamp: " + timestamp);
+
     }
 
     @Override

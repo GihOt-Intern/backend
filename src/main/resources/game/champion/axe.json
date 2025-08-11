@@ -13,6 +13,6 @@
   },
   "ability": {
     "name": "Whirlwind",
-    "cool_down": 15.0
+    "cool_down": 8.0
   }
 }

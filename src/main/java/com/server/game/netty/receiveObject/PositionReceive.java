@@ -1,6 +1,7 @@
 package com.server.game.netty.receiveObject;
 
-import java.nio.ByteBuffer;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 
 import org.springframework.stereotype.Component;
 
@@ -8,6 +9,7 @@ import com.server.game.annotation.customAnnotation.ReceiveType;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.tlv.interf4ce.TLVDecodable;
 import com.server.game.netty.tlv.messageEnum.ReceiveMessageType;
+import com.server.game.util.Util;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -20,14 +22,22 @@ import lombok.experimental.FieldDefaults;
 @ReceiveType(ReceiveMessageType.POSITION_UPDATE_RECEIVE)
 @Component
 public class PositionReceive implements TLVDecodable {
-    short slot;
+    String stringId;
     Vector2 position;
     long timestamp;
 
     @Override
-    public void decode(ByteBuffer buffer) {
-        slot = buffer.getShort();
-        position = new Vector2(buffer.getFloat(), buffer.getFloat());
-        timestamp = buffer.getLong();
+    public void decode(byte[] value) {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(value);
+            DataInputStream dis = new DataInputStream(bais);
+
+            this.stringId = Util.readString(dis, Short.class);
+            this.position = new Vector2(dis.readFloat(), dis.readFloat());
+            this.timestamp = dis.readLong();
+
+        } catch (Exception e) {
+            throw new  RuntimeException("Cannot decode " + this.getClass().getSimpleName(), e);
+        }
     }
 } 
