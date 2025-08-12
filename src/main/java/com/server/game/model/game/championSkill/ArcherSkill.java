@@ -54,7 +54,13 @@ public class ArcherSkill extends SkillComponent {
 
     @Override
     protected boolean doUse() {
+
         RectShape hitbox = this.getHitbox();
+
+        this.getCastSkillContext().setSkillLength(ARCHER_LENGTH);
+        this.getSkillOwner().getGameStateService()
+            .sendCastSkillAnimation(this.getCastSkillContext());
+            
 
         this.getCastSkillContext().addSkillDamage(this.getDamage());
 

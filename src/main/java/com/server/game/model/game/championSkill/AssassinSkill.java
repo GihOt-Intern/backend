@@ -54,23 +54,6 @@ public class AssassinSkill extends SkillComponent {
     private final void dash(Vector2 ownerOldPosition, 
         Vector2 ownerNewExpectedPosition,
         Vector2 ownerActualNewPosition) {
-
-        
-        
-        // GridCell expectedCell = this.skillOwner
-        //     .getGameState().toGridCell(ownerNewExpectedPosition);
-        // boolean isExpectedValid = this.skillOwner
-        //     .getGameState().getGameMapGrid().isWalkable(expectedCell);
-        // log.info("Is expected position {}, cell {} valid: {}", 
-        //     ownerNewExpectedPosition, expectedCell, isExpectedValid);
-
-
-        // GridCell actualCell = this.skillOwner
-        //     .getGameState().toGridCell(ownerActualNewPosition);
-        // boolean isActualValid = this.skillOwner
-        //     .getGameState().getGameMapGrid().isWalkable(actualCell);
-        // log.info("Is actual position {}, cell {} valid: {}", 
-        //     ownerActualNewPosition, actualCell, isActualValid);
         
     
         // Broadcast cast skill event

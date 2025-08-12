@@ -16,7 +16,7 @@ public class TLVDecoder {
             throw new IllegalArgumentException("Type already registered: " + type);
         }
         registry.put(type, clazz);
-        System.out.println(">>> Registered TLVDecodable: <" + clazz.getSimpleName() + "> for type=<" + type + ">");
+        // System.out.println(">>> Registered TLVDecodable: <" + clazz.getSimpleName() + "> for type=<" + type + ">");
     }
 
 

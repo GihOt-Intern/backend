@@ -48,10 +48,6 @@ public class NettySocketServer {
 
             this.serverChannel = f.channel();
 
-
-            // String hostAddress = java.net.InetAddress.getLocalHost().getHostAddress();
-            // System.out.println("WebSocket server host address: " + hostAddress);
-
             System.out.println("WebSocket server started at host=localhost, port=" + port);
 
 
@@ -59,10 +55,7 @@ public class NettySocketServer {
         } catch (Exception e) {
             System.err.println("Failed to start WebSocket server: " + e.getMessage());
             throw e;
-        } 
-        // finally {
-        //     this.stop();
-        // }
+        }
     }
 
     
