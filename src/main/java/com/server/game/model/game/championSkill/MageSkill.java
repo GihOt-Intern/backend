@@ -22,14 +22,17 @@ import com.server.game.model.game.component.skillComponent.DurationSkillComponen
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public final class MageSkill extends DurationSkillComponent {
 
-    static final Float HITBOX_LENGTH = 10f;
     static final Float HITBOX_WIDTH = 4f;
 
     static final Float DURATION_SECONDS = 3f;
     // damage every half second
     static final Float DAMAGE_INTERVAL_SECONDS = .5f;
 
-    static final Float SPEED = 
+    static final Float SPEED_SECONDS = 4f;
+
+    static final Float HITBOX_LENGTH = DURATION_SECONDS * SPEED_SECONDS;
+
+    static final Float SPEED_TICKS = 
         HITBOX_LENGTH / (Util.seconds2GameTick(DURATION_SECONDS)); // distance per tick
 
     MageHitbox hitbox = null;
@@ -39,15 +42,27 @@ public final class MageSkill extends DurationSkillComponent {
         super(owner, ability, DURATION_SECONDS, DAMAGE_INTERVAL_SECONDS);
     }
 
-    @Override
-    public boolean canUseWhileAttacking() {
+    @Override 
+    public boolean canCastWhileAttacking() {
         return false;
     }
 
-    @Override
-    public boolean canUseWhileMoving() {
+    @Override 
+    public boolean canCastWhileMoving() {
         return false;
     }
+
+    @Override // stop attacking when cast, but when hit box move, can attack 
+    public boolean canPerformWhileAttacking() {
+        return true;
+    }
+
+    @Override // stop moving when cast, but when hit box move, can move
+    public boolean canPerformWhileMoving() {
+        return true;
+    }
+
+    
 
     private float getDamagePerIntervalSeconds() {
         // return 40 + 0.2f * this.getSkillOwner().getDefense();
@@ -60,7 +75,7 @@ public final class MageSkill extends DurationSkillComponent {
         Vector2 center = this.getSkillOwner().getCurrentPosition();
         Vector2 mousePoint = this.getCastSkillContext().getTargetPoint();
         Vector2 direction = center.directionTo(mousePoint);
-        this.hitbox = new MageHitbox(center, HITBOX_LENGTH / 2, direction, SPEED);
+        this.hitbox = new MageHitbox(center, HITBOX_LENGTH / 2, direction, SPEED_TICKS);
     }
 
     @Override // Hitbox moves every tick

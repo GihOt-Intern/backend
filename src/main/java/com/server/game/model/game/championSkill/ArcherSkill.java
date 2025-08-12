@@ -28,12 +28,12 @@ public class ArcherSkill extends SkillComponent {
     }
 
     @Override
-    public boolean canUseWhileAttacking() {
+    public boolean canCastWhileAttacking() {
         return true;
     }
 
     @Override
-    public boolean canUseWhileMoving() {
+    public boolean canCastWhileMoving() {
         return false;
     }
 

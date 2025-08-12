@@ -22,12 +22,22 @@ public class MeleeSkill extends DurationSkillComponent {
     }
 
     @Override
-    public boolean canUseWhileAttacking() {
+    public boolean canCastWhileAttacking() {
         return false;
     }
 
     @Override
-    public boolean canUseWhileMoving() {
+    public boolean canCastWhileMoving() {
+        return true;
+    }
+
+    @Override // stop attacking when cast, but when hit box move, can attack 
+    public boolean canPerformWhileAttacking() {
+        return false;
+    }
+
+    @Override // stop moving when cast, but when hit box move, can move
+    public boolean canPerformWhileMoving() {
         return true;
     }
 

@@ -40,6 +40,10 @@ public class GoldService {
             return;
         }
 
+        if (gameState.reachNumGoldMineLimit()) {
+            return;
+        }
+
         boolean isSmallGoldMine = Util.randomBoolean();
         Playground playground = gameState.getPlayground();
         Vector2 playgroundCenter = playground.getPosition();
@@ -65,6 +69,7 @@ public class GoldService {
         gameState.getGameStateService()
             .sendGoldMineSpawnMessage(gameState.getGameId(), goldMine.getStringId(), isSmallGoldMine, randomGoldMinePosition, goldMine.getInitialHP());
 
+        gameState.increaseCurrentNumGoldMine();
         gameState.updateNextGoldMineGenerationTick();
     }       
         

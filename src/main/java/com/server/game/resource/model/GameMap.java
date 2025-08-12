@@ -40,6 +40,7 @@ public class GameMap {
     Float largeGoldMineExploitSeconds;
 
     Float goldMineGenerationIntervalSeconds;
+    Integer maxNumGoldMineExist;
     Integer towerHP;
     Integer burgHP;
     Playground playground;
@@ -61,6 +62,7 @@ public class GameMap {
         @JsonProperty("small_gold_mine_exploit_seconds") Float smallGoldMineExploitSeconds,
         @JsonProperty("large_gold_mine_exploit_seconds") Float largeGoldMineExploitSeconds,
         @JsonProperty("gold_mine_generation_interval_seconds") Float goldMineGenerationIntervalSeconds,
+        @JsonProperty("max_num_gold_mine_exist") Integer maxNumGoldMineExist,
         @JsonProperty("tower_hp") Integer towerHP,
         @JsonProperty("burg_hp") Integer burgHP,
         @JsonProperty("play_ground") Playground playground,
@@ -81,6 +83,7 @@ public class GameMap {
         this.largeGoldMineExploitSeconds = largeGoldMineExploitSeconds;
         
         this.goldMineGenerationIntervalSeconds = goldMineGenerationIntervalSeconds;
+        this.maxNumGoldMineExist = maxNumGoldMineExist;
 
         this.towerHP = towerHP;
         this.burgHP = burgHP;

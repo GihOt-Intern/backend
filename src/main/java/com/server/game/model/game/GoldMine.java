@@ -71,10 +71,7 @@ public final class GoldMine extends Entity implements HasFixedPosition {
         gameStateService.stopChampionsAttackingTo(this.gameState, this);
 
         this.getGameState().removeEntity(this);
+
+        this.getGameState().decreaseCurrentNumGoldMine();
     }
-
-
-
-
-    
 }

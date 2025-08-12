@@ -45,8 +45,8 @@ public abstract class SkillComponent {
     }
 
 
-    public abstract boolean canUseWhileAttacking();
-    public abstract boolean canUseWhileMoving();
+    public abstract boolean canCastWhileAttacking();
+    public abstract boolean canCastWhileMoving();
 
 
     public final float getCooldown() {
@@ -78,7 +78,7 @@ public abstract class SkillComponent {
             return false;
         }
 
-        if (this.skillOwner.isMoving() && !this.canUseWhileMoving()) {
+        if (this.skillOwner.isMoving() && !this.canCastWhileMoving()) {
             // cast skill is higher priority than moving, so we stop moving
             log.info("Champion {} is moving and received a skill use request, stopping movement.",
                 this.skillOwner.getName());
@@ -86,7 +86,7 @@ public abstract class SkillComponent {
             this.skillOwner.setStopMoving(true);
         }
 
-        if (this.skillOwner.isAttacking() && !this.canUseWhileAttacking()) {
+        if (this.skillOwner.isAttacking() && !this.canCastWhileAttacking()) {
             // cast skill is higher priority than attack, so we stop the attack
             log.info("Champion {} is attacking and received a skill use request, stopping attack.",
                 this.skillOwner.getName());

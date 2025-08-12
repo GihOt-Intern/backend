@@ -29,7 +29,8 @@ public class GameState {
     final GameMapGrid gameMapGrid;
 
     long currentTick = 0;
-    long nextGoldMineGenerationTick = Util.seconds2GameTick(10f); // TODO: adjust this value based on game design
+    long nextGoldMineGenerationTick = Util.seconds2GameTick(60f); // TODO: adjust this value based on game design
+    Integer currentNumGoldMine = 0;
 
     final Map<Short, SlotState> slotStates = new ConcurrentHashMap<>();
     final Map<String, Entity> stringId2Entity = new ConcurrentHashMap<>();
@@ -66,6 +67,18 @@ public class GameState {
     public void updateNextGoldMineGenerationTick() {
         this.nextGoldMineGenerationTick = this.currentTick + Util.seconds2GameTick(
             this.getGameMap().getGoldMineGenerationIntervalSeconds());
+    }
+
+    public boolean reachNumGoldMineLimit() {
+        return this.currentNumGoldMine >= this.getGameMap().getMaxNumGoldMineExist();
+    }
+
+    public void increaseCurrentNumGoldMine() {
+        ++this.currentNumGoldMine;
+    }
+
+    public void decreaseCurrentNumGoldMine() {
+        --this.currentNumGoldMine;
     }
 
 

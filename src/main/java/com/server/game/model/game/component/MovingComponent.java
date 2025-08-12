@@ -64,7 +64,7 @@ public class MovingComponent {
         //     return true; // Stop moving
         // }
 
-        if (this.owner.isCastingDurationSkill() && !this.owner.canUseSkillWhileMoving()) {
+        if (this.owner.isCastingDurationSkill() && !this.owner.canPerformSkillWhileMoving()) {
             log.info(">>> [Log in PositionComponent.setMoveContext] Cannot set move context while casting skill, skipping.");
             return false; // Cannot set move context while casting skill
         }

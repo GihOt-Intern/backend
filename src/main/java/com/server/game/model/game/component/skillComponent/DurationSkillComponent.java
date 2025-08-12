@@ -52,6 +52,9 @@ public abstract class DurationSkillComponent extends SkillComponent {
         return true;
     }
 
+    public abstract boolean canPerformWhileMoving();
+    public abstract boolean canPerformWhileAttacking();
+
     // optional method to create hitbox, can be overridden by subclasses
     protected void createHitbox() {}
 
@@ -62,7 +65,7 @@ public abstract class DurationSkillComponent extends SkillComponent {
 
         log.info("Updating skill for champion: {}", this.getSkillOwner().getName());
 
-        if (this.skillOwner.isMoving() && !this.canUseWhileMoving()) {
+        if (this.skillOwner.isMoving() && !this.canPerformWhileMoving()) {
             // cast skill is higher priority than moving, so we stop moving
             log.info("Champion {} is moving and received a skill use request, stopping movement.",
                 this.skillOwner.getName());
@@ -70,7 +73,7 @@ public abstract class DurationSkillComponent extends SkillComponent {
             this.skillOwner.setStopMoving(true);
         }
 
-        if (skillOwner.isAttacking() && !this.canUseWhileAttacking()) {
+        if (skillOwner.isAttacking() && !this.canPerformWhileAttacking()) {
             // skill has higher priority than attack, so we stop the attack
             log.info("Using skill, but champion is attacking, stopping attack for champion {}.",
                 this.skillOwner.getName());

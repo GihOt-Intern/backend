@@ -28,12 +28,12 @@ public class AssassinSkill extends SkillComponent {
 
 
     @Override
-    public boolean canUseWhileAttacking() {
+    public boolean canCastWhileAttacking() {
         return false;
     }
 
     @Override
-    public boolean canUseWhileMoving() {
+    public boolean canCastWhileMoving() {
         return false;
     }
 

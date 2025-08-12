@@ -355,17 +355,17 @@ public abstract class Entity implements Attackable {
         return false; // Default value if no skill component is present
     }
 
-    public boolean canUseSkillWhileAttacking() {
-        if (hasComponent(SkillComponent.class)) {
-            return getComponent(SkillComponent.class).canUseWhileAttacking();
+    public boolean canPerformSkillWhileAttacking() {
+        if (hasComponent(DurationSkillComponent.class)) {
+            return getComponent(DurationSkillComponent.class).canPerformWhileAttacking();
         }
-        System.out.println("Entity does not have SkillComponent, returning true for canUseSkillWhileAttacking.");
+        System.out.println("Entity does not have DurationSkillComponent, returning true for canPerformSkillWhileAttacking.");
         return true; // Default value if no skill component is present
     }
 
-    public boolean canUseSkillWhileMoving() {
-        if (hasComponent(SkillComponent.class)) {
-            return getComponent(SkillComponent.class).canUseWhileMoving();
+    public boolean canPerformSkillWhileMoving() {
+        if (hasComponent(DurationSkillComponent.class)) {
+            return getComponent(DurationSkillComponent.class).canPerformWhileMoving();
         }
         System.out.println("Entity does not have SkillComponent, returning true for canUseSkillWhileMoving.");
         return true; // Default value if no skill component is present
