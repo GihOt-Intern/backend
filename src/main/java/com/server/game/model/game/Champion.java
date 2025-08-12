@@ -181,6 +181,8 @@ public final class Champion extends DependentEntity implements SkillReceivable {
                 this.getGameState().getGameId(), this.getOwnerSlot().getSlot());
 
 
+        this.stopAttacking();
+
         Integer stolenGold = Math.round(this.getCurrentGold()*0.3f);
 
         killer.increaseGold(stolenGold);
