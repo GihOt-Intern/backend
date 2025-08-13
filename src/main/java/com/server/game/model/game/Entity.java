@@ -306,32 +306,48 @@ public abstract class Entity implements Attackable {
 
         Vector2 myPosition = this.getCurrentPosition();
         // For non-building entities (troops, champions), their dimensions are treated as zero
-        Float myWidth = 0f;
-        Float myLength = 0f;
+        // Float myWidth = 0f;
+        // Float myLength = 0f;
+
+        Float myRadius = 0f;
 
         if (this instanceof Building myBuilding) {
-            myWidth = myBuilding.getWidth();
-            myLength = myBuilding.getLength();
+            Float myWidth = myBuilding.getWidth();
+            Float myLength = myBuilding.getLength();
+            myRadius = (float) (Math.sqrt(myWidth * myWidth + myLength * myLength) / 2f);
         }
 
         Vector2 otherPosition = other.getCurrentPosition();
         // For non-building entities (troops, champions), their dimensions are treated as zero
-        Float otherWidth = 0f;
-        Float otherLength = 0f;
+        // Float otherWidth = 0f;
+        // Float otherLength = 0f;
+        Float otherRadius = 0f;
 
         if (other instanceof Building otherBuilding) {
-            otherWidth = otherBuilding.getWidth();
-            otherLength = otherBuilding.getLength();
+            Float otherWidth = otherBuilding.getWidth();
+            Float otherLength = otherBuilding.getLength();
+            otherRadius = (float) Math.sqrt(otherWidth * otherWidth + otherLength * otherLength) / 2f;
         }
 
-        float dx = Math.max(0, 
-            Math.abs(myPosition.x() - otherPosition.x()) - 
-                (myWidth + otherWidth) / 2);
-        float dy = Math.max(0, 
-            Math.abs(myPosition.y() - otherPosition.y()) - 
-                (myLength + otherLength) / 2);
 
-        return (float) Math.sqrt(dx * dx + dy * dy);
+
+        Float centerDistance = myPosition.distance(otherPosition);
+        
+        if (centerDistance <= myRadius + otherRadius) {
+            // Entities are overlapping, return 0 distance
+            return centerDistance;
+        }
+        
+       return centerDistance - myRadius - otherRadius;
+
+        // float dx = Math.max(0, 
+        //     Math.abs(myPosition.x() - otherPosition.x()) - 
+        //         (myRadius + otherRadius) / 2);
+        // float dy = Math.max(0, 
+        //     Math.abs(myPosition.y() - otherPosition.y()) - 
+        //         (myLength + otherLength) / 2);
+
+        // return (float) Math.sqrt(dx * dx + dy * dy);
     }
 
     public void updatePosition(Vector2 newPosition) {
