@@ -181,19 +181,20 @@ public class GameStateService {
         }
     }
 
-    public void sendGameOver(String gameId, short winnerSlot, short loserSlot, long timestamp, String burgId) {
-        EntityDeathSend entityDeathSend = new EntityDeathSend(burgId);
+    public void sendGameOver(String gameId, short winnerSlot, short loserSlot, long timestamp) {
+        
         GameOverSend gameOverSend = new GameOverSend(winnerSlot);
         LoserSend loserSend = new LoserSend();
+        
         Channel channel = ChannelManager.getChannelByGameIdAndSlot(gameId, winnerSlot);
         if (channel != null) {
             log.info("Sending game over message for gameId: {}, winnerSlot: {}", gameId, winnerSlot);
             channel.writeAndFlush(gameOverSend);
-            channel.writeAndFlush(entityDeathSend);
             // log.info("Sent game over message for gameId: {}, winnerSlot: {}", gameId, winnerSlot);
         } else {
             log.warn("No channel found for gameId: {} when sending game over message", gameId);
         }
+
         Channel loserChannel = ChannelManager.getChannelByGameIdAndSlot(gameId, loserSlot);
         if (loserChannel != null) {
             log.info("Sending loser message for gameId: {}, loserSlot: {}", gameId, loserSlot);
@@ -201,6 +202,7 @@ public class GameStateService {
         } else {
             log.warn("No channel found for gameId: {} when sending loser message", gameId);
         }
+        
         gameCoordinator.unregisterGame(gameId);
     }
 

@@ -86,26 +86,14 @@ public final class Burg extends Building {
 
         gameState.decreaseNumSlotsAlive();
 
-
-        // int remainingBurgs = 0;
-        // short lastAliveBurgSlot = -1;
-
-        // for(Entity entity : gameState.getEntities()) {
-        //     if (entity instanceof Burg && entity.isAlive()) {
-        //         remainingBurgs++;
-        //         lastAliveBurgSlot = entity.getOwnerSlot().getSlot();
-        //     }
-        // }
-
-        // if (remainingBurgs == 1) {
+        this.getGameStateService().sendEntityDeathMessage(gameState, this.getStringId());
 
         if (gameState.isGameOver()) {
             this.getGameStateService().sendGameOver(
                 this.getGameId(), 
                 gameState.getWinnerSlot().getSlot(),
                 ownerSlot.getSlot(), 
-                killer.getAttackContext().getTimestamp(),
-                this.getStringId()
+                killer.getAttackContext().getTimestamp()
             );
         }
     }
