@@ -101,7 +101,11 @@ public final class Burg extends Building {
 
         if (gameState.isGameOver()) {
             this.getGameStateService().sendGameOver(
-                this.getGameId(), gameState.getWinnerSlot().getSlot(), killer.getAttackContext().getTimestamp()
+                this.getGameId(), 
+                gameState.getWinnerSlot().getSlot(),
+                ownerSlot.getSlot(), 
+                killer.getAttackContext().getTimestamp(),
+                this.getStringId()
             );
         }
     }

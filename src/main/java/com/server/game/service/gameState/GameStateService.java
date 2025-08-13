@@ -30,6 +30,7 @@ import com.server.game.netty.messageHandler.AnimationMessageHandler;
 import com.server.game.netty.messageHandler.GameStateMessageHandler;
 import com.server.game.netty.messageHandler.PlaygroundMessageHandler;
 import com.server.game.netty.sendObject.GameOverSend;
+import com.server.game.netty.sendObject.LoserSend;
 import com.server.game.netty.sendObject.entity.EntitiesRemovedSend;
 import com.server.game.netty.sendObject.entity.EntityDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
@@ -180,16 +181,27 @@ public class GameStateService {
         }
     }
 
-    public void sendGameOver(String gameId, short winnerSlot, long timestamp) {
+    public void sendGameOver(String gameId, short winnerSlot, short loserSlot, long timestamp, String burgId) {
+        EntityDeathSend entityDeathSend = new EntityDeathSend(burgId);
         GameOverSend gameOverSend = new GameOverSend(winnerSlot);
-        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
+        LoserSend loserSend = new LoserSend();
+        Channel channel = ChannelManager.getChannelByGameIdAndSlot(gameId, winnerSlot);
         if (channel != null) {
             log.info("Sending game over message for gameId: {}, winnerSlot: {}", gameId, winnerSlot);
             channel.writeAndFlush(gameOverSend);
+            channel.writeAndFlush(entityDeathSend);
             // log.info("Sent game over message for gameId: {}, winnerSlot: {}", gameId, winnerSlot);
         } else {
             log.warn("No channel found for gameId: {} when sending game over message", gameId);
         }
+        Channel loserChannel = ChannelManager.getChannelByGameIdAndSlot(gameId, loserSlot);
+        if (loserChannel != null) {
+            log.info("Sending loser message for gameId: {}, loserSlot: {}", gameId, loserSlot);
+            loserChannel.writeAndFlush(loserSend);
+        } else {
+            log.warn("No channel found for gameId: {} when sending loser message", gameId);
+        }
+        gameCoordinator.unregisterGame(gameId);
     }
 
     public void scheduleChampionRespawn(SlotState slotState, short respawnTime) {
