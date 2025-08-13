@@ -4,6 +4,7 @@ package com.server.game.model.game.component.attackComponent;
 import org.springframework.lang.Nullable;
 
 import com.server.game.model.game.Entity;
+import com.server.game.model.game.Tower;
 import com.server.game.model.game.attackStrategy.AttackStrategy;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.util.Util;
@@ -143,7 +144,7 @@ public class AttackComponent {
 
         if (ctx.getTarget() == null || !ctx.getTarget().isAlive()) {
             System.out.println(">>> [Log in AttackComponent] After performing attack, target is null or dead");
-            moveService.setStopMoving(this.owner, true);
+            if (!(this.owner instanceof Tower)) moveService.setStopMoving(this.owner, true);
             this.stopAttacking();
         }
 

@@ -39,6 +39,7 @@ public enum SendMessageType {
     TROOP_SPAWN_COOLDOWN_SEND((short) 204),
     ENTITIES_REMOVED((short) 205),
     GAME_OVER((short) 206),
+    LOSER_OVER((short) 207),
 
     HEARTBEAT_SEND((short) 255), // Heartbeat message
 

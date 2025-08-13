@@ -143,7 +143,7 @@ public final class Burg extends Building {
 
         if (remainingBurgs == 1) {
             this.getGameStateService().sendGameOver(
-                this.getGameId(), lastAliveBurgSlot, killer.getAttackContext().getTimestamp()
+                this.getGameId(), lastAliveBurgSlot, ownerSlot.getSlot(), killer.getAttackContext().getTimestamp(), this.getStringId()
             );
         }
     }
