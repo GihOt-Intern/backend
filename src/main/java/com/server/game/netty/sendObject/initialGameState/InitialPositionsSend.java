@@ -150,9 +150,6 @@ public class InitialPositionsSend implements TLVEncodable {
                 byte[] burgDataBytes = burgData.encode();
                 dos.write(burgDataBytes);
 
-
-                // System.out.println(">>> [Log in InitialPositionData.encode] Champion " + championStringId + " position: " + position + ", rotate: " + rotate);
-
                 return baos.toByteArray();
 
             } catch (IOException e) {

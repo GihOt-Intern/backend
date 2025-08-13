@@ -6,6 +6,7 @@ import com.server.game.util.TroopEnum;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
+@Slf4j
 public class TroopService {
     
     TroopDBRepository troopDBRepository;
@@ -52,7 +54,7 @@ public class TroopService {
     public Integer getTroopInitialHP(TroopEnum troopEnum) {
         TroopDB troop = getTroopDBById(troopEnum);
         if (troop == null) {
-            System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum + " not found.");
+            log.info("Troop with id " + troopEnum + " not found.");
             return null;
         }
         return troop.getInitialHP();
@@ -61,7 +63,7 @@ public class TroopService {
     public Float getTroopMovementSpeed(TroopEnum troopEnum) {
         TroopDB troop = getTroopDBById(troopEnum);
         if (troop == null) {
-            System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum + " not found");
+            log.info("Troop with id " + troopEnum + " not found");
             return null;
         }
         return troop.getMoveSpeed();
@@ -70,7 +72,7 @@ public class TroopService {
     public Float getTroopAttackRange(TroopEnum troopEnum) {
         TroopDB troop = getTroopDBById(troopEnum);
         if (troop == null) {
-            System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum + " not found.");
+            log.info("Troop with id " + troopEnum + " not found.");
             return 1.0f; // Default range
         }
         return troop.getAttackRange();
@@ -79,7 +81,7 @@ public class TroopService {
     public Float getTroopDetectionRange(TroopEnum troopEnum) {
         TroopDB troop = getTroopDBById(troopEnum);
         if (troop == null) {
-            System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum + " not found.");
+            log.info("Troop with id " + troopEnum + " not found.");
             return 3.0f; // Default range
         }
         return troop.getDetectionRange();
@@ -88,7 +90,7 @@ public class TroopService {
     public int getTroopCost(TroopEnum troopEnum) {
         TroopDB troop = getTroopDBById(troopEnum);
         if (troop == null) {
-            System.out.println(">>> [Log in TroopService] Troop with id " + troopEnum + " not found.");
+            log.info("Troop with id " + troopEnum + " not found.");
             return 100; // Default cost
         }
         return troop.getCost();

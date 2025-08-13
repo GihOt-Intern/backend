@@ -19,7 +19,6 @@ public enum TroopEnum {
     public static TroopEnum fromShort(short id) {
         for (TroopEnum troop : values()) {
             if (troop.getTroopId() == id) {
-                // System.out.println("TroopEnum: " + troop.name() + ", ID: " + troop.getTroopId());
                 return troop;
             }
         }

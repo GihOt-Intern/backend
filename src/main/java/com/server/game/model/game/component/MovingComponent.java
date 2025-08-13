@@ -51,21 +51,11 @@ public class MovingComponent {
         }
 
         if (currentTick - lastAcceptedMoveRequestTick < MIN_UPDATE_INTERVAL_TICK) {
-            // log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + 
-            //     lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
-            // log.info(">>> [Log in PositionComponent.setMoveContext] Move request ignored due to rate limiting.");
-            // log.info(">>> [Log in PositionComponent.setMoveContext] Last accepted tick: " + lastAcceptedMoveRequestTick + ", Current tick: " + currentTick);
             return false;
         }
 
-
-        // if (moveContext == null) {
-        //     log.info(">>> [Log in PositionComponent.setMoveContext] Move context is null, stopping movement.");
-        //     return true; // Stop moving
-        // }
-
         if (this.owner.isCastingDurationSkill() && !this.owner.canPerformSkillWhileMoving()) {
-            log.info(">>> [Log in PositionComponent.setMoveContext] Cannot set move context while casting skill, skipping.");
+            log.info("Cannot set move context while casting skill, skipping.");
             return false; // Cannot set move context while casting skill
         }
 
@@ -118,9 +108,6 @@ public class MovingComponent {
             return false;
         }
 
-
-        // System.out.println(">>> [Log in MovingComponent.performMove] Performing move...");
-
         float neededMoveDistance = this.distancePerTick;
 
         if (this.owner.isAttacking()) {
@@ -133,14 +120,9 @@ public class MovingComponent {
         }
 
         while(this.moveContext.getPath().hasNext()) {
-            // System.out.println(">>> [Log in MovingComponent.performMove] Moving to next cell...");
             GridCell nextCell = this.moveContext.getPath().peekCurrentCell();
             Vector2 positionAtNextCell = this.moveContext.toPosition(nextCell);
             float distanceToNextCell = this.currentPosition.distance(positionAtNextCell);
-            // System.out.println(">>> [Log in MovingComponent.performMove] Current pos: " + this.currentPosition + 
-            //     ", Needed move distance: " + neededMoveDistance + 
-            //     ", Distance to next cell: " + distanceToNextCell + ", Cell index: " + moveContext.getPath().getIndex() +
-            //     ", Path size: " + moveContext.getPath().size());
             if (neededMoveDistance >= distanceToNextCell) {
                 // Move to the next cell
                 this.setCurrentPosition(positionAtNextCell);

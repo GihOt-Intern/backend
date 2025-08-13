@@ -51,14 +51,7 @@ public class MoveContext {
     }
 
     public void setPath(List<GridCell> path) {
-        // if (path == null || path.isEmpty()) {
-        //     this.path = null;
-        //     return;
-        // }
-        
         this.path = new PathComponent(path);
-
-        // TODO: try pop out the first cell
         if (this.path.hasNext()) { this.path.popCurrentCell(); }
     }
 
@@ -127,25 +120,23 @@ public class MoveContext {
 
         public GridCell peekCurrentCell() {
             if (!hasNext()) {
-                System.out.println(">>> No more cells in path, returning null.");
-                return null; // Hoặc có thể ném ngoại lệ nếu không có vị trí tiếp theo
+                log.info(">>> No more cells in path, returning null.");
+                return null; 
             }
             return path.get(index);
         }
         
         public void popCurrentCell() {
             if (!hasNext()) {
-                System.out.println(">>> No more cells in path, cannot pop.");
-                // return null; // Hoặc có thể ném ngoại lệ nếu không có vị trí tiếp theo
+                log.info(">>> No more cells in path, cannot pop.");
             }
             ++index;
-            // return path.get(index);
         }
 
         public GridCell getNextCell() {
             if (!hasNext()) {
-                System.out.println(">>> No more cells in path, returning null.");
-                return null; // Hoặc có thể ném ngoại lệ nếu không có vị trí tiếp theo
+                log.info(">>> No more cells in path, returning null.");
+                return null;
             }
             return path.get(index++);
         }

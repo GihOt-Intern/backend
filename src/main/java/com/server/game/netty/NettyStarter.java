@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 
+@Slf4j
 @Component
 public class NettyStarter {
 
@@ -20,7 +22,7 @@ public class NettyStarter {
             try {
                 nettyServer.start();
             } catch (Exception e) {
-                System.out.println("Failed to start Netty server.");
+                log.info("Failed to start Netty server.");
                 e.printStackTrace();
                 throw new RuntimeException("Failed to start Netty server", e);
             }

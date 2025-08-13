@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @AllArgsConstructor
-public class MoveService2 {
+public class MoveService {
 
     private final AttackService attackService;
     
@@ -39,7 +39,6 @@ public class MoveService2 {
 
     public void setStopMoving(Entity entity, boolean isForced) {
         entity.setMoveContext(null, isForced);
-        // log.info("Stopping move for entity {}", entity.getStringId());
     }
 
     /**

@@ -3,6 +3,7 @@ package com.server.game.factory;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,7 +21,7 @@ import com.server.game.resource.model.SlotInfo.TowerDB;
 
 import lombok.AccessLevel;
 
-
+@Slf4j
 @Data
 @Component
 @RequiredArgsConstructor
@@ -34,7 +35,7 @@ public class SlotStateFactory {
 
     public SlotState createSlotState(GameState gameState, Short slot, ChampionEnum championEnum) {
         if (gameState == null || slot == null || championEnum == null) {
-            System.out.println(">>> [SlotStateFactory] Invalid parameters for creating slot state");
+            log.info(">>> [SlotStateFactory] Invalid parameters for creating slot state");
             return null;
         }
 
@@ -49,7 +50,7 @@ public class SlotStateFactory {
         Champion champion = championFactory.createChampion(championEnum, gameState, slotState);
 
         if (champion == null) {
-            System.out.println(">>> [SlotStateFactory] Champion creation failed for slot " + slot);
+            log.info(">>> [SlotStateFactory] Champion creation failed for slot " + slot);
             return null;
         }
 
@@ -63,7 +64,7 @@ public class SlotStateFactory {
                 .map(towerDB -> {
                     Tower tower = towerFactory.createTower(gameState, slotState, towerDB);
                     if (tower == null) {
-                        System.out.println(">>> [SlotStateFactory] Tower creation failed for slot " + slot);
+                        log.info(">>> [SlotStateFactory] Tower creation failed for slot " + slot);
                         return null;
                     }
                     gameStateService.addEntityTo(gameState, tower);
@@ -78,7 +79,7 @@ public class SlotStateFactory {
         BurgDB burgDB = gameState.getGameMap().getBurgDB(slot);
         Burg burg = burgFactory.createBurg(gameState, slotState, burgDB);
         if (burg == null) {
-            System.out.println(">>> [SlotStateFactory] Burg creation failed for slot " + slot);
+            log.info(">>> [SlotStateFactory] Burg creation failed for slot " + slot);
             return null;
         }
         slotState.setBurg(burg);

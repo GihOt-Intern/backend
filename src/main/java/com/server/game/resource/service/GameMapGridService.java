@@ -3,6 +3,7 @@ package com.server.game.resource.service;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import lombok.AccessLevel;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
+@Slf4j
 public class GameMapGridService {
 
     GameMapGridCompressRepository gameMapGridCompressRepository;
@@ -83,7 +85,7 @@ public class GameMapGridService {
         GameMapGridCompress gameMapGridCompress = gameMapGridCompressRepository.findById(id)
             .orElse(null);
         if (gameMapGridCompress == null) {
-            System.out.println(">>> [Log in GameMapGridService] GameMapGridCompress with id " + id + " not found.");
+            log.info("GameMapGridCompress with id " + id + " not found.");
             return null;
         }
         return decompressGameMapGrid(gameMapGridCompress);

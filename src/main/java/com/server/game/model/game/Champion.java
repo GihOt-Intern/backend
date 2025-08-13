@@ -14,7 +14,6 @@ import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.resource.model.ChampionDB;
-import com.server.game.service.move.MoveService2;
 import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
@@ -48,7 +47,7 @@ public final class Champion extends DependentEntity implements SkillReceivable {
 
 
     public Champion(ChampionDB championDB, SlotState ownerSlot, GameState gameState,
-        SkillFactory skillFactory, MoveService2 moveService) {
+        SkillFactory skillFactory) {
 
         super("champion_" + UUID.randomUUID().toString(),
             gameState, ownerSlot);
@@ -77,8 +76,7 @@ public final class Champion extends DependentEntity implements SkillReceivable {
             championDB.getStats().getAttack(),
             championDB.getStats().getAttackSpeed(),
             championDB.getStats().getAttackRange(),
-            new ChampionAttackStrategy(),
-            moveService
+            new ChampionAttackStrategy()
         );
 
         this.addAllComponents();
@@ -115,9 +113,6 @@ public final class Champion extends DependentEntity implements SkillReceivable {
 
         boolean nextInPlayground = this.checkInPlayground(
             this.getGameState().getGameMap().getPlayground());
-
-        // System.out.println(">>> [Log in Champion.checkInPlayGround] " + this.stringId + " nextInPlayGround: " +
-        //     nextInPlayGround + ", current inPlayGround: " + this.isInPlayground());
 
         if (nextInPlayground != this.isInPlayground()) {
             this.toggleInPlaygroundFlag(); // Toggle the state

@@ -9,9 +9,12 @@ import java.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
 
 
 @Component
+@Slf4j
 public class Util {
 
     public static final int SHORT_SIZE = 2;
@@ -54,7 +57,7 @@ public class Util {
         try {
             return new String(bytes, Util.STRING_ENCODING);
         } catch (UnsupportedEncodingException e) {
-            System.out.println("Unsupported encoding: " + Util.STRING_ENCODING);
+            log.error("Unsupported encoding: " + Util.STRING_ENCODING);
             return null;
         }
     }
@@ -63,7 +66,7 @@ public class Util {
         try {
             return str.getBytes(Util.STRING_ENCODING);
         } catch (UnsupportedEncodingException e) {
-            System.out.println("Unsupported encoding: " + Util.STRING_ENCODING);
+            log.error("Unsupported encoding: " + Util.STRING_ENCODING);
             return null;
         }
     }

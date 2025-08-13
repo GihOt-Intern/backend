@@ -19,6 +19,6 @@ import org.springframework.stereotype.Component;
 public class BurgFactory {
 
     public Burg createBurg(GameState gameState, SlotState ownerSlot, BurgDB burgDB) {
-        return new Burg(ownerSlot, gameState, gameState.getBurgsInitHP(), burgDB);
+        return new Burg(ownerSlot, gameState, burgDB);
     }
 }

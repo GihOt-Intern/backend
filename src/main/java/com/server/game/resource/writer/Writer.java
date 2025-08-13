@@ -19,7 +19,9 @@ import com.server.game.resource.repository.TroopDBRepository;
 import com.server.game.resource.service.GameMapGridService;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @AllArgsConstructor
 public class Writer {
@@ -57,7 +59,7 @@ public class Writer {
             if (mapRepository.existsByName(mapName)
                 && false
              ) { // remove && false when not debugging
-                System.out.println("Map already exists: " + mapName);
+                log.info("Map already exists: " + mapName);
                 continue;
             }
             this.writeMap(mapName); 
@@ -68,11 +70,11 @@ public class Writer {
     private void writeMap(String mapName) {
         GameMap map = jsonReader.readGameMapFromJson(mapName);
         if (map == null) {
-            System.out.println("Failed to read map from JSON.");
+            log.info("Failed to read map from JSON.");
             return;
         }
         mapRepository.save(map);
-        System.out.println("Map saved successfully: " + map.getName());
+        log.info("Map saved successfully: " + map.getName());
     }
     
     @EventListener(ApplicationReadyEvent.class)
@@ -81,7 +83,7 @@ public class Writer {
             if (gameMapGridService.existsByName(mapName)
                 && false
              ) { // remove && false when not debugging
-                System.out.println("Game map already exists: " + mapName);
+                log.info("Game map already exists: " + mapName);
                 continue;
             }
             this.writeGameMapGrid(mapName);
@@ -92,11 +94,11 @@ public class Writer {
     private void writeGameMapGrid(String mapName) {
         GameMapGrid mapGrid = jsonReader.readGameMapGridFromJson(mapName);
         if (mapGrid == null) {
-            System.out.println("Failed to read map grid from JSON.");
+            log.info("Failed to read map grid from JSON.");
             return;
         }
         gameMapGridService.saveGameMapGrid(mapGrid);
-        System.out.println("Game map grid saved successfully: " + mapGrid.getId());
+        log.info("Game map grid saved successfully: " + mapGrid.getId());
     }
 
 
@@ -106,7 +108,7 @@ public class Writer {
             if (championDBRepository.existsByName(championName) 
                 && false
             ) { // remove && false when not debugging
-                System.out.println("Champion already exists: " + championName);
+                log.info("Champion already exists: " + championName);
                 continue;
             }
             this.writeChampion(championName.toLowerCase());
@@ -116,11 +118,11 @@ public class Writer {
     private void writeChampion(String championName) {
         ChampionDB champion = jsonReader.readChampionFromJson(championName);
         if (champion == null) {
-            System.out.println("Failed to read champion from JSON.");
+            log.info("Failed to read champion from JSON.");
             return;
         }
         championDBRepository.save(champion);
-        System.out.println("Champion saved successfully: " + champion.getName());
+        log.info("Champion saved successfully: " + champion.getName());
     }
 
 
@@ -130,7 +132,7 @@ public class Writer {
             if (troopDBRepository.existsByName(troopName) 
                 && false
             ) { // remove && false when not debugging
-                System.out.println("Troop already exists: " + troopName);
+                log.info("Troop already exists: " + troopName);
                 continue;
             }
             this.writeTroop(troopName.toLowerCase());
@@ -140,10 +142,10 @@ public class Writer {
     private void writeTroop(String troopName) {
         TroopDB troop = jsonReader.readTroopFromJson(troopName);
         if (troop == null) {
-            System.out.println("Failed to read troop from JSON.");
+            log.info("Failed to read troop from JSON.");
             return;
         }
         troopDBRepository.save(troop);
-        System.out.println("Troop saved successfully: " + troop.getName());
+        log.info("Troop saved successfully: " + troop.getName());
     }
 }

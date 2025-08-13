@@ -25,9 +25,9 @@ public class AnimationMessageHandler {
             // Get any channel from the game to broadcast the animation
             Channel channel = ChannelManager.getAnyChannelByGameId(ctx.getGameId());
             channel.writeAndFlush(attackAnimation);
-            System.out.println("[Log in SocketSender#sendAttackAnimation] Sent AttackAnimationDisplaySend: " + attackAnimation);
+            log.info("Sent AttackAnimationSend: " + attackAnimation);
         } catch (Exception e) {
-            System.err.println("[Log in SocketSender#sendAttackAnimation] Exception in broadcastAttackerAnimation: " + e.getMessage());
+            log.error("Exception in broadcastAttackerAnimation: " + e.getMessage());
         }
     }
 
@@ -45,9 +45,9 @@ public class AnimationMessageHandler {
             // Get any channel from the game to broadcast the skill cast
             Channel channel = ChannelManager.getAnyChannelByGameId(ctx.getGameState().getGameId());
             channel.writeAndFlush(skillCastSend);
-            System.out.println("[Log in SocketSender#sendSkillCast] Sent SkillCastSend: " + skillCastSend);
+            log.info("Sent SkillCastSend: " + skillCastSend);
         } catch (Exception e) {
-            System.err.println("[Log in SocketSender#sendSkillCast] Exception in sendSkillCast: " + e.getMessage());
+            log.error("Exception in sendSkillCast: " + e.getMessage());
         }
     }
 }

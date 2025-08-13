@@ -16,8 +16,9 @@ import io.netty.channel.ChannelFuture;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Component
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -35,11 +36,11 @@ public class GameInititalLoadingMessageHandler {
         
         future.addListener(f -> {
             if (f.isSuccess()) {
-                System.out.println(">>> [Log in GameLoadingHandler.loadInitial] Initial loading messages sent successfully.");
+                log.info(">>> Initial loading messages sent successfully.");
                 // Send initial game state successfully, register game to gameCoordinator
                 gameCoordinator.registerGame(gameState);
             } else {
-                System.err.println(">>> [Log in GameLoadingHandler.loadInitial] Initial loading messages failed: " + f.cause());
+                log.error(">>> Initial loading messages failed: " + f.cause());
             }
         });
     }
@@ -49,7 +50,7 @@ public class GameInititalLoadingMessageHandler {
 
         InitialPositionsSend championPositionsSend = 
             new InitialPositionsSend(gameState);
-        System.out.println(">>> Send loading initial positions message");
+        log.info(">>> Send loading initial positions message");
         return channel.writeAndFlush(championPositionsSend);
     }
 
@@ -62,7 +63,7 @@ public class GameInititalLoadingMessageHandler {
             Short slot = ChannelManager.getSlotByChannel(playerChannel);
             Champion champion = gameState.getChampionBySlot(slot);
             if (champion == null) {
-                System.out.println(">>> [Log in MapHandler.handleInitialGameStateLoading] Champion with slot " + slot + " not found.");
+                log.info(">>> Champion with slot " + slot + " not found.");
                 continue;
             }
             Integer initGold = gameState.peekGold(slot);
@@ -74,7 +75,7 @@ public class GameInititalLoadingMessageHandler {
             lastFuture = playerChannel.writeAndFlush(championInitialStatsSend);
         }
 
-        System.out.println(">>> Sent loading champion initial stats message to all players in the room.");
+        log.info(">>> Sent loading champion initial stats message to all players in the room.");
         return lastFuture == null 
             ? channel.newSucceededFuture() 
             : lastFuture;

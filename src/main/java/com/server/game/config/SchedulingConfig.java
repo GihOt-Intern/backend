@@ -5,7 +5,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Configuration
+@Slf4j
 public class SchedulingConfig {
 
     @Bean
@@ -16,7 +19,7 @@ public class SchedulingConfig {
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
         scheduler.setAwaitTerminationSeconds(10);
         scheduler.setErrorHandler(t -> {
-            System.err.println("Error in scheduled task: " + t.getMessage());
+            log.error("Error in scheduled task: " + t.getMessage());
             t.printStackTrace();
         });
         return scheduler;

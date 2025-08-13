@@ -6,7 +6,7 @@ import com.server.game.model.game.SlotState;
 import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.service.champion.ChampionService;
-import com.server.game.service.move.MoveService2;
+import com.server.game.service.move.MoveService;
 import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
@@ -24,13 +24,13 @@ public class ChampionFactory {
     
     ChampionService championService;
     SkillFactory skillFactory;
-    MoveService2 moveService;
+    MoveService moveService;
 
     public Champion createChampion(ChampionEnum championEnum, GameState gameState, SlotState ownerSlot) {
         ChampionDB championDB = championService.getChampionDBById(championEnum);
         if (championDB == null) {
             return null;
         }
-        return new Champion(championDB, ownerSlot, gameState, skillFactory, moveService);
+        return new Champion(championDB, ownerSlot, gameState, skillFactory);
     }
 }

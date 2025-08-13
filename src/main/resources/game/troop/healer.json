@@ -4,16 +4,16 @@
   "type": "support",
   "role": "Support/Healer",
   "stats": {
-    "hp": 350,
-    "defense": 50,
-    "attack": 40,
-    "move_speed": 4.0,
-    "attack_speed": 1.0,
-    "attack_range": 1.5,
-    "detection_range": 10.0,
+    "hp": 400,
+    "defense": 30,
+    "attack": 100,
+    "move_speed": 3.4,
+    "attack_speed": 0.9,
+    "attack_range": 5.2,
+    "detection_range": 6.0,
     "healing_power": 80,
     "healing_range": 3.0,
-    "cost": 180
+    "cost": 55
   },
   "ability": {
     "name": "Group Heal",

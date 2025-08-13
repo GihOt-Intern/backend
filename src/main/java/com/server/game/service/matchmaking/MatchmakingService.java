@@ -2,11 +2,19 @@ package com.server.game.service.matchmaking;
 
 import com.server.game.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MatchmakingService {
@@ -57,8 +65,7 @@ public class MatchmakingService {
             match = redisUtil.get(matchKey(userId));
         } catch (Exception ignored) {}
         if (match == null) return null;
-        if (match instanceof Map) {
-            Map<String, Object> matchMap = (Map<String, Object>) match;
+        if (match instanceof Map matchMap) {
             return matchMap;
         }
         return null;
@@ -68,7 +75,7 @@ public class MatchmakingService {
     public void matchPlayers() {
 
         if (!redisUtil.isRedisReady()) {
-            System.err.println("Redis is not ready, skipping this matchmaking cycle.");
+            log.error("Redis is not ready, skipping this matchmaking cycle.");
             return;
         }
 

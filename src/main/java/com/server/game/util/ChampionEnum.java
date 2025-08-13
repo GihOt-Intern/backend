@@ -20,7 +20,6 @@ public enum ChampionEnum {
     public static ChampionEnum fromShort(short id) {
         for (ChampionEnum championEnum : values()) {
             if (championEnum.getChampionId() == id) {
-                // System.out.println("ChampionEnum: " + championEnum.name() + ", ID: " + championEnum.getChampionId());
                 return championEnum;
             }
         }

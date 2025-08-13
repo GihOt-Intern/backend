@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
+import com.server.game.model.game.HasFixedPosition;
 import com.server.game.model.game.SlotState;
 import com.server.game.model.game.Tower;
 import com.server.game.model.game.SkillReceivable;
@@ -33,6 +34,7 @@ import com.server.game.netty.sendObject.entity.EntitiesRemovedSend;
 import com.server.game.netty.sendObject.entity.EntityDeathSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnSend;
 import com.server.game.netty.sendObject.respawn.ChampionRespawnTimeSend;
+import com.server.game.service.move.MoveService;
 import com.server.game.util.Util;
 import com.server.game.model.game.Entity;
 
@@ -49,6 +51,7 @@ public class GameStateService {
     private final PlaygroundMessageHandler playgroundMessageHandler;
     private final AnimationMessageHandler animationMessageHandler;
     private final GameStateMessageHandler gameStateMessageHandler;
+    private final MoveService moveService;
 
     // Track active respawn schedulers to prevent duplicates: gameId:slot -> scheduler
     private final Map<String, ScheduledExecutorService> activeRespawnSchedulers = new ConcurrentHashMap<>();
@@ -539,6 +542,22 @@ public class GameStateService {
         }
     }
 
+    public void setMove(Entity mover, Vector2 toPosition, boolean isForced) {
+        if (mover instanceof HasFixedPosition) {
+            log.debug("Cannot set move for entity: {}", mover.getStringId());
+            return;
+        }
+        moveService.setMove(mover, toPosition, isForced);
+    }
+    
+    public void setStopMoving(Entity mover, boolean isForced) {
+        if (mover instanceof HasFixedPosition) {
+            log.debug("Cannot stop move for entity: {}", mover.getStringId());
+            return;
+        }
+        mover.setStopMoving(isForced);
+    }
+
     public void sendPositionUpdate(GameState gameState, Entity mover) {
         this.gameStateMessageHandler.sendPositionUpdate(gameState, mover);
     }
@@ -570,8 +589,11 @@ public class GameStateService {
         this.playgroundMessageHandler.sendGoldChangeMessage(gameId, slot, newGold);
     }
 
-    public void sendGoldMineSpawnMessage(String gameId, String goldMineId, boolean isSmallGoldMine, Vector2 position, int initHP) {
-        this.playgroundMessageHandler.sendGoldMineSpawnMessage(gameId, goldMineId, isSmallGoldMine, position, initHP);
+    public void sendGoldMineSpawnMessage(String gameId, String goldMineId, 
+        boolean isSmallGoldMine, Vector2 position, int initHP) {
+        
+            this.playgroundMessageHandler
+            .sendGoldMineSpawnMessage(gameId, goldMineId, isSmallGoldMine, position, initHP);
     }
     
     public void sendEntityDeathMessage(GameState gameState, String entityId) {

@@ -6,7 +6,9 @@ import com.server.game.netty.ChannelManager;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DisconnectHandler extends ChannelInboundHandlerAdapter {
 
     @Override
@@ -29,7 +31,7 @@ public class DisconnectHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        System.out.println(">>> Server Exception: " + cause.getMessage());
+        log.error(">>> Server Exception: " + cause.getMessage());
         cause.printStackTrace();
         ctx.close();
     }

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.factory.AttackContextFactory;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.TroopInstance2;
+import com.server.game.model.game.Troop;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.attack.AttackReceive;
@@ -60,10 +60,10 @@ public class AttackMessageHandler {
 
         if (entityStringId.startsWith("troop_") ) {
             GameState gameState = gameStateService.getGameStateById(gameId);
-            TroopInstance2 troop = (TroopInstance2) gameState.getEntityByStringId(entityStringId);
+            Troop troop = (Troop) gameState.getEntityByStringId(entityStringId);
             troop.setInDefensiveStance(false);
             troop.setDefensePosition(null);
-            log.info(">>> [Log in AttackMessageHandler.handleAttackMessage] Troop {} defensive stance disabled", entityStringId);
+            log.info("Troop {} defensive stance disabled", entityStringId);
         }
 
         AttackContext attackContext = attackContextFactory.createAttackContext(
@@ -71,6 +71,6 @@ public class AttackMessageHandler {
 
 
         attackService.setAttack(attackContext);
-        log.info(">>> [Log in AttackMessageHandler.handleAttackMessage] Attack context set for entity: {}", entityStringId);
+        log.info("Attack context set for entity: {}", entityStringId);
     }
 } 

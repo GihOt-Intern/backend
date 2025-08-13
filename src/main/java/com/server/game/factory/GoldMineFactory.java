@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.gameState.SlotStateService;
-import com.server.game.service.move.MoveService2;
+import com.server.game.service.move.MoveService;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.GoldMine;
 import com.server.game.model.map.component.Vector2;
@@ -26,7 +26,7 @@ public class GoldMineFactory {
     ChampionFactory championFactory;
     TroopService troopService;
     SlotStateService slotStateService;
-    MoveService2 moveService;
+    MoveService moveService;
 
     public GoldMine createGoldMine(GameState gameState, boolean isSmallGoldMine, Vector2 position) {
         if (gameState == null) {

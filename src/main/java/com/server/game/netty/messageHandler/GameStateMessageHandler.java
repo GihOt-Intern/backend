@@ -31,9 +31,8 @@ public class GameStateMessageHandler {
             // Get any channel from the game to broadcast the position update
             Channel channel = ChannelManager.getAnyChannelByGameId(gameState.getGameId());
             channel.writeAndFlush(positionSend);
-            // System.out.println("[Log in SocketSender#sendPositionUpdate] Sent PositionSend: " + positionSend);
         } catch (Exception e) {
-            System.err.println("[Log in SocketSender#sendPositionUpdate] Exception in broadcastPositionUpdate: " + e.getMessage());
+            log.error("Exception in broadcastPositionUpdate: " + e.getMessage());
         }
     }
 
@@ -51,9 +50,8 @@ public class GameStateMessageHandler {
             // Get any channel from the game to broadcast the health update
             Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
             channel.writeAndFlush(healthUpdateSend);
-            // System.out.println("[Log in SocketSender#sendHealthUpdate] Sent HealthUpdateSend: " + healthUpdateSend);
         } catch (Exception e) {
-            System.err.println("[Log in SocketSender#sendHealthUpdate] Exception in broadcastHealthUpdate: " + e.getMessage());
+            log.error("Exception in broadcastHealthUpdate: " + e.getMessage());
         }
     }
 
@@ -65,9 +63,8 @@ public class GameStateMessageHandler {
             // Get any channel from the game to broadcast the health update
             Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
             channel.writeAndFlush(entityDeathSend);
-            System.out.println("[Log in sendEntityDeath] Sent entityDeath: " + entityDeathSend);
         } catch (Exception e) {
-            System.err.println("[Log in SocketSender#sendEntityDeath] Exception in broadcastEntityDeath: " + e.getMessage());
+            log.error("Exception in broadcastEntityDeath: " + e.getMessage());
         }
     }
 }

@@ -3,9 +3,9 @@ package com.server.game.service.defense;
 import com.server.game.factory.AttackContextFactory;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.TroopInstance2;
+import com.server.game.model.game.Troop;
 import com.server.game.service.attack.AttackService;
-import com.server.game.service.move.MoveService2;
+import com.server.game.service.move.MoveService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,14 +17,14 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class DefensiveStanceService {
-    private final MoveService2 moveService;
+    private final MoveService moveService;
     private final AttackService attackService;
     private final AttackContextFactory attackContextFactory;
 
     public void updateDefensiveStances(GameState gameState) {
         gameState.getEntities().stream()
-            .filter(e -> e instanceof TroopInstance2)
-            .map(e -> (TroopInstance2) e)
+            .filter(e -> e instanceof Troop)
+            .map(e -> (Troop) e)
             .forEach(troop -> {
                 // First check if troop should re-enable defensive stance
                 troop.checkAndEnableDefensiveStance();
@@ -33,7 +33,7 @@ public class DefensiveStanceService {
             });
     }
 
-    private void processTroopDefense(TroopInstance2 troop, GameState gameState) {
+    private void processTroopDefense(Troop troop, GameState gameState) {
         // Skip if not in defensive stance, but allow processing if attacking defensively
         if (!troop.isInDefensiveStance()) {
             return;
@@ -96,7 +96,7 @@ public class DefensiveStanceService {
         }
     }
 
-    private Optional<Entity> findNearestEnemyInDetectionRange(TroopInstance2 troop, GameState gameState) {
+    private Optional<Entity> findNearestEnemyInDetectionRange(Troop troop, GameState gameState) {
         return gameState.getEntities().stream()
             .filter(Entity::isAlive)
             .filter(e -> e.getOwnerSlot() != null) // Ensure entity has an owner slot

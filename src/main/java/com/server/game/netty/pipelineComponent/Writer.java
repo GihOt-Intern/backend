@@ -7,10 +7,11 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import lombok.extern.slf4j.Slf4j;
 
 
 
-
+@Slf4j
 public class Writer extends  ChannelOutboundHandlerAdapter {
 
     @Override
@@ -22,18 +23,14 @@ public class Writer extends  ChannelOutboundHandlerAdapter {
         }
 
         OutboundSendMessage outboundMessage = (OutboundSendMessage) msg;
-        // System.out.println(">>> [Writer] Server received OutboundSendMessage");
-        // System.out.println(">>> [Writer] SendTarget type: " + outboundMessage.getSendTarget().getClass().getSimpleName());
 
         ChannelFuture future = outboundMessage.send();
 
         future.addListener(f -> {
             if (f.isSuccess()) {
-                // System.out.println(">>> [Writer] Successfully sent OutboundSendMessage to target(s)");
-                //System.out.println(">>> =======================================================");
                 promise.setSuccess();
             } else {
-                System.out.println(">>> [Writer] Failed to send OutboundSendMessage: " + f.cause().getMessage());
+                log.error(">>> [Writer] Failed to send OutboundSendMessage: " + f.cause().getMessage());
                 promise.setFailure(f.cause());
             }
         });
@@ -42,7 +39,7 @@ public class Writer extends  ChannelOutboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        System.out.println(">>> Server Exception: " + cause.getMessage()); 
+        log.error(">>> Server Exception: " + cause.getMessage()); 
         cause.printStackTrace();
         ctx.close(); // Close the channel on exception
     }

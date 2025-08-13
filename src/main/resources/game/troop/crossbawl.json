@@ -4,14 +4,14 @@
   "type": "ranged",
   "role": "Ranged DPS",
   "stats": {
-    "hp": 300,
-    "defense": 40,
-    "attack": 90,
-    "move_speed": 4.5,
-    "attack_speed": 1.8,
-    "attack_range": 4.0,
-    "detection_range": 10.0,
-    "cost": 120
+    "hp": 500,
+    "defense": 30,
+    "attack": 120,
+    "move_speed": 3.5,
+    "attack_speed": 1.0,
+    "attack_range": 5.5,
+    "detection_range": 7.0,
+    "cost": 60
   },
   "ability": {
     "name": "Piercing Shot",

@@ -17,8 +17,9 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -35,13 +36,13 @@ public class RegistryMessageHandler {
 
         Channel existingChannel = ChannelManager.getChannelByUserId(userId);
         if (existingChannel != null && existingChannel != ctx.channel()) {
-            System.out.println(">>> User already has an active session, disconnecting the old channel.");
+            log.info(">>> User already has an active session, disconnecting the old channel.");
             ChannelManager.unregister(existingChannel);
             existingChannel.close();
         }
 
         if (userId == null || !userService.isUserExist(userId)) {
-            System.out.println(">>> Authentication failed for token: " + token);
+            log.info(">>> Authentication failed for token: " + token);
             ctx.channel().writeAndFlush(new AuthenticationSend(AuthenticationSend.Status.FAILURE, "Invalid token, playerId does not exist or failed to register for room notifications"));
             return;
         }

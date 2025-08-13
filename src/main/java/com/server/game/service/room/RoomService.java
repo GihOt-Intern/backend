@@ -17,6 +17,7 @@ import io.netty.channel.Channel;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoomService {
 
@@ -99,9 +101,9 @@ public class RoomService {
 
     public void leaveRoom(String roomId) {
         User user = userService.getUserInfo();
-        System.out.println(">>> [Log in leaveRoom()] Getting room by roomId: " + roomId); 
+        log.info("Getting room by roomId: " + roomId); 
         Room room = getRoomById(roomId);
-        System.out.println(">>> [Log in leaveRoom()] Room found.");
+        log.info("Room {} found.", roomId);
         Channel channel = ChannelManager.getChannelByUserId(user.getId());
         
         channel.writeAndFlush(new MessageSend(roomId)).addListener(future -> {
@@ -290,7 +292,7 @@ public class RoomService {
             Channel playerChannel = ChannelManager.getChannelByUserId(player.getId());
             if (playerChannel == null || !playerChannel.isActive()) {
                 allPlayersConnected = false;
-                System.out.println("Player " + player.getUsername() + " is not connected.");
+                log.info("Player " + player.getUsername() + " is not connected.");
             }
         }
 
@@ -301,7 +303,7 @@ public class RoomService {
 
         Set<Channel> channels = ChannelManager.getChannelsByGameId(roomId);
         if (channels.isEmpty()) {
-            System.out.println("No active game channels found for room: " + roomId);
+            log.info("No active game channels found for room: " + roomId);
             return;
         }
         
@@ -318,14 +320,14 @@ public class RoomService {
                 ChannelManager.setSlot2Channel(slot, ch);
                 players.put(slot, username);
             } else {
-                System.out.println("No user found for channel: " + ch.id().asShortText());
+                log.info("No user found for channel: " + ch.id().asShortText());
             }
         }
         
         InfoPlayersInRoomSend infoPlayerInRoomSend = new InfoPlayersInRoomSend(players);
         channel.writeAndFlush(infoPlayerInRoomSend);
 
-        System.out.println(">>> Game started for room: " + roomId + " with " + (slot + 1) + " players");
+        log.info(">>> Game started for room: " + roomId + " with " + (slot + 1) + " players");
         
         this.setRoomTo(room, RoomStatus.IN_GAME);
     }

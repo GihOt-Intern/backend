@@ -20,9 +20,12 @@ import lombok.experimental.FieldDefaults;
 @Getter
 public final class Burg extends Building {
 
-    public Burg(SlotState ownerSlot, GameState gameState, Integer hp, BurgDB burgDB) {
+    public Burg(SlotState ownerSlot, GameState gameState, BurgDB burgDB) {
         super("burg_" + ownerSlot.getSlot() + UUID.randomUUID().toString(),
-        ownerSlot, gameState, hp, burgDB.getId(), burgDB.getPosition(),
+        ownerSlot, gameState,
+        gameState.getGameMap().getBurgHP(), 
+        gameState.getGameMap().getBurgDefense(), 
+        burgDB.getId(), burgDB.getPosition(),
         burgDB.getWidth(), burgDB.getLength(), burgDB.getRotate());
     }
 
@@ -49,58 +52,6 @@ public final class Burg extends Building {
         
         return false; // Burg is still alive
     }
-
-    // /**
-    //  * Calculate the shortest distance from this burg's boundary to another entity's boundary
-    //  * @param other the other entity
-    //  * @return the shortest distance between boundaries
-    //  */
-    // public float distanceToEntityBoundary(Entity other) {
-    //     if (other instanceof Building otherBuilding) {
-    //         return calculateBuildingToBuildingDistance(this, otherBuilding);
-    //     } else {
-    //         // For non-building entities (troops, champions), treat as point entities
-    //         return calculateBuildingToPointDistance(this, other.getCurrentPosition());
-    //     }
-    // }
-    
-    // /**
-    //  * Calculate distance between two buildings considering their dimensions
-    //  */
-    // private float calculateBuildingToBuildingDistance(Building building1, Building building2) {
-    //     // Get building dimensions (default to 1x1 if not available)
-    //     float w1 = (building1 instanceof Tower) ? ((Tower) building1).getWidth() : 
-    //               (building1 instanceof Burg) ? ((Burg) building1).getWidth() : 1.0f;
-    //     float l1 = (building1 instanceof Tower) ? ((Tower) building1).getLength() : 
-    //               (building1 instanceof Burg) ? ((Burg) building1).getLength() : 1.0f;
-        
-    //     float w2 = (building2 instanceof Tower) ? ((Tower) building2).getWidth() : 
-    //               (building2 instanceof Burg) ? ((Burg) building2).getWidth() : 1.0f;
-    //     float l2 = (building2 instanceof Tower) ? ((Tower) building2).getLength() : 
-    //               (building2 instanceof Burg) ? ((Burg) building2).getLength() : 1.0f;
-        
-    //     // Calculate axis-aligned bounding box distance
-    //     float dx = Math.max(0, Math.abs(building1.getPosition().x() - building2.getPosition().x()) - (w1 + w2) / 2);
-    //     float dy = Math.max(0, Math.abs(building1.getPosition().y() - building2.getPosition().y()) - (l1 + l2) / 2);
-        
-    //     return (float) Math.sqrt(dx * dx + dy * dy);
-    // }
-    
-    // /**
-    //  * Calculate distance from building boundary to a point
-    //  */
-    // private float calculateBuildingToPointDistance(Building building, Vector2 point) {
-    //     float w = (building instanceof Tower) ? ((Tower) building).getWidth() : 
-    //              (building instanceof Burg) ? ((Burg) building).getWidth() : 1.0f;
-    //     float l = (building instanceof Tower) ? ((Tower) building).getLength() : 
-    //              (building instanceof Burg) ? ((Burg) building).getLength() : 1.0f;
-        
-    //     // Calculate distance from point to building's bounding box
-    //     float dx = Math.max(0, Math.abs(building.getPosition().x() - point.x()) - w / 2);
-    //     float dy = Math.max(0, Math.abs(building.getPosition().y() - point.y()) - l / 2);
-        
-    //     return (float) Math.sqrt(dx * dx + dy * dy);
-    // }
 
     /** 
      * Handle the case when the burg is destroyed

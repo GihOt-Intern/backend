@@ -3,7 +3,7 @@ package com.server.game.service.troop;
 import com.server.game.factory.TroopFactory;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.TroopInstance2;
+import com.server.game.model.game.Troop;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.MoveContext;
 import com.server.game.model.map.component.Vector2;
@@ -14,7 +14,7 @@ import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.gameState.SlotStateService;
 import com.server.game.factory.AttackContextFactory;
 import com.server.game.factory.MoveContextFactory;
-import com.server.game.service.move.MoveService2;
+import com.server.game.service.move.MoveService;
 import com.server.game.util.TroopEnum;
 
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class TroopManager {
     private final TroopFactory troopFactory;
 
     private final MoveContextFactory moveContextFactory;
-    private final MoveService2 moveService;
+    private final MoveService moveService;
 
     
     private final AttackService attackService;
@@ -42,7 +42,7 @@ public class TroopManager {
     /** 
      * Add a troop instance to the game state.
      */
-    public TroopInstance2 createTroop(String gameId, short ownerSlot, TroopEnum troopType, Vector2 position) {
+    public Troop createTroop(String gameId, short ownerSlot, TroopEnum troopType, Vector2 position) {
         return troopFactory.createTroop(gameId, ownerSlot, troopType, position);
     }
     
@@ -51,12 +51,12 @@ public class TroopManager {
      */
     public boolean removeTroop(GameState gameState, String troopInstanceId) {
         Entity troopInstance = gameStateService.getEntityByStringId(gameState, troopInstanceId);
-        if (troopInstance == null || !(troopInstance instanceof TroopInstance2)) {
+        if (troopInstance == null || !(troopInstance instanceof Troop)) {
             log.warn("Troop instance not found for ID: {}", troopInstanceId);
             return false;
         }
 
-        TroopInstance2 troop = (TroopInstance2) troopInstance;
+        Troop troop = (Troop) troopInstance;
         
         // Remove from SlotState first
         slotStateService.removeTroop(troop.getOwnerSlot(), troop);
@@ -74,8 +74,8 @@ public class TroopManager {
         GameState gameState = gameStateService.getGameStateById(gameId);
         Entity troop = gameStateService.getEntityByStringId(gameState, troopInstanceId);
 
-        if (troop instanceof TroopInstance2) {
-            ((TroopInstance2) troop).setInDefensiveStance(false); // Disable defense on manual attack
+        if (troop instanceof Troop) {
+            ((Troop) troop).setInDefensiveStance(false); // Disable defense on manual attack
         }
 
         AttackContext attackContext = attackContextFactory.createAttackContext(gameId, troopInstanceId, targetId, System.currentTimeMillis());
@@ -97,7 +97,7 @@ public class TroopManager {
             return;
         }
         
-        TroopInstance2 troop = (TroopInstance2) troopInstance;
+        Troop troop = (Troop) troopInstance;
         
         // Update defense position but do NOT enable defensive stance for manual moves
         troop.updateDefensePosition(position);
@@ -115,12 +115,12 @@ public class TroopManager {
      */
     public boolean checkAndHandleTroopDeath(GameState gameState, String troopInstanceId) {
         Entity troopEntity = gameStateService.getEntityByStringId(gameState, troopInstanceId);
-        if (troopEntity == null || !(troopEntity instanceof TroopInstance2)) {
+        if (troopEntity == null || !(troopEntity instanceof Troop)) {
             log.warn("Troop instance not found for ID: {}", troopInstanceId);
             return false;
         }
 
-        TroopInstance2 troop = (TroopInstance2) troopEntity;
+        Troop troop = (Troop) troopEntity;
         if (troop.getCurrentHP() > 0) {
             return false; // Troop is still alive
         }
