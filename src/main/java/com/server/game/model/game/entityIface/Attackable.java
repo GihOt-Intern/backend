@@ -1,4 +1,4 @@
-package com.server.game.model.game.component.attackComponent;
+package com.server.game.model.game.entityIface;
 
 import com.server.game.model.game.context.AttackContext;
 

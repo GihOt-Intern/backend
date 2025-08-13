@@ -97,7 +97,7 @@ public class GameLogicScheduler {
             try {
                 defensiveStanceService.updateDefensiveStances(gameState);
                 towerDefenseService.updateTowerDefenses(gameState);
-                // TODO: Add slower update systems here
+                // NOTE: Add slower update systems here
                 // - Resource generation
                 // - AI decision making
                 // - Game statistics updates
@@ -118,7 +118,7 @@ public class GameLogicScheduler {
     public void backgroundGameLogicLoop() {
         for (GameState gameState : gameStateService.getAllActiveGameStates()) {
             try {
-                // TODO: Add background systems here
+                // NOTE: Add background systems here
                 // - Game session cleanup
                 // - Performance metrics collection
                 // - Anti-cheat validation

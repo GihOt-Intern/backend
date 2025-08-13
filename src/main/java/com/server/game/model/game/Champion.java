@@ -3,16 +3,17 @@ package com.server.game.model.game;
 
 import java.util.UUID;
 
+import com.server.game.factory.SkillFactory;
 import com.server.game.model.game.attackStrategy.ChampionAttackStrategy;
+import com.server.game.model.game.component.AttackComponent;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.MovingComponent;
-import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
 import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
-import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.util.ChampionEnum;
 

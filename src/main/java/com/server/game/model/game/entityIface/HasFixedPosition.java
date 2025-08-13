@@ -1,4 +1,4 @@
-package com.server.game.model.game;
+package com.server.game.model.game.entityIface;
 import com.server.game.model.map.component.Vector2;
 
 

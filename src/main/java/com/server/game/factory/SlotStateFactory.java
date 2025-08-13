@@ -11,11 +11,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.util.ChampionEnum;
-import com.server.game.model.game.Burg;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
-import com.server.game.model.game.Tower;
+import com.server.game.model.game.building.Burg;
+import com.server.game.model.game.building.Tower;
 import com.server.game.resource.model.SlotInfo.BurgDB;
 import com.server.game.resource.model.SlotInfo.TowerDB;
 

@@ -1,12 +1,13 @@
 package com.server.game.model.game;
 
 import com.server.game.model.game.attackStrategy.TroopAttackStrategy;
+import com.server.game.model.game.component.AttackComponent;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.MovingComponent;
-import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attributeComponent.TroopAttributeComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.TroopDB;
 import com.server.game.util.TroopEnum;

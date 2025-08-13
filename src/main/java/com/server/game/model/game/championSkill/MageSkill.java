@@ -14,8 +14,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
 
-import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
+import com.server.game.model.game.entityIface.SkillReceivable;
 
 
 @Slf4j

@@ -3,8 +3,8 @@ package com.server.game.factory;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.context.CastSkillContext;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.gameState.GameStateService;
 import lombok.AllArgsConstructor;
@@ -25,7 +25,7 @@ public class CastSkillContextFactory {
     public CastSkillContext createCastSkillContext(
         String gameId, String casterStringId, Vector2 targetPosition, long timestamp) {
 
-        // TODO: Currently, 4 skills do not have a target entity.
+        // NOTE: Currently, 4 skills do not have a target entity.
         String targetEntityId = null; 
 
         GameState gameState = gameStateService.getGameStateById(gameId);
@@ -46,13 +46,13 @@ public class CastSkillContextFactory {
 
         Entity target = targetEntityId != null ? gameState.getEntityByStringId(targetEntityId) : null;
 
-        if (targetEntityId != null && target == null) {
-            log.info("Target not found: {}", targetEntityId);
-        }
+        // if (targetEntityId != null && target == null) {
+        //     log.info("Target not found: {}", targetEntityId);
+        // }
 
-        if ((target != null) && !(target instanceof SkillReceivable)) {
-            log.info("Target must be a SkillReceivable");
-        }
+        // if ((target != null) && !(target instanceof SkillReceivable)) {
+        //     log.info("Target must be a SkillReceivable");
+        // }
 
         return new CastSkillContext(gameState, caster, (SkillReceivable) target, targetPosition, timestamp);
     }

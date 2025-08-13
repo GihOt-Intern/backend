@@ -3,8 +3,8 @@ package com.server.game.model.game.championSkill;
 import java.util.Set;
 
 import com.server.game.model.game.Champion;
-import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.model.map.shape.RectShape;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;

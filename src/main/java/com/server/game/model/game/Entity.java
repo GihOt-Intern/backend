@@ -3,15 +3,17 @@ package com.server.game.model.game;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.server.game.model.game.building.Building;
+import com.server.game.model.game.component.AttackComponent;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.MovingComponent;
-import com.server.game.model.game.component.attackComponent.AttackComponent;
-import com.server.game.model.game.component.attackComponent.Attackable;
 import com.server.game.model.game.component.attributeComponent.AttributeComponent;
 import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
 import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.MoveContext;
+import com.server.game.model.game.entityIface.Attackable;
+import com.server.game.model.game.entityIface.HasFixedPosition;
 import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 

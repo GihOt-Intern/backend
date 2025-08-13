@@ -3,6 +3,8 @@ package com.server.game.model.game;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.server.game.model.game.building.Burg;
+import com.server.game.model.game.building.Tower;
 import com.server.game.model.game.component.GoldComponent;
 
 import lombok.AccessLevel;

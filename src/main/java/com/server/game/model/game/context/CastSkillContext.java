@@ -7,8 +7,8 @@ import org.springframework.lang.Nullable;
 
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.model.map.component.Vector2;
-import com.server.game.model.game.SkillReceivable;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

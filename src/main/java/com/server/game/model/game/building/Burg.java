@@ -1,11 +1,13 @@
-package com.server.game.model.game;
+package com.server.game.model.game.building;
 
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
+import com.server.game.model.game.Entity;
+import com.server.game.model.game.GameState;
+import com.server.game.model.game.SlotState;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.resource.model.SlotInfo.BurgDB;
 

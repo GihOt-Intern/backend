@@ -3,7 +3,6 @@ package com.server.game.factory;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
-import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.resource.model.ChampionDB;
 import com.server.game.service.champion.ChampionService;
 import com.server.game.service.move.MoveService;

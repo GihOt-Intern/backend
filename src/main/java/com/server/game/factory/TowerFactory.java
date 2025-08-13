@@ -2,7 +2,7 @@ package com.server.game.factory;
 
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
-import com.server.game.model.game.Tower;
+import com.server.game.model.game.building.Tower;
 import com.server.game.resource.model.SlotInfo.TowerDB;
 
 import lombok.AccessLevel;

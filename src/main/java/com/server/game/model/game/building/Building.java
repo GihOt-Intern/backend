@@ -1,7 +1,11 @@
-package com.server.game.model.game;
+package com.server.game.model.game.building;
 
 
+import com.server.game.model.game.DependentEntity;
+import com.server.game.model.game.GameState;
+import com.server.game.model.game.SlotState;
 import com.server.game.model.game.component.HealthComponent;
+import com.server.game.model.game.entityIface.HasFixedPosition;
 import com.server.game.model.map.component.Vector2;
 
 import lombok.AccessLevel;

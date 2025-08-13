@@ -3,8 +3,8 @@ package com.server.game.model.game.championSkill;
 import java.util.Set;
 
 import com.server.game.model.game.Champion;
-import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 
 import lombok.extern.slf4j.Slf4j;

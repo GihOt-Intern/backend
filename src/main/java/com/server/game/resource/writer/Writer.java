@@ -56,12 +56,12 @@ public class Writer {
     @EventListener(ApplicationReadyEvent.class)
     public void writeMaps() {
         for (String mapName : mapNames) {
-            if (mapRepository.existsByName(mapName)
-                && false
-             ) { // remove && false when not debugging
-                log.info("Map already exists: " + mapName);
-                continue;
-            }
+            // if (mapRepository.existsByName(mapName)
+            //     && false
+            //  ) { // remove && false when not debugging
+            //     log.info("Map already exists: " + mapName);
+            //     continue;
+            // }
             this.writeMap(mapName); 
         }
     }
@@ -80,12 +80,12 @@ public class Writer {
     @EventListener(ApplicationReadyEvent.class)
     public void writeMapGrids() {
         for (String mapName : mapNames) {
-            if (gameMapGridService.existsByName(mapName)
-                && false
-             ) { // remove && false when not debugging
-                log.info("Game map already exists: " + mapName);
-                continue;
-            }
+            // if (gameMapGridService.existsByName(mapName)
+            //     && false
+            //  ) { // remove && false when not debugging
+            //     log.info("Game map already exists: " + mapName);
+            //     continue;
+            // }
             this.writeGameMapGrid(mapName);
         }
     }
@@ -105,12 +105,12 @@ public class Writer {
     @EventListener(ApplicationReadyEvent.class)
     public void writeChampions() {
         for (String championName : championNames) {
-            if (championDBRepository.existsByName(championName) 
-                && false
-            ) { // remove && false when not debugging
-                log.info("Champion already exists: " + championName);
-                continue;
-            }
+            // if (championDBRepository.existsByName(championName) 
+            //     && false
+            // ) { // remove && false when not debugging
+            //     log.info("Champion already exists: " + championName);
+            //     continue;
+            // }
             this.writeChampion(championName.toLowerCase());
         }
     }
@@ -129,12 +129,12 @@ public class Writer {
     @EventListener(ApplicationReadyEvent.class)
     public void writeTroops() {
         for (String troopName : troopNames) {
-            if (troopDBRepository.existsByName(troopName) 
-                && false
-            ) { // remove && false when not debugging
-                log.info("Troop already exists: " + troopName);
-                continue;
-            }
+            // if (troopDBRepository.existsByName(troopName) 
+            //     && false
+            // ) { // remove && false when not debugging
+            //     log.info("Troop already exists: " + troopName);
+            //     continue;
+            // }
             this.writeTroop(troopName.toLowerCase());
         }
     }

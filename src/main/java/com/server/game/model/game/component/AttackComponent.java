@@ -1,4 +1,4 @@
-package com.server.game.model.game.component.attackComponent;
+package com.server.game.model.game.component;
 
 
 import org.springframework.lang.Nullable;

@@ -9,8 +9,8 @@ import com.server.game.factory.AttackContextFactory;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.Tower;
 import com.server.game.model.game.Troop;
+import com.server.game.model.game.building.Tower;
 import com.server.game.service.attack.AttackService;
 
 import lombok.RequiredArgsConstructor;

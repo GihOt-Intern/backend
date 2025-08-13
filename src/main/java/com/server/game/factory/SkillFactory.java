@@ -1,9 +1,10 @@
-package com.server.game.model.game.component.skillComponent;
+package com.server.game.factory;
 
 import org.springframework.stereotype.Component;
 
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.championSkill.*;
+import com.server.game.model.game.component.skillComponent.SkillComponent;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 import com.server.game.util.ChampionEnum;
 

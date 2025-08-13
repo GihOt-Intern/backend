@@ -16,12 +16,12 @@ import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.HasFixedPosition;
 import com.server.game.model.game.SlotState;
-import com.server.game.model.game.Tower;
-import com.server.game.model.game.SkillReceivable;
+import com.server.game.model.game.building.Tower;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
+import com.server.game.model.game.entityIface.HasFixedPosition;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.model.map.shape.Shape;
@@ -299,11 +299,6 @@ public class GameStateService {
         champion.setCurrentHP(maxHealth);
         champion.setCurrentPosition(initialPosition);
 
-        // TODO: reset position state
-
-
-        // log.info("Champion in slot {} of game {} has been respawned", slot, gameId);
-
         //Send message
         ChampionRespawnSend respawnSend = new ChampionRespawnSend(
             slotState.getChampion().getStringId(), 
@@ -312,8 +307,6 @@ public class GameStateService {
         if (channel != null) {
             channel.writeAndFlush(respawnSend);
         }
-
-        // TODO
     }
 
     /**
