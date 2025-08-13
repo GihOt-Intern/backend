@@ -37,8 +37,8 @@ public class MoveService {
         this.setMove(ctx, needStopAttack);
     }
 
-    public void setStopMoving(Entity entity, boolean isForced) {
-        entity.setMoveContext(null, isForced);
+    public void setStopMoving(Entity entity) {
+        entity.setMoveContext(null, true);
     }
 
     /**

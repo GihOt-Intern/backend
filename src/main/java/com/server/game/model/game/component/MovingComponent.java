@@ -46,7 +46,7 @@ public class MovingComponent {
 
         if (isForced) {
             this.moveContext = moveContext;
-            lastAcceptedMoveRequestTick = currentTick;
+            // lastAcceptedMoveRequestTick = currentTick;
             return true;
         }
 
@@ -104,7 +104,7 @@ public class MovingComponent {
     }
 
     private boolean performMove() {
-        if (moveContext == null) {
+        if (moveContext == null || !moveContext.getPath().hasNext()) {
             return false;
         }
 

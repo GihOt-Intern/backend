@@ -60,15 +60,15 @@ public final class Burg extends Building {
      */
     @Override
     protected void handleDeath(Entity killer) {
-        SlotState ownerSlot = this.getOwnerSlot();
         GameState gameState = this.getGameState();
-        short destroyedSlot = ownerSlot.getSlot();
+        SlotState ownerSlot = this.getOwnerSlot();
+        // short destroyedSlot = ownerSlot.getSlot();
 
         List<String> removedEntityIds = new ArrayList<>();
         List<Entity> entitiesToRemove = new ArrayList<>();
 
         for(Entity entity : gameState.getEntities()) {
-            if (entity.getOwnerSlot().getSlot() == destroyedSlot) {
+            if (ownerSlot.equals(entity.getOwnerSlot())) {
                 removedEntityIds.add(entity.getStringId());
                 entitiesToRemove.add(entity);
             }
@@ -84,19 +84,24 @@ public final class Burg extends Building {
             gameState.removeEntity(entity);
         }
 
-        int remainingBurgs = 0;
-        short lastAliveBurgSlot = -1;
+        gameState.decreaseNumSlotsAlive();
 
-        for(Entity entity : gameState.getEntities()) {
-            if (entity instanceof Burg && entity.isAlive()) {
-                remainingBurgs++;
-                lastAliveBurgSlot = entity.getOwnerSlot().getSlot();
-            }
-        }
 
-        if (remainingBurgs == 1) {
+        // int remainingBurgs = 0;
+        // short lastAliveBurgSlot = -1;
+
+        // for(Entity entity : gameState.getEntities()) {
+        //     if (entity instanceof Burg && entity.isAlive()) {
+        //         remainingBurgs++;
+        //         lastAliveBurgSlot = entity.getOwnerSlot().getSlot();
+        //     }
+        // }
+
+        // if (remainingBurgs == 1) {
+
+        if (gameState.isGameOver()) {
             this.getGameStateService().sendGameOver(
-                this.getGameId(), lastAliveBurgSlot, killer.getAttackContext().getTimestamp()
+                this.getGameId(), gameState.getWinnerSlot().getSlot(), killer.getAttackContext().getTimestamp()
             );
         }
     }

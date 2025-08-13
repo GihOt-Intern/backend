@@ -98,6 +98,14 @@ public class SlotState {
 
     public int getTroopCount(){ return this.troops.size(); }
 
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) { return false; }
+        if (!(other instanceof SlotState otherSlotState)) { return false; }
+        if (this == other) { return true; }
+        return this.slot == otherSlotState.slot;
+    }
+
     /**
      * Get player status summary
      */

@@ -101,7 +101,7 @@ public class AttackComponent {
         
         if (!this.inAttackRange()) {
             owner.getGameStateService().setMove(
-                this.owner, ctx.getTarget().getCurrentPosition(), false);
+                this.owner, ctx.getTarget().getCurrentPosition());
             return false;
         }
 

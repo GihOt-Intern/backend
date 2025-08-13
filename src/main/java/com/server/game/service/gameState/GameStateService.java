@@ -492,12 +492,12 @@ public class GameStateService {
         }
     }
 
-    public void setMove(Entity mover, Vector2 toPosition, boolean isForced) {
+    public void setMove(Entity mover, Vector2 toPosition) {
         if (mover instanceof HasFixedPosition) {
             log.debug("Cannot set move for entity: {}", mover.getStringId());
             return;
         }
-        moveService.setMove(mover, toPosition, isForced);
+        moveService.setMove(mover, toPosition, false);
     }
     
     public void setStopMoving(Entity mover, boolean isForced) {

@@ -40,6 +40,8 @@ public class GameState {
 
     final GameStateService gameStateService;
 
+    Integer numSlotsAlive;
+
 
     public GameState(String gameId, GameMap gameMap,
         GameMapGrid gameMapGrid, 
@@ -58,6 +60,8 @@ public class GameState {
             SlotState slotState = slotStateFactory.createSlotState(this, slot, championEnum);
             this.slotStates.put(slot, slotState);
         }
+
+        this.numSlotsAlive = this.slotStates.size();
 
         this.nextGoldMineGenerationTick =
             Util.seconds2GameTick(this.gameMap.getGoldMineFirstGenerationSeconds());
@@ -311,12 +315,37 @@ public class GameState {
         this.currentTick++;
     }
 
+    public void decreaseNumSlotsAlive() {
+        if (this.numSlotsAlive > 0) {
+            this.numSlotsAlive--;
+        } else {
+            log.warn("Attempted to decrease numSlotsAlive below zero.");
+        }
+    }
+
+    public boolean isGameOver() {
+        return this.numSlotsAlive <= 1;
+    }
+
+    public SlotState getWinnerSlot() {
+        if (!this.isGameOver()) {
+            log.warn("Game is not over, cannot determine winner slot.");
+            return null;
+        }
+
+        for (SlotState slotState : this.slotStates.values()) {
+            if (!slotState.isEliminated()) {
+                return slotState; // Return the first non-eliminated slot as the winner
+            }
+        }
+        return null;
+    }
+
     public boolean isValidGridCell(GridCell cell) {
         return cell != null && 
                cell.r() >= 0 && cell.r() < gameMapGrid.getNRows() &&
                cell.c() >= 0 && cell.c() < gameMapGrid.getNCols();
     }
-
 
     public Integer getBurgsInitHP() {
         return gameMap.getBurgHP();
