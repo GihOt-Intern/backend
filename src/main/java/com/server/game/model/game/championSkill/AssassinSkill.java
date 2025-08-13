@@ -3,8 +3,8 @@ package com.server.game.model.game.championSkill;
 import java.util.Set;
 
 import com.server.game.model.game.Champion;
-import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.model.map.shape.RectShape;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
@@ -28,12 +28,12 @@ public class AssassinSkill extends SkillComponent {
 
 
     @Override
-    public boolean canUseWhileAttacking() {
+    public boolean canCastWhileAttacking() {
         return false;
     }
 
     @Override
-    public boolean canUseWhileMoving() {
+    public boolean canCastWhileMoving() {
         return false;
     }
 
@@ -54,23 +54,6 @@ public class AssassinSkill extends SkillComponent {
     private final void dash(Vector2 ownerOldPosition, 
         Vector2 ownerNewExpectedPosition,
         Vector2 ownerActualNewPosition) {
-
-        
-        
-        // GridCell expectedCell = this.skillOwner
-        //     .getGameState().toGridCell(ownerNewExpectedPosition);
-        // boolean isExpectedValid = this.skillOwner
-        //     .getGameState().getGameMapGrid().isWalkable(expectedCell);
-        // log.info("Is expected position {}, cell {} valid: {}", 
-        //     ownerNewExpectedPosition, expectedCell, isExpectedValid);
-
-
-        // GridCell actualCell = this.skillOwner
-        //     .getGameState().toGridCell(ownerActualNewPosition);
-        // boolean isActualValid = this.skillOwner
-        //     .getGameState().getGameMapGrid().isWalkable(actualCell);
-        // log.info("Is actual position {}, cell {} valid: {}", 
-        //     ownerActualNewPosition, actualCell, isActualValid);
         
     
         // Broadcast cast skill event

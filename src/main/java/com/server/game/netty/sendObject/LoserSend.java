@@ -18,27 +18,17 @@ import lombok.experimental.FieldDefaults;
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class GameOverSend implements TLVEncodable {
-    short winnerSlot; // Slot of the winning player
+public class LoserSend implements TLVEncodable{
 
     @Override
     public SendMessageType getType() {
-        return SendMessageType.GAME_OVER;
+        return SendMessageType.LOSER_OVER;
     }
 
     @Override
     public byte[] encode() {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            DataOutputStream dos = new DataOutputStream(baos);
-            
-            // Ghi slot người thắng
-            dos.writeShort(winnerSlot);
-            
-            return baos.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot encode GameOverSend", e);
-        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        return baos.toByteArray();
     }
 
     @Override

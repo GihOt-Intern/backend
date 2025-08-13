@@ -1,4 +1,4 @@
-package com.server.game.netty.messageHandler.troopMessageHandler;
+package com.server.game.netty.messageHandler;
 
 import com.server.game.resource.model.GameMap;
 import com.server.game.resource.model.SlotInfo;
@@ -8,7 +8,7 @@ import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
-import com.server.game.model.game.TroopInstance2;
+import com.server.game.model.game.Troop;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.troop.TroopPositionReceive;
@@ -80,12 +80,12 @@ public class TroopMessageHandler {
             
             // Verify the troop belongs to the requesting slot for security
             Entity troopEntity = gameState.getEntityByStringId(troopId);
-            if (troopEntity == null || !(troopEntity instanceof TroopInstance2)) {
+            if (troopEntity == null || !(troopEntity instanceof Troop)) {
                 log.warn("Troop {} not found or invalid type", troopId);
                 continue;
             }
             
-            TroopInstance2 troop = (TroopInstance2) troopEntity;
+            Troop troop = (Troop) troopEntity;
             if (troop.getOwnerSlot().getSlot() != requestingSlot) {
                 log.warn("Player {} attempted to move troop {} owned by slot {}", 
                     requestingSlot, troopId, troop.getOwnerSlot().getSlot());
@@ -153,7 +153,7 @@ public class TroopMessageHandler {
             return;
         }
 
-        TroopInstance2 troopInstance = troopManager.createTroop(
+        Troop troopInstance = troopManager.createTroop(
             gameId,
             request.getOwnerSlot(),
             troopType,

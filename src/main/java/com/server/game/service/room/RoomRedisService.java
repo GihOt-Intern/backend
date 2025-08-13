@@ -6,6 +6,7 @@ import com.server.game.model.room.RoomStatus;
 import com.server.game.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import lombok.AccessLevel;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.Random;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -62,7 +64,7 @@ public class RoomRedisService {
         
         // Add room ID to the set of all room IDs
         redisUtil.sAdd(ROOM_IDS_KEY, room.getId());
-        System.out.println(">>> [Log in RoomRedisService.save()] Room with ID " + room.getId() + " saved");
+        log.info("Room with ID " + room.getId() + " saved");
         return room;
     }
 
@@ -71,7 +73,7 @@ public class RoomRedisService {
         try {
             return redisUtil.get(roomKey, Room.class);
         } catch (DataNotFoundException e) {
-            System.out.println(">>> [Log in findById()] Room with ID " + id + " not found!");
+            log.info("Room with ID " + id + " not found!");
             throw new DataNotFoundException("Room with ID " + id + " not found");
         }
     }
@@ -100,24 +102,24 @@ public class RoomRedisService {
         String roomId = room.getId();
         String roomKey = ROOM_KEY_PREFIX + roomId;
         if (!existsById(roomId)) {
-            System.out.println(">>> [Log in delete()] Room with ID " + roomId + " not found in Redis.");
+            log.info("Room with ID " + roomId + " not found in Redis. Cannot delete");
             return;
         }
         redisUtil.delete(roomKey);
         redisUtil.sRemove(ROOM_IDS_KEY, roomId);
-        System.out.println(">>> [Log in delete()] Room with ID " + roomId + " deleted from Redis.");
+        log.info("Room with ID " + roomId + " deleted from Redis.");
     }
 
     public void deleteById(String id) {
         if (!existsById(id)) {
-            System.out.println(">>> [Log in deleteById()] Room with ID " + id + " not found in Redis.");
+            log.info("Room with ID " + id + " not found in Redis. Cannot delete");
             return;
         }
 
         String roomKey = ROOM_KEY_PREFIX + id;
         redisUtil.delete(roomKey);
         redisUtil.sRemove(ROOM_IDS_KEY, id);
-        System.out.println(">>> [Log in deleteById()] Room with ID " + id + " deleted successfully.");
+        log.info("Room with ID " + id + " deleted successfully.");
     }
 
     public boolean existsById(String id) {

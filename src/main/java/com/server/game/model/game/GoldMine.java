@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.context.AttackContext;
+import com.server.game.model.game.entityIface.HasFixedPosition;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.service.gameState.GameStateService;
 
@@ -71,10 +72,7 @@ public final class GoldMine extends Entity implements HasFixedPosition {
         gameStateService.stopChampionsAttackingTo(this.gameState, this);
 
         this.getGameState().removeEntity(this);
+
+        this.getGameState().decreaseCurrentNumGoldMine();
     }
-
-
-
-
-    
 }

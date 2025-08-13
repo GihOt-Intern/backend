@@ -8,6 +8,9 @@ import com.server.game.model.map.component.GridCell;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.GameMapGrid;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ThetaStarPathfinder {
 
     // 4 directions or 8 directions ???
@@ -28,25 +31,25 @@ public class ThetaStarPathfinder {
 
         // Nếu điểm bắt đầu nằm ở ô không đi được
         if (!gameMapGrid.isWalkable(start)) {
-            System.out.println(">>> Start point is not walkable");
+            log.info(">>> Start point is not walkable");
             GridCell closestWalkable = findClosestWalkablePosition(grid, start);
             if (closestWalkable == null) {
-                System.out.println(">>> No walkable position found near start point");
+                log.info(">>> No walkable position found near start point");
                 return Collections.emptyList();
             }
-            System.out.println(">>> Using closest walkable position: " + closestWalkable);
+            log.info(">>> Using closest walkable position: " + closestWalkable);
             start = closestWalkable;
         }
 
         // Nếu điểm kết thúc nằm ở ô không đi được
         if (!gameMapGrid.isWalkable(end)) {
-            System.out.println(">>> End point is not walkable");
+            log.info(">>> End point is not walkable");
             GridCell closestWalkable = findClosestWalkablePosition(grid, end);
             if (closestWalkable == null) {
-                System.out.println(">>> No walkable position found near end point");
+                log.info(">>> No walkable position found near end point");
                 return Collections.emptyList();
             }
-            System.out.println(">>> Using closest walkable position: " + closestWalkable);
+            log.info(">>> Using closest walkable position: " + closestWalkable);
             end = closestWalkable;
         }
 
@@ -76,7 +79,7 @@ public class ThetaStarPathfinder {
             nodesExplored++;
 
             if (current.row == end.r() && current.col == end.c()) {
-                System.out.println(">>> Found path to end point after exploring " + nodesExplored + " nodes");
+                log.info(">>> Found path to end point after exploring " + nodesExplored + " nodes");
                 return reconstructPath(current);
             }
 
@@ -90,7 +93,7 @@ public class ThetaStarPathfinder {
             }
 
             if (currentDistance > distanceLimit && nodesExplored > MAX_NODES_TO_EXPLORE) {
-                System.out.println(">>> Stopping search due to distance limit or max nodes explored");
+                log.info(">>> Stopping search due to distance limit or max nodes explored");
                 break; // Stop if we exceed distance limit or max nodes explored
             }
 
@@ -149,7 +152,7 @@ public class ThetaStarPathfinder {
             }
         }
         if (nodesExplored >= MAX_NODES_TO_EXPLORE) {
-            System.out.println("Pathfinding stopped after exploring " + nodesExplored + " nodes, returning closest path");
+            log.info("Pathfinding stopped after exploring " + nodesExplored + " nodes, returning closest path");
         }
 
         // Không tìm được đường đi đến end ⇒ trả về đường đi gần nhất
@@ -167,7 +170,7 @@ public class ThetaStarPathfinder {
         if (closestWalkable != null) {
             return gameState.toPosition(closestWalkable);
         } else {
-            System.out.println(">>> No walkable position found near " + position);
+            log.info(">>> No walkable position found near " + position);
             return null; // Không tìm thấy ô đi được gần nhất
         }
     }
@@ -196,7 +199,7 @@ public class ThetaStarPathfinder {
             
             // If current position is walkable, return it immediately
             if (grid[current.row][current.col]) {
-                System.out.println(">>> Found walkable position after exploring " + 
+                log.info(">>> Found walkable position after exploring " + 
                     nodesExplored + " nodes: (" + current.row + "," + current.col + ")");
                 return new GridCell(current.row, current.col);
             }
@@ -236,7 +239,7 @@ public class ThetaStarPathfinder {
             }
         }
 
-        System.out.println(">>> No walkable position found after exploring " + nodesExplored + " nodes");
+        log.info(">>> No walkable position found after exploring " + nodesExplored + " nodes");
         return null; // No walkable position found
     }
 
@@ -289,7 +292,7 @@ public class ThetaStarPathfinder {
         }
 
         // print path for debugging
-        System.out.println("Path found: " + path);
+        log.info("Path found: " + path);
 
         // Convert LinkedList to ArrayList to access by index later
         return new ArrayList<>(path);

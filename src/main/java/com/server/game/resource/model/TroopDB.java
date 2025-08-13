@@ -8,8 +8,10 @@ import lombok.Data;
 import lombok.experimental.Delegate;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
+@Slf4j
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -108,7 +110,7 @@ public class TroopDB {
         if (stats != null) {
             return stats.getHp();
         }
-        System.out.println(">>> [Log in Troop] Initial HP not found for troop " + id);
+        log.info("Initial HP not found for troop " + id);
         return null;
     }
 

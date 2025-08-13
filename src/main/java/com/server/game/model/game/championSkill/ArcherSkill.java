@@ -3,8 +3,8 @@ package com.server.game.model.game.championSkill;
 import java.util.Set;
 
 import com.server.game.model.game.Champion;
-import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.model.map.shape.RectShape;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ArcherSkill extends SkillComponent {
 
-    private static final float ARCHER_LENGTH = 8.0f;
+    private static final float ARCHER_LENGTH = 10.0f;
     private static final float ARCHER_WIDTH = 4.0f;
 
     public ArcherSkill(Champion owner, ChampionAbility ability) {
@@ -28,12 +28,12 @@ public class ArcherSkill extends SkillComponent {
     }
 
     @Override
-    public boolean canUseWhileAttacking() {
+    public boolean canCastWhileAttacking() {
         return true;
     }
 
     @Override
-    public boolean canUseWhileMoving() {
+    public boolean canCastWhileMoving() {
         return false;
     }
 
@@ -54,7 +54,13 @@ public class ArcherSkill extends SkillComponent {
 
     @Override
     protected boolean doUse() {
+
         RectShape hitbox = this.getHitbox();
+
+        this.getCastSkillContext().setSkillLength(ARCHER_LENGTH);
+        this.getSkillOwner().getGameStateService()
+            .sendCastSkillAnimation(this.getCastSkillContext());
+            
 
         this.getCastSkillContext().addSkillDamage(this.getDamage());
 

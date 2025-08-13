@@ -3,8 +3,8 @@ package com.server.game.model.game.championSkill;
 import java.util.Set;
 
 import com.server.game.model.game.Champion;
-import com.server.game.model.game.SkillReceivable;
 import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.resource.model.ChampionDB.ChampionAbility;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,12 +22,22 @@ public class MeleeSkill extends DurationSkillComponent {
     }
 
     @Override
-    public boolean canUseWhileAttacking() {
+    public boolean canCastWhileAttacking() {
         return false;
     }
 
     @Override
-    public boolean canUseWhileMoving() {
+    public boolean canCastWhileMoving() {
+        return true;
+    }
+
+    @Override // stop attacking when cast, but when hit box move, can attack 
+    public boolean canPerformWhileAttacking() {
+        return false;
+    }
+
+    @Override // stop moving when cast, but when hit box move, can move
+    public boolean canPerformWhileMoving() {
         return true;
     }
 

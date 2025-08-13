@@ -9,8 +9,8 @@ import com.server.game.factory.AttackContextFactory;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.Tower;
-import com.server.game.model.game.TroopInstance2;
+import com.server.game.model.game.Troop;
+import com.server.game.model.game.building.Tower;
 import com.server.game.service.attack.AttackService;
 
 import lombok.RequiredArgsConstructor;
@@ -63,7 +63,7 @@ public class TowerDefenseService {
             .filter(Entity::isAlive)
             .filter(e -> e.getOwnerSlot() != null)
             .filter(e -> e.getOwnerSlot().getSlot() != tower.getOwnerSlot().getSlot()) // Is an enemy
-            .filter(e -> e instanceof TroopInstance2)
+            .filter(e -> e instanceof Troop)
             .filter(e -> tower.distanceTo(e) <= tower.getAttackComponent().getAttackRange())
             .min(Comparator.comparing(e -> tower.distanceTo(e)));
 

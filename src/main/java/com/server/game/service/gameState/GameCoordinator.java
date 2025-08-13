@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.server.game.model.game.GameState;
-import com.server.game.netty.messageHandler.troopMessageHandler.TroopMessageHandler;
+import com.server.game.netty.messageHandler.TroopMessageHandler;
 
 import lombok.extern.slf4j.Slf4j;
 

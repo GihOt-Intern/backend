@@ -23,7 +23,7 @@ public class MessageMappingScanner implements ApplicationListener<ApplicationRea
 
     @Override
     public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
-        System.out.println(">>> Scanning for @MessageMapping methods...");
+        // System.out.println(">>> Scanning for @MessageMapping methods...");
         for (Object bean : context.getBeansWithAnnotation(Component.class).values()) {
             for (Method method : bean.getClass().getDeclaredMethods()) {
                 MessageMapping mapping = method.getAnnotation(MessageMapping.class);

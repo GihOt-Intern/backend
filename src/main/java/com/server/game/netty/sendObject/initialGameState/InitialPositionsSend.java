@@ -12,7 +12,7 @@ import io.netty.channel.Channel;
 import com.server.game.model.game.Champion;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
-import com.server.game.model.game.Tower;
+import com.server.game.model.game.building.Tower;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.pipelineComponent.outboundSendMessage.SendTarget;
@@ -68,7 +68,7 @@ public class InitialPositionsSend implements TLVEncodable {
             dos.writeInt(burgHP);
 
             // Write number of champion positions
-            dos.writeShort(championPositionsData.size());
+            dos.writeShort((short) championPositionsData.size());
 
             // Write each champion's position data
             for (InitialPositionData positionData : championPositionsData) {
@@ -87,8 +87,7 @@ public class InitialPositionsSend implements TLVEncodable {
         return new AMatchBroadcastTarget(channel);
     }
     
-
-
+    
 
     //************* InitialPositionData class *************//
     @Data
@@ -149,9 +148,6 @@ public class InitialPositionsSend implements TLVEncodable {
                 // Write burg data
                 byte[] burgDataBytes = burgData.encode();
                 dos.write(burgDataBytes);
-
-
-                // System.out.println(">>> [Log in InitialPositionData.encode] Champion " + championStringId + " position: " + position + ", rotate: " + rotate);
 
                 return baos.toByteArray();
 

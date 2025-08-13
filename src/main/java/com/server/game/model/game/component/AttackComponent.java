@@ -1,4 +1,4 @@
-package com.server.game.model.game.component.attackComponent;
+package com.server.game.model.game.component;
 
 
 import org.springframework.lang.Nullable;
@@ -7,28 +7,30 @@ import com.server.game.model.game.Entity;
 import com.server.game.model.game.attackStrategy.AttackStrategy;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.util.Util;
-import com.server.game.service.move.MoveService2;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Getter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class AttackComponent {
-    private Entity owner;
-    private int damage;
-    private float attackSpeed;
-    private float attackRange;
-    private int attackDelayTick;
-    private long nextAttackTick;
+    Entity owner;
+    int damage;
+    float attackSpeed;
+    float attackRange;
+    int attackDelayTick;
+    long nextAttackTick;
 
-    private AttackContext attackContext = null;
+    final AttackStrategy strategy;
 
-    private final AttackStrategy strategy;
-
-    private final MoveService2 moveService;
+    AttackContext attackContext = null;
 
 
     public AttackComponent(Entity owner, int damage, float attackSpeed, float attackRange, 
-        AttackStrategy strategy, MoveService2 moveService) {
+        AttackStrategy strategy) {
 
         this.owner = owner;
         this.strategy = strategy;
@@ -37,25 +39,20 @@ public class AttackComponent {
         this.attackRange = attackRange;
         this.attackDelayTick = Math.round(1000.0f / (attackSpeed * Util.getGameTickIntervalMs()));
         this.nextAttackTick = 0;
-    
-        this.moveService = moveService;
     }
 
     public boolean setAttackContext(@Nullable AttackContext ctx) {
 
         if (ctx == null) { // ctx null means forced stop attack
-            // System.out.println(">>> [Log in AttackComponent] Setting attack context to null, force stopping attack.");
             this.attackContext = null;
             return true;
         }
         
-        if (this.owner.isCastingDurationSkill() && !this.owner.canUseSkillWhileAttacking()) {
-            // System.out.println(">>> [Log in AttackComponent] Cannot set attack context while casting skill, skipping.");
+        if (this.owner.isCastingDurationSkill() && !this.owner.canPerformSkillWhileAttacking()) {
             return false;
         }
 
         this.attackContext = ctx;
-        // System.out.println(">>> [Log in AttackComponent] Attack context set: " + ctx);
         return true;
     }
 
@@ -68,10 +65,6 @@ public class AttackComponent {
 
     public boolean isAttacking() {
         return this.attackContext != null && this.attackContext.getTarget() != null;
-    }
-    
-    public void stopAttacking() {
-        this.setAttackContext(null);
     }
 
     private final boolean inAttackWindow(long currentTick) {
@@ -106,45 +99,28 @@ public class AttackComponent {
         }
 
         
-        if (!this.inAttackRange() && !this.owner.getStringId().startsWith("tower")) {
-            // System.out.println(">>> [Log in AttackComponent] Target is out of attack range, trying to move to position that reach attack range.");
-            // System.out.println(">>> Current position: " + this.owner.getCurrentPosition() + 
-            //     ", Target position: " + ctx.getTarget().getCurrentPosition() + 
-            //     ", Attack range: " + this.attackRange);
-
-            // Vector2 ownerPosition = this.owner.getCurrentPosition();
-            // Vector2 targetPosition = ctx.getTarget().getCurrentPosition();
-            
-            // Vector2 direction = targetPosition.subtract(ownerPosition).normalize();
-            // Vector2 newPosition = ownerPosition.add(
-            //     direction.multiply(owner.getDistanceNeededToReachAttackRange()));
-
-            // moveService.setMove(this.owner, newPosition, false);
-
-            moveService.setMove(this.owner, ctx.getTarget().getCurrentPosition(), false);
+        if (!this.inAttackRange()) {
+            owner.getGameStateService().setMove(
+                this.owner, ctx.getTarget().getCurrentPosition());
             return false;
         }
 
         if (!this.inAttackWindow(currentTick)) {  
-            // System.out.println(">>> [Log in AttackComponent] Not in attack window, current tick: " + currentTick + ", next attack tick: " + this.nextAttackTick);
             return false;  
         }
 
 
         // Stop moving before performing the attack
-        if (!this.owner.getStringId().startsWith("tower")) {
-            moveService.setStopMoving(this.owner, false);
-        }
-            // System.out.println(">>> [Log in AttackComponent] Stopped moving before attack");
-        
+        owner.getGameStateService().setStopMoving(this.owner, false);
+
         // Use the strategy to perform the attack
         // .performAttack() has handled to do not attack allies
         boolean didAttack = strategy.performAttack(ctx);
 
         if (ctx.getTarget() == null || !ctx.getTarget().isAlive()) {
-            System.out.println(">>> [Log in AttackComponent] After performing attack, target is null or dead");
-            moveService.setStopMoving(this.owner, true);
-            this.stopAttacking();
+            log.info("After performing attack, target is null or dead");
+            owner.getGameStateService().setStopMoving(this.owner, true);
+            this.owner.getGameStateService().setStopAttacking(this.owner);
         }
 
         // After performing the attack, update the next attack tick

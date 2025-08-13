@@ -11,8 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RedisUtil {
@@ -23,7 +24,7 @@ public class RedisUtil {
         try {
             RedisConnectionFactory connectionFactory = redisTemplate.getConnectionFactory();
             if (connectionFactory == null) {
-                System.err.println("Redis connection factory is null");
+                log.error("Redis connection factory is null");
                 return false;
             }
             
@@ -32,12 +33,12 @@ public class RedisUtil {
             boolean isReady = "PONG".equals(pong);
             
             if (!isReady) {
-                System.err.println("Redis ping failed - received: " + pong);
+                log.error("Redis ping failed - received: " + pong);
             }
             
             return isReady;
         } catch (Exception e) {
-            System.err.println("Redis connection failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            log.error("Redis connection failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -64,14 +65,14 @@ public class RedisUtil {
                 if (testValue.equals(retrieved)) {
                     System.out.println("Redis read/write test: PASSED");
                 } else {
-                    System.err.println("Redis read/write test: FAILED - Expected: " + testValue + ", Got: " + retrieved);
+                    log.error("Redis read/write test: FAILED - Expected: " + testValue + ", Got: " + retrieved);
                 }
                 
                 // Cleanup
                 delete(testKey);
             }
         } catch (Exception e) {
-            System.err.println("Redis connection test failed: " + e.getMessage());
+            log.error("Redis connection test failed: " + e.getMessage());
             e.printStackTrace();
         }
         System.out.println("=== Redis Connection Test Complete ===");

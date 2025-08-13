@@ -20,8 +20,10 @@ import com.server.game.util.Util;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
+@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GameState {
     final String gameId;
@@ -29,13 +31,16 @@ public class GameState {
     final GameMapGrid gameMapGrid;
 
     long currentTick = 0;
-    long nextGoldMineGenerationTick = Util.seconds2GameTick(10f); // TODO: adjust this value based on game design
+    long nextGoldMineGenerationTick;
+    Integer currentNumGoldMine = 0;
 
     final Map<Short, SlotState> slotStates = new ConcurrentHashMap<>();
     final Map<String, Entity> stringId2Entity = new ConcurrentHashMap<>();
     final Map<GridCell, Set<Entity>> grid2Entity = new ConcurrentHashMap<>();
 
     final GameStateService gameStateService;
+
+    Integer numSlotsAlive;
 
 
     public GameState(String gameId, GameMap gameMap,
@@ -56,6 +61,11 @@ public class GameState {
             this.slotStates.put(slot, slotState);
         }
 
+        this.numSlotsAlive = this.slotStates.size();
+
+        this.nextGoldMineGenerationTick =
+            Util.seconds2GameTick(this.gameMap.getGoldMineFirstGenerationSeconds());
+
         this.gameStateService = gameStateService;
     }
 
@@ -68,6 +78,18 @@ public class GameState {
             this.getGameMap().getGoldMineGenerationIntervalSeconds());
     }
 
+    public boolean reachNumGoldMineLimit() {
+        return this.currentNumGoldMine >= this.getGameMap().getMaxNumGoldMineExist();
+    }
+
+    public void increaseCurrentNumGoldMine() {
+        ++this.currentNumGoldMine;
+    }
+
+    public void decreaseCurrentNumGoldMine() {
+        --this.currentNumGoldMine;
+    }
+
 
     public int getNumPlayers() {
         return slotStates.size();
@@ -75,7 +97,7 @@ public class GameState {
 
     public void addEntity(Entity entity) {
         if (entity == null || entity.getStringId() == null) {
-            System.err.println(">>> [Log in GameState.addEntity] Invalid entity or stringId");
+            log.error("Invalid entity or stringId");
             return;
         }
 
@@ -88,7 +110,7 @@ public class GameState {
 
     public void removeEntity(Entity entity) {
         if (entity == null || entity.getStringId() == null) {
-            System.err.println(">>> [Log in GameState.removeEntity] Invalid entity or stringId");
+            log.error("Invalid entity or stringId");
             return;
         }
 
@@ -248,7 +270,7 @@ public class GameState {
         if (currentGold != null && currentGold >= amount) {
             this.setGold(slotState, currentGold - amount);
         } else {
-            System.err.println(">>> [Log in GameState.spendGold] Not enough gold for slot. Current: " + currentGold + ", Required: " + amount);
+            log.error("Not enough gold for slot. Current: " + currentGold + ", Required: " + amount);
         }
     }
 
@@ -262,7 +284,7 @@ public class GameState {
 
     public void setGold(SlotState slotState, Integer newAmount) {
         if (slotState == null) {
-            System.err.println(">>> [Log in GameState.setGold] Slot not found in game state for gameId: " + gameId);
+            log.error("Slot not found in game state for gameId: " + gameId);
             return;
         }
         slotState.setCurrentGold(newAmount);
@@ -291,7 +313,32 @@ public class GameState {
 
     public void incrementTick() {
         this.currentTick++;
-        // System.out.println(">>> [Log in GameState.incrementTick] Current tick of game: " + this.getGameId() + " incremented to: " + this.currentTick);
+    }
+
+    public void decreaseNumSlotsAlive() {
+        if (this.numSlotsAlive > 0) {
+            this.numSlotsAlive--;
+        } else {
+            log.warn("Attempted to decrease numSlotsAlive below zero.");
+        }
+    }
+
+    public boolean isGameOver() {
+        return this.numSlotsAlive <= 1;
+    }
+
+    public SlotState getWinnerSlot() {
+        if (!this.isGameOver()) {
+            log.warn("Game is not over, cannot determine winner slot.");
+            return null;
+        }
+
+        for (SlotState slotState : this.slotStates.values()) {
+            if (!slotState.isEliminated()) {
+                return slotState; // Return the first non-eliminated slot as the winner
+            }
+        }
+        return null;
     }
 
     public boolean isValidGridCell(GridCell cell) {
@@ -299,7 +346,6 @@ public class GameState {
                cell.r() >= 0 && cell.r() < gameMapGrid.getNRows() &&
                cell.c() >= 0 && cell.c() < gameMapGrid.getNCols();
     }
-
 
     public Integer getBurgsInitHP() {
         return gameMap.getBurgHP();

@@ -3,13 +3,13 @@
   "name": "Archer",
   "role": "Crossbow",
   "stats": {
-    "hp": 650,
-    "defense": 25,
-    "attack": 180,
-    "move_speed": 7.5,
-    "attack_speed": 2.1,
-    "attack_range": 8.0,
-    "gold_mine_damage": 1
+    "hp": 1200,
+    "defense": 50,
+    "attack": 300,
+    "move_speed": 5.0,
+    "attack_speed": 1.2,
+    "attack_range": 6.5,
+    "gold_mine_damage": 2
   },
   "ability": {
     "name": "Piercing Arrow",

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +25,7 @@ import lombok.AccessLevel;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class GameMap {
     short id;
     String name;
@@ -36,12 +38,20 @@ public class GameMap {
     Integer smallGoldMineCapacity;
     Integer largeGoldMineCapacity;
 
-    Float smallGoldMineExploitSeconds;
-    Float largeGoldMineExploitSeconds;
-
+    Float goldMineFirstGenerationSeconds;
     Float goldMineGenerationIntervalSeconds;
+    Integer maxNumGoldMineExist;
+    
     Integer towerHP;
+    Integer towerAttack;
+    Integer towerDefense;
+    Float towerAttackSpeed;
+    Float towerAttackRange;
+
     Integer burgHP;
+    Integer burgDefense;
+
+
     Playground playground;
     List<SlotInfo> slotInfos;
 
@@ -52,17 +62,29 @@ public class GameMap {
     public GameMap(
         @JsonProperty("id") short id,
         @JsonProperty("map_name") String name,
+
         @JsonProperty("initial_gold_each_slot") int initialGoldEachSlot,
         @JsonProperty("gold_generated_per_second") int goldGeneratedPerSecond,
+
         @JsonProperty("small_gold_mine_initial_hp") Integer smallGoldMineInitialHP,
         @JsonProperty("large_gold_mine_initial_hp") Integer largeGoldMineInitialHP,
+
         @JsonProperty("small_gold_mine_capacity") Integer smallGoldMineCapacity,
         @JsonProperty("large_gold_mine_capacity") Integer largeGoldMineCapacity,
-        @JsonProperty("small_gold_mine_exploit_seconds") Float smallGoldMineExploitSeconds,
-        @JsonProperty("large_gold_mine_exploit_seconds") Float largeGoldMineExploitSeconds,
+
+        @JsonProperty("gold_mine_first_generation_seconds") Float goldMineFirstGenerationSeconds,
         @JsonProperty("gold_mine_generation_interval_seconds") Float goldMineGenerationIntervalSeconds,
+        @JsonProperty("max_num_gold_mine_exist") Integer maxNumGoldMineExist,
+
         @JsonProperty("tower_hp") Integer towerHP,
+        @JsonProperty("tower_attack") Integer towerAttack,
+        @JsonProperty("tower_defense") Integer towerDefense,
+        @JsonProperty("tower_attack_speed") Float towerAttackSpeed,
+        @JsonProperty("tower_attack_range") Float towerAttackRange,
+
         @JsonProperty("burg_hp") Integer burgHP,
+        @JsonProperty("burg_defense") Integer burgDefense,
+
         @JsonProperty("play_ground") Playground playground,
         @JsonProperty("slot_info") List<SlotInfo> slotInfos
     ) {
@@ -77,13 +99,19 @@ public class GameMap {
         this.smallGoldMineCapacity = smallGoldMineCapacity;
         this.largeGoldMineCapacity = largeGoldMineCapacity;
         
-        this.smallGoldMineExploitSeconds = smallGoldMineExploitSeconds;
-        this.largeGoldMineExploitSeconds = largeGoldMineExploitSeconds;
-        
+        this.goldMineFirstGenerationSeconds = goldMineFirstGenerationSeconds;
         this.goldMineGenerationIntervalSeconds = goldMineGenerationIntervalSeconds;
+        this.maxNumGoldMineExist = maxNumGoldMineExist;
 
         this.towerHP = towerHP;
+        this.towerAttack = towerAttack;
+        this.towerDefense = towerDefense;
+        this.towerAttackSpeed = towerAttackSpeed;
+        this.towerAttackRange = towerAttackRange;
+
+
         this.burgHP = burgHP;
+        this.burgDefense = burgDefense;
 
         this.playground = playground;
         this.slotInfos = slotInfos;
@@ -117,7 +145,7 @@ public class GameMap {
         if (slot2SlotInfo.containsKey(slot)) {
             return slot2SlotInfo.get(slot).getSpawnPosition();
         }
-        System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
+        log.info("SlotInfo for slot " + slot + " not found.");
         return null;
     }
 
@@ -125,7 +153,7 @@ public class GameMap {
         if (slot2SlotInfo.containsKey(slot)) {
             return slot2SlotInfo.get(slot).getInitialRotate();
         }
-        System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
+        log.info("SlotInfo for slot " + slot + " not found.");
         return null;
     }
 
@@ -133,7 +161,7 @@ public class GameMap {
         if (slot2SlotInfo.containsKey(slot)) {
             return slot2SlotInfo.get(slot).getTowersDB();
         }
-        System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
+        log.info("SlotInfo for slot " + slot + " not found.");
         return new HashSet<>();
     }
 
@@ -148,7 +176,7 @@ public class GameMap {
         if (slot2SlotInfo.containsKey(slot)) {
             return slot2SlotInfo.get(slot).getBurgDB();
         }
-        System.out.println(">>> [Log in GameMap] SlotInfo for slot " + slot + " not found.");
+        log.info("SlotInfo for slot " + slot + " not found.");
         return null;
     }
 

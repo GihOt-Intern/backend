@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.server.game.config.SpringContextHolder;
 import com.server.game.service.room.RoomRedisService;
+import com.server.game.service.scheduler.GameCleanupScheduler;
 import com.server.game.service.user.UserService;
 import com.server.game.util.ChampionEnum;
 
@@ -16,9 +17,11 @@ import java.util.Set;
 
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Component
+@Slf4j
 public class ChannelManager {
 
     private static final Map<String, Channel> userChannels = new ConcurrentHashMap<>();
@@ -40,12 +43,12 @@ public class ChannelManager {
 
     private static void userRegister(String userId, Channel channel) {
         if (userId == null || userId.isEmpty()) {
-            System.out.println(">>> Cannot register channel, userId is null or empty.");
+            log.info(">>> Cannot register channel, userId is null or empty.");
             return; // Invalid userId, do not register
         }
 
         if (userChannels.containsKey(userId)) {
-            System.out.println(">>> UserId already registered: " + userId);
+            log.info(">>> UserId already registered: " + userId);
             return; // UserId already registered, do not register again
         }
         
@@ -57,12 +60,12 @@ public class ChannelManager {
         ChannelManager.setUsername2Channel(username, channel);
 
         userChannels.put(userId, channel);
-        System.out.println(">>> Registered channel for userId: " + userId);
+        log.info(">>> Registered channel for userId: " + userId);
     }
 
     private static void gameRegister(String gameId, Channel channel) {
         if (gameId == null || gameId.isEmpty()) {
-            System.out.println(">>> Cannot register channel, gameId is null or empty.");
+            log.info(">>> Cannot register channel, gameId is null or empty.");
             return; // Invalid gameId, do not register
         }
 
@@ -75,7 +78,7 @@ public class ChannelManager {
         gameChannels.computeIfAbsent(gameId, k -> ConcurrentHashMap.newKeySet())
                    .add(channel);
 
-        System.out.println(">>> Registered channel for gameId: " + gameId + "\n\n");
+        log.info(">>> Registered channel for gameId: " + gameId + "\n\n");
     }
 
     public static void unregister(Channel channel) {
@@ -86,25 +89,25 @@ public class ChannelManager {
     private static void userUnregister(Channel channel) {
        String userId = ChannelManager.getUserIdByChannel(channel);
         if (userId == null) {
-            System.out.println(">>> Cannot unregister channel, userId is null.");
+            log.info(">>> Cannot unregister channel, userId is null.");
             return;
         }
         userChannels.remove(userId); 
 
-        System.out.println(">>> Unregistered channel for userId: " + userId);
+        log.info(">>> Unregistered channel for userId: " + userId);
     }
 
     private static void gameUnregister(Channel channel) {
         String gameId = ChannelManager.getGameIdByChannel(channel);
         if (gameId == null) {
-            System.out.println(">>> Cannot unregister channel, gameId is null.");
+            log.info(">>> Cannot unregister channel, gameId is null.");
             return;
         }
 
         Set<Channel> channels = gameChannels.get(gameId);
         if (channels != null) {
             if (!channels.contains(channel)) {
-                System.out.println(">>> Channel not found in game channels for gameId: " + gameId);
+                log.info(">>> Channel not found in game channels for gameId: " + gameId);
                 return; // Channel not found in the game, nothing to remove
             }
 
@@ -114,19 +117,19 @@ public class ChannelManager {
                 //Remove the room from redis cache
                 RoomRedisService roomRedisService = SpringContextHolder.getBean(RoomRedisService.class);
                 roomRedisService.deleteById(gameId);
-                System.out.println(">>> [Log in gameUnregister()] Removed room from redis cache for roomId: " + gameId);
+                log.info("Removed room from redis cache for roomId: " + gameId);
                 
                 // Notify GameCleanupService that this game is now empty
                 try {
-                    com.server.game.service.scheduler.GameCleanupScheduler gameCleanupService = 
-                        SpringContextHolder.getBean(com.server.game.service.scheduler.GameCleanupScheduler.class);
+                    GameCleanupScheduler gameCleanupService = 
+                        SpringContextHolder.getBean(GameCleanupScheduler.class);
                     gameCleanupService.notifyGameEmpty(gameId);
                 } catch (Exception e) {
-                    System.out.println(">>> [Warning] Could not notify GameCleanupService for empty game: " + gameId + " - " + e.getMessage());
+                    log.info(">>> [Warning] Could not notify GameCleanupService for empty game: " + gameId + " - " + e.getMessage());
                 }
             }
 
-            System.out.println(">>> Unregistered channel for gameId: " + gameId);
+            log.info(">>> Unregistered channel for gameId: " + gameId);
         }
     }
 
@@ -145,20 +148,20 @@ public class ChannelManager {
         if (channels != null && !channels.isEmpty()) {
             return channels.iterator().next(); // Return any channel from the set
         }
-        System.out.println(">>> No channels found for gameId: " + gameId);
+        log.info(">>> No channels found for gameId: " + gameId);
         return null; // No channels found for this gameId
     }
 
     public static Channel getChannelByUserId(String userId) {
         Channel channel = userChannels.get(userId);
         if (channel != null) { return channel; }
-        System.out.println(">>> No channel found for userId: " + userId);
+        log.info(">>> No channel found for userId: " + userId);
         return null; 
     }
 
     public static Set<Channel> getChannelsByGameId(String gameId) {
         if (!gameChannels.containsKey(gameId)) {
-            System.out.println(">>> No channels found for gameId: " + gameId);
+            log.info(">>> No channels found for gameId: " + gameId);
             return Collections.emptySet();
         }
         return gameChannels.get(gameId);
@@ -174,28 +177,28 @@ public class ChannelManager {
                 }
             }
         }
-        System.out.println(">>> No channel found for gameId: " + gameId + " and slot: " + slot);
+        log.info(">>> No channel found for gameId: " + gameId + " and slot: " + slot);
         return null; // No matching channel found
     }
     
     public static String getUserIdByChannel(Channel channel) {
         String userId = channel.attr(USER_ID).get();
         if (userId != null) { return userId; }
-        System.out.println(">>> Cannot get userId, it is not set for the channel.");
+        log.info(">>> Cannot get userId, it is not set for the channel.");
         return null;
     }
 
     public static String getUsernameByChannel(Channel channel) {
         String username = channel.attr(USERNAME).get();
         if (username != null) { return username; }
-        System.out.println(">>> Cannot get username, it is not set for the channel.");
+        log.info(">>> Cannot get username, it is not set for the channel.");
         return null;
     }
 
     public static String getUsernameBySlot(String gameId, short slot) {
         Set<Channel> channels = ChannelManager.getChannelsByGameId(gameId);
         if (channels == null || channels.isEmpty()) {
-            System.out.println(">>> No channels found for gameId: " + gameId);
+            log.info(">>> No channels found for gameId: " + gameId);
             return null;
         }
 
@@ -205,27 +208,27 @@ public class ChannelManager {
                 return getUsernameByChannel(channel); // Return the username of the matching channel
             }
         }
-        System.out.println(">>> No channel found for gameId: " + gameId + " and slot: " + slot);
+        log.info(">>> No channel found for gameId: " + gameId + " and slot: " + slot);
         return null; // No matching channel found
     }
 
     public static String getGameIdByChannel(Channel channel) {
         String gameId = channel.attr(GAME_ID).get();
         if (gameId != null) { return gameId; }
-        System.out.println(">>> Cannot get gameId, it is not set for the channel.");
+        log.info(">>> Cannot get gameId, it is not set for the channel.");
         return null;
     }
 
 
     public static Short getSlotByChannel(Channel channel) {
         if (channel == null) {
-            System.out.println(">>> Cannot get slot, channel is null.");
+            log.info(">>> Cannot get slot, channel is null.");
             return null; // Return -1 if channel is null
         }
         Short slot = 0;
         slot = channel.attr(SLOT).get();
         if (slot == null) {
-            System.out.println(">>> Cannot get slot, it is not set for the channel.");
+            log.info(">>> Cannot get slot, it is not set for the channel.");
             return null; // Return -1 if slot is not set
         }
         return slot;
@@ -234,7 +237,7 @@ public class ChannelManager {
     public static ChampionEnum getChampionEnumByChannel(Channel channel) {
         ChampionEnum championEnum = channel.attr(CHAMPION_ID).get();
         if (championEnum == null) {
-            System.out.println(">>> [Log in ChannelManager.getChampionEnumByChannel()] Cannot get championEnum, it is not set for the channel.");
+            log.info("Cannot get championEnum, it is not set for the channel.");
             return null;
         }
         return championEnum;
@@ -247,7 +250,7 @@ public class ChannelManager {
     public static Map<Short, ChampionEnum> getSlot2ChampionEnum(String gameId) {
         Set<Channel> channels = gameChannels.get(gameId);
         if (channels == null || channels.isEmpty()) {
-            System.out.println(">>> No channels found for gameId: " + gameId);
+            log.info(">>> No channels found for gameId: " + gameId);
             return Collections.emptyMap();
         }
 
@@ -265,7 +268,7 @@ public class ChannelManager {
     public static Boolean isUserReady(Channel channel) {
         Boolean isReady = channel.attr(IS_READY).get();
         if (isReady == null) {
-            System.out.println(">>> Cannot get user ready status, it is not set for the channel.");
+            log.info(">>> Cannot get user ready status, it is not set for the channel.");
             return false; // Default to false if not set
         }
         return isReady;

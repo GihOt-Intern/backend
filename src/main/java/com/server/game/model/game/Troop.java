@@ -1,15 +1,15 @@
 package com.server.game.model.game;
 
 import com.server.game.model.game.attackStrategy.TroopAttackStrategy;
+import com.server.game.model.game.component.AttackComponent;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.MovingComponent;
-import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attributeComponent.TroopAttributeComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.model.map.component.Vector2;
 import com.server.game.resource.model.TroopDB;
-import com.server.game.service.move.MoveService2;
 import com.server.game.util.TroopEnum;
 
 import lombok.AccessLevel;
@@ -25,7 +25,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TroopInstance2 extends DependentEntity implements SkillReceivable {
+public class Troop extends DependentEntity implements SkillReceivable {
 
     final TroopEnum troopEnum;
 
@@ -43,7 +43,7 @@ public class TroopInstance2 extends DependentEntity implements SkillReceivable {
     boolean inDefensiveStance = true;
     Entity defensiveTarget = null;
 
-    public TroopInstance2(TroopDB troopDB, GameState gameState, SlotState ownerSlot, MoveService2 moveService) {
+    public Troop(TroopDB troopDB, GameState gameState, SlotState ownerSlot) {
         super("troop_" + UUID.randomUUID().toString(),
             gameState, ownerSlot);
 
@@ -56,7 +56,6 @@ public class TroopInstance2 extends DependentEntity implements SkillReceivable {
             troopDB.getStats().getHealingRange(),
             troopDB.getStats().getCost()
         );
-        System.out.println("TroopInstance2 created with attributes: " + attributeComponent + " and enum: " + troopEnum);
 
         this.movingComponent = new MovingComponent(
             this,
@@ -72,8 +71,7 @@ public class TroopInstance2 extends DependentEntity implements SkillReceivable {
             troopDB.getStats().getAttack(),
             troopDB.getStats().getAttackSpeed(),
             troopDB.getStats().getAttackRange(),
-            new TroopAttackStrategy(),
-            moveService
+            new TroopAttackStrategy()
         );
 
         this.defenseRange = this.attributeComponent.getDetectionRange() * 1.5f;
@@ -216,5 +214,8 @@ public class TroopInstance2 extends DependentEntity implements SkillReceivable {
     protected void handleDeath(Entity killer) {
         // Note: TroopManager.checkAndHandleAllTroopDeaths() will handle the cleanup in the next game tick
         log.info("Troop {} has died and will be cleaned up in next game tick", this.getStringId());
+
+        this.getGameStateService().setStopAttacking(this);
+        this.getGameStateService().setStopMoving(this, true);
     }
 }

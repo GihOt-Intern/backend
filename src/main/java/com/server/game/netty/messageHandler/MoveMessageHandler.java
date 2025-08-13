@@ -6,12 +6,12 @@ import com.server.game.annotation.customAnnotation.MessageMapping;
 import com.server.game.factory.MoveContextFactory;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
-import com.server.game.model.game.TroopInstance2;
+import com.server.game.model.game.Troop;
 import com.server.game.model.game.context.MoveContext;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.receiveObject.PositionReceive;
 import com.server.game.service.gameState.GameStateService;
-import com.server.game.service.move.MoveService2;
+import com.server.game.service.move.MoveService;
 
 import io.netty.channel.Channel;
 import lombok.AllArgsConstructor;
@@ -25,7 +25,7 @@ public class MoveMessageHandler {
     private final MoveContextFactory moveContextFactory;
 
     private final GameStateService gameStateService;
-    private final MoveService2 moveService;
+    private final MoveService moveService;
 
     @MessageMapping(PositionReceive.class)
     public void handleMoveMessage(PositionReceive receiveObject, Channel channel) {
@@ -34,9 +34,9 @@ public class MoveMessageHandler {
         GameState gameState = gameStateService.getGameStateById(gameId);
         
         Entity mover = gameStateService.getEntityByStringId(gameState, receiveObject.getStringId());
-        if (receiveObject.getStringId().startsWith("troop")) {
-            ((TroopInstance2) mover).setDefensePosition(receiveObject.getPosition());
-            ((TroopInstance2) mover).setInDefensiveStance(false);
+        if (mover instanceof Troop troop) {
+            troop.setDefensePosition(receiveObject.getPosition());
+            troop.setInDefensiveStance(false);
         }
         
         MoveContext ctx = moveContextFactory.createMoveContext(
@@ -47,7 +47,6 @@ public class MoveMessageHandler {
         );
 
         moveService.setMove(ctx, true);
-        
     }
     
 } 

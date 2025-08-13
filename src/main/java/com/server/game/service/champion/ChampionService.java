@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 
@@ -15,13 +16,14 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
+@Slf4j
 public class ChampionService {
     
     ChampionDBRepository championRepository;
 
     public ChampionDB getChampionDBById(ChampionEnum championEnum) {
         return championRepository.findById(championEnum.getChampionId()).orElseGet(() -> {
-            System.out.println(">>> [Log in ChampionService] Champion with id " + championEnum.getChampionId() + " not found.");
+            log.info("Champion with id " + championEnum.getChampionId() + " not found.");
             return null;
         });
     }

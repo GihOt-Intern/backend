@@ -13,7 +13,7 @@ import com.server.game.service.castSkill.CastSkillService;
 import com.server.game.service.defense.DefensiveStanceService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.gold.GoldService;
-import com.server.game.service.move.MoveService2;
+import com.server.game.service.move.MoveService;
 import com.server.game.service.tower.TowerDefenseService;
 import com.server.game.service.troop.TroopManager;
 
@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class GameLogicScheduler {
 
-    MoveService2 moveService;
+    MoveService moveService;
     AttackService attackService;
     CastSkillService castSkillService;
     GoldService goldService;
@@ -97,7 +97,7 @@ public class GameLogicScheduler {
             try {
                 defensiveStanceService.updateDefensiveStances(gameState);
                 towerDefenseService.updateTowerDefenses(gameState);
-                // TODO: Add slower update systems here
+                // NOTE: Add slower update systems here
                 // - Resource generation
                 // - AI decision making
                 // - Game statistics updates
@@ -118,7 +118,7 @@ public class GameLogicScheduler {
     public void backgroundGameLogicLoop() {
         for (GameState gameState : gameStateService.getAllActiveGameStates()) {
             try {
-                // TODO: Add background systems here
+                // NOTE: Add background systems here
                 // - Game session cleanup
                 // - Performance metrics collection
                 // - Anti-cheat validation
@@ -144,12 +144,12 @@ public class GameLogicScheduler {
                 channel.writeAndFlush(new HeartbeatMessage())
                     .addListener(future -> {
                         if (!future.isSuccess()) {
-                            System.out.println(">>> Heartbeat failed for user " + userId + ". Cleaning up channel.");
+                            log.info(">>> Heartbeat failed for user " + userId + ". Cleaning up channel.");
                             ChannelManager.unregister(channel);
                         }
                 });
             } else {
-                System.out.println(">>> Inactive channel for user " + userId + ". Removing from manager.");
+                log.info(">>> Inactive channel for user " + userId + ". Removing from manager.");
                 ChannelManager.unregister(channel);
             }
         }

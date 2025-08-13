@@ -16,8 +16,8 @@ public class MessageDispatcher {
 
     public void register(Class<?> receiveClazz, Object classContains, Method method) {
         handlerMap.put(receiveClazz, new HandlerMethod(classContains, method));
-        System.out.println(">>> Registered handler: <" + method.getName() + "> method in <" + classContains.getClass().getSimpleName() + "> class" +
-            " to handle <" + receiveClazz.getSimpleName() + "> message type");
+        // System.out.println(">>> Registered handler: <" + method.getName() + "> method in <" + classContains.getClass().getSimpleName() + "> class" +
+        //     " to handle <" + receiveClazz.getSimpleName() + "> message type");
     }
 
     

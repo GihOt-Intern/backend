@@ -10,17 +10,17 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.DefaultChannelPromise;
 import io.netty.util.concurrent.ImmediateEventExecutor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GlobalBroadcastTarget implements SendTarget {
 
     @Override
     public ChannelFuture send(ByteBuf message) {
-        // System.out.println(">>> Sending Global Broadcast...");
-
 
         Set<Channel> channels = ChannelManager.getAllChannels();
         if (channels == null || channels.isEmpty()) {
-            System.out.println(">>> No active channels found.");
+            log.warn(">>> No active channels found.");
             return new DefaultChannelPromise(null, ImmediateEventExecutor.INSTANCE).setSuccess();
         }
 
@@ -28,7 +28,6 @@ public class GlobalBroadcastTarget implements SendTarget {
         for (Channel channel : channels) {
             if (channel.isActive()) {
                 lastFuture = channel.writeAndFlush(message.retainedDuplicate());
-                // System.out.println(">>> Server sent BinaryWebSocketFrame to user: " + ChannelManager.getUserIdByChannel(channel));
             }
         }
 

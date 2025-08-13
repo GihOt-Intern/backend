@@ -9,6 +9,7 @@ import com.server.game.resource.model.TroopDB;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@Slf4j
 public class JsonReader {
 
     ObjectMapper objectMapper;
@@ -28,14 +30,14 @@ public class JsonReader {
             InputStream is = getClass().getClassLoader().getResourceAsStream("game/map/" + mapName + ".json");
             if (is == null) {
                 // throw new FileNotFoundException("File not found: resources/game/map/" + mapName + ".json");
-                System.out.println(">>> File not found: resources/game/map/" + mapName + ".json");
+                log.info(">>> File not found: resources/game/map/" + mapName + ".json");
                 return null;
             }
             return objectMapper.readValue(is, GameMap.class);
 
         } catch (IOException e) {
             // e.printStackTrace();
-            System.out.println(">>> Error reading map JSON: " + e.getMessage());
+            log.info(">>> Error reading map JSON: " + e.getMessage());
             return null;
         }
     }
@@ -45,14 +47,14 @@ public class JsonReader {
             InputStream is = getClass().getClassLoader().getResourceAsStream("game/map/" + mapName + "_grid.json");
             if (is == null) {
                 // throw new FileNotFoundException("File not found: resources/game/map/" + mapName + "_grid.json");
-                System.out.println(">>> File not found: resources/game/map/" + mapName + "_grid.json");
+                log.info(">>> File not found: resources/game/map/" + mapName + "_grid.json");
                 return null;
             }
             return objectMapper.readValue(is, GameMapGrid.class);
 
         } catch (IOException e) {
             // e.printStackTrace();
-            System.out.println(">>> Error reading map grid JSON: " + e.getMessage());
+            log.info(">>> Error reading map grid JSON: " + e.getMessage());
             return null;
         }
     }   
@@ -62,14 +64,14 @@ public class JsonReader {
             InputStream is = getClass().getClassLoader().getResourceAsStream("game/champion/" + championName + ".json");
             if (is == null) {
                 // throw new FileNotFoundException("File not found: resources/game/champion/" + championName + ".json");
-                System.out.println(">>> File not found: resources/game/champion/" + championName + ".json");
+                log.info(">>> File not found: resources/game/champion/" + championName + ".json");
                 return null;
             }
             return objectMapper.readValue(is, ChampionDB.class);
 
         } catch (IOException e) {
             // e.printStackTrace();
-            System.out.println(">>> Error reading champion JSON: " + e.getMessage());
+            log.info(">>> Error reading champion JSON: " + e.getMessage());
             return null;
         }
     }
@@ -79,14 +81,14 @@ public class JsonReader {
             InputStream is = getClass().getClassLoader().getResourceAsStream("game/troop/" + troopName + ".json");
             if (is == null) {
                 // throw new FileNotFoundException("File not found: resources/game/troop/" + troopName + ".json");
-                System.out.println(">>> File not found: resources/game/troop/" + troopName + ".json");
+                log.info(">>> File not found: resources/game/troop/" + troopName + ".json");
                 return null;
             }
             return objectMapper.readValue(is, TroopDB.class);
 
         } catch (IOException e) {
             // e.printStackTrace();
-            System.out.println(">>> Error reading troop JSON: " + e.getMessage());
+            log.info(">>> Error reading troop JSON: " + e.getMessage());
             return null;
         }
     }

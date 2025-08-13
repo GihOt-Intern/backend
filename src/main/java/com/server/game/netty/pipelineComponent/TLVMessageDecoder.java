@@ -3,29 +3,24 @@ package com.server.game.netty.pipelineComponent;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
 import com.server.game.netty.tlv.codec.TLVDecoder;
 import com.server.game.netty.tlv.interf4ce.TLVDecodable;
-import com.server.game.util.Util;
 
+@Slf4j
 public class TLVMessageDecoder extends MessageToMessageDecoder<ByteBuf> {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf buf, List<Object> out) throws Exception {
-        //System.out.println(">>> Server received ByteBuf:");
-        Util.printHex(buf.nioBuffer(), true);
-
-        //System.out.println(">>> Server Decoding ByteBuf to TLVDecodable object");
+        // Util.printHex(buf.nioBuffer(), true);
 
         short type = buf.readShort();
         int length = buf.readInt();
 
-        //System.out.println(">>> Server Read TLV type: " + type + ", length: " + length);
-
         if (buf.readableBytes() != length) {
-            //System.out.println(">>> [value] length is inconsistent with the [length] in message!!!");
             return;
         }
 
@@ -33,15 +28,13 @@ public class TLVMessageDecoder extends MessageToMessageDecoder<ByteBuf> {
         buf.readBytes(value);
 
         TLVDecodable receiveObject = TLVDecoder.bytes2Object(type, value);
-        //System.out.println(">>> Server Decoded ByteBuf to TLVDecodable object: " + receiveObject.getClass().getSimpleName());
 
         out.add(receiveObject);            
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        System.out.println(">>> Server Exception: " + cause.getMessage());
-        cause.printStackTrace();
+        log.error(">>> Server Exception: " + cause.getMessage(), cause);
         ctx.close(); // Close the channel on exception
     }
 }

@@ -3,18 +3,19 @@ package com.server.game.model.game;
 
 import java.util.UUID;
 
+import com.server.game.factory.SkillFactory;
 import com.server.game.model.game.attackStrategy.ChampionAttackStrategy;
+import com.server.game.model.game.component.AttackComponent;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.MovingComponent;
-import com.server.game.model.game.component.attackComponent.AttackComponent;
 import com.server.game.model.game.component.attributeComponent.ChampionAttributeComponent;
 import com.server.game.model.game.component.skillComponent.DurationSkillComponent;
 import com.server.game.model.game.component.skillComponent.SkillComponent;
-import com.server.game.model.game.component.skillComponent.SkillFactory;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
+import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.resource.model.ChampionDB;
-import com.server.game.service.move.MoveService2;
+import com.server.game.service.gameState.GameStateService;
 import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
@@ -48,7 +49,7 @@ public final class Champion extends DependentEntity implements SkillReceivable {
 
 
     public Champion(ChampionDB championDB, SlotState ownerSlot, GameState gameState,
-        SkillFactory skillFactory, MoveService2 moveService) {
+        SkillFactory skillFactory) {
 
         super("champion_" + UUID.randomUUID().toString(),
             gameState, ownerSlot);
@@ -77,8 +78,7 @@ public final class Champion extends DependentEntity implements SkillReceivable {
             championDB.getStats().getAttack(),
             championDB.getStats().getAttackSpeed(),
             championDB.getStats().getAttackRange(),
-            new ChampionAttackStrategy(),
-            moveService
+            new ChampionAttackStrategy()
         );
 
         this.addAllComponents();
@@ -115,9 +115,6 @@ public final class Champion extends DependentEntity implements SkillReceivable {
 
         boolean nextInPlayground = this.checkInPlayground(
             this.getGameState().getGameMap().getPlayground());
-
-        // System.out.println(">>> [Log in Champion.checkInPlayGround] " + this.stringId + " nextInPlayGround: " +
-        //     nextInPlayGround + ", current inPlayGround: " + this.isInPlayground());
 
         if (nextInPlayground != this.isInPlayground()) {
             this.toggleInPlaygroundFlag(); // Toggle the state
@@ -174,17 +171,19 @@ public final class Champion extends DependentEntity implements SkillReceivable {
 
     @Override
     protected void handleDeath(Entity killer) {
-        if (this.isAlive()) { return; }
         log.info("Champion {} is dead, handling death logic...", this.getName());
 
-        this.getGameStateService().checkAndHandleChampionDeath(
-                this.getGameState().getGameId(), this.getOwnerSlot().getSlot());
+        GameStateService gameStateService = this.getGameStateService();
 
+        gameStateService.setChampionDead(this);
 
-        Integer stolenGold = Math.round(this.getCurrentGold()*0.3f);
+        gameStateService.setStopAttacking(this);
+        gameStateService.setStopMoving(this, true);
 
-        killer.increaseGold(stolenGold);
-        this.decreaseGold(stolenGold);
+        gameStateService.handleStolingGold(this, killer);
+
+        gameStateService.scheduleChampionRespawn(this.ownerSlot, (short) 3);
+        gameStateService.sendEntityDeathMessage(this.getGameState(), this.getStringId());
     }
 
 
@@ -194,7 +193,6 @@ public final class Champion extends DependentEntity implements SkillReceivable {
 
     public void updateDurationSkill() {
         if (this.skillComponent instanceof DurationSkillComponent durationSkillComponent) {
-            // log.info("Updating duration skill for champion: {}", this.getName());
             durationSkillComponent.updatePerTick();
         }
     }

@@ -3,6 +3,8 @@ package com.server.game.model.game;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.server.game.model.game.building.Burg;
+import com.server.game.model.game.building.Tower;
 import com.server.game.model.game.component.GoldComponent;
 
 import lombok.AccessLevel;
@@ -12,9 +14,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Data
+@Slf4j
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SlotState {
@@ -36,7 +40,7 @@ public class SlotState {
     @Delegate
     final GoldComponent goldComponent;
 
-    final Set<TroopInstance2> troops;
+    final Set<Troop> troops;
 
     public SlotState(GameState gameState, Short slot, Champion champion, Set<Tower> towers, Burg bug, Integer initialGold) {
         this.gameState = gameState;
@@ -48,9 +52,9 @@ public class SlotState {
         this.troops = new HashSet<>();
     }
 
-    public void addTroop(TroopInstance2 troop) {
+    public void addTroop(Troop troop) {
         if (troop == null) {
-            System.out.println(">>> [SlotState] Cannot add null troop");
+            log.error(">>> [SlotState] Cannot add null troop");
             return;
         }
         this.troops.add(troop);
@@ -88,11 +92,19 @@ public class SlotState {
         this.setCurrentHP(this.getMaxHP());
     }
 
-    public void addTroopInstance(TroopInstance2 troopInstance){
+    public void addTroopInstance(Troop troopInstance){
         this.troops.add(troopInstance);
     }
 
     public int getTroopCount(){ return this.troops.size(); }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) { return false; }
+        if (!(other instanceof SlotState otherSlotState)) { return false; }
+        if (this == other) { return true; }
+        return this.slot == otherSlotState.slot;
+    }
 
     /**
      * Get player status summary

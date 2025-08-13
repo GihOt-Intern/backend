@@ -6,7 +6,9 @@ import java.util.Map;
 
 import com.server.game.netty.tlv.interf4ce.TLVDecodable;
 
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class TLVDecoder {
 
     private static final Map<Short, Class<? extends TLVDecodable>> registry = new HashMap<>();
@@ -16,7 +18,7 @@ public class TLVDecoder {
             throw new IllegalArgumentException("Type already registered: " + type);
         }
         registry.put(type, clazz);
-        System.out.println(">>> Registered TLVDecodable: <" + clazz.getSimpleName() + "> for type=<" + type + ">");
+        // System.out.println(">>> Registered TLVDecodable: <" + clazz.getSimpleName() + "> for type=<" + type + ">");
     }
 
 
@@ -24,7 +26,7 @@ public class TLVDecoder {
         // OOP abstraction: use interface (abstraction) to create an concrete instance base on [type]
         Class<? extends TLVDecodable> clazz = registry.get(type);
         if (clazz == null) {
-            System.out.println(">>> No class registered for type: " + type);
+            log.error(">>> No class registered for type: " + type);
             throw new IllegalArgumentException("Unknown type: " + type);
         }
 

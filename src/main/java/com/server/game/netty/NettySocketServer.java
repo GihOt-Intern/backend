@@ -10,8 +10,10 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class NettySocketServer {
 
     private Channel serverChannel;
@@ -26,7 +28,7 @@ public class NettySocketServer {
     public synchronized void start() throws Exception {
         
         if (serverChannel != null && serverChannel.isActive()) {
-            System.out.println("WebSocket server is already running.");
+            log.info("WebSocket server is already running.");
             return;
         }
 
@@ -48,27 +50,20 @@ public class NettySocketServer {
 
             this.serverChannel = f.channel();
 
-
-            // String hostAddress = java.net.InetAddress.getLocalHost().getHostAddress();
-            // System.out.println("WebSocket server host address: " + hostAddress);
-
-            System.out.println("WebSocket server started at host=localhost, port=" + port);
+            log.info("WebSocket server started at host=localhost, port=" + port);
 
 
             f.channel().closeFuture().sync();
         } catch (Exception e) {
-            System.err.println("Failed to start WebSocket server: " + e.getMessage());
+            log.error("Failed to start WebSocket server: " + e.getMessage());
             throw e;
-        } 
-        // finally {
-        //     this.stop();
-        // }
+        }
     }
 
     
     @PreDestroy   // Shutdown Netty server automatically when Spring server is stopped
     private void stop() throws Exception {
-        System.out.println("Shutting down Netty server...");
+        log.info("Shutting down Netty server...");
 
         if (serverChannel != null) {
             serverChannel.close().sync();
@@ -79,6 +74,6 @@ public class NettySocketServer {
         if (workerGroup != null) {
             workerGroup.shutdownGracefully().sync();
         }
-        System.out.println("Netty server shut down.");
+        log.info("Netty server shut down.");
     }
 }

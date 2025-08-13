@@ -4,14 +4,14 @@
   "type": "melee",
   "role": "Tank",
   "stats": {
-    "hp": 400,
+    "hp": 800,
     "defense": 80,
-    "attack": 60,
-    "move_speed": 3.5,
-    "attack_speed": 1.2,
-    "attack_range": 0.8,
-    "detection_range": 10.0,
-    "cost": 100
+    "attack": 90,
+    "move_speed": 3.2,
+    "attack_speed": 0.8,
+    "attack_range": 2.0,
+    "detection_range": 5.0,
+    "cost": 50
   },
   "ability": {
     "name": "Shield Wall",

@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-// import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 
 import jakarta.validation.Valid;
@@ -41,8 +40,6 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
     UserService userService;
     UserMapper userMapper;
-
-    // SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest request) {
@@ -88,44 +85,4 @@ public class AuthenticationController {
             new ApiResponse<>(HttpStatus.OK.value(), "Token refreshed successfully", response);
         return ResponseEntity.ok(apiResponse);
     }
-
-    // @MessageMapping("/login")
-    // public void authenticateWebSocket(@Valid @Payload AuthenticationRequest request, 
-    //                                 Principal principal) throws Exception {
-    //     System.out.println("Received login via WS: " + request.getUsername());
-    //     System.out.println("Principal = " + principal.getName());
-
-    //     try {
-    //         User user = authenticationService.authenticate(request);
-    //         String token = authenticationService.generateToken(user);
-    //         AuthenticationResponse response = authenticationMapper.toAuthenticationResponse(user, token);
-
-    //         // Simulate sending a response back to the user
-    //         messagingTemplate.convertAndSendToUser(
-    //             principal.getName(),
-    //             "/queue/login-response",
-    //             new ApiResponse<>(HttpStatus.OK.value(), "WebSocket authentication successful", response)
-    //         );
-    //     } catch (Exception e) {
-    //         System.out.println("WebSocket authentication failed: " + e.getMessage());
-    //         messagingTemplate.convertAndSendToUser(
-    //             principal.getName(),
-    //             "/queue/login-response",
-    //             new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "WebSocket authentication failed: " + e.getMessage(), null)
-    //         );
-    //     }
-    // }
-
-
-    // @EventListener
-    // public void handleSessionConnectEvent(SessionConnectEvent event) {
-    //     System.out.println("Session Connect Event");
-    // }
-
-    // @EventListener
-    // public void handleSessionDisconnectEvent(SessionConnectEvent event) {
-    //     System.out.println("Session Disconnect Event");
-
-        
-    // }
 }

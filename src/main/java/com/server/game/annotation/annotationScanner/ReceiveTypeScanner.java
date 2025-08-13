@@ -18,7 +18,7 @@ public class ReceiveTypeScanner implements ApplicationListener<ApplicationReadyE
 
     @Override
     public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
-        System.out.println(">>> Scanning for @ReceiveType classes...");
+        // System.out.println(">>> Scanning for @ReceiveType classes...");
 
         String[] beanNames = context.getBeanDefinitionNames();
         for (String name : beanNames) {
