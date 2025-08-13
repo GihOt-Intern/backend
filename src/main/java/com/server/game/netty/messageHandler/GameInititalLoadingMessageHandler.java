@@ -9,6 +9,8 @@ import com.server.game.model.game.GameState;
 import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.initialGameState.ChampionInitialStatsSend;
 import com.server.game.netty.sendObject.initialGameState.InitialPositionsSend;
+import com.server.game.resource.model.TroopDB;
+import com.server.game.resource.service.TroopService;
 import com.server.game.service.gameState.GameCoordinator;
 
 import io.netty.channel.Channel;
@@ -26,6 +28,7 @@ public class GameInititalLoadingMessageHandler {
 
     GameStateFactory gameStateBuilder;
     GameCoordinator gameCoordinator;
+    TroopService troopService;
     
     // This method is called by LobbyHandler when all players are ready
     public void loadInitial(Channel channel) {
@@ -48,6 +51,7 @@ public class GameInititalLoadingMessageHandler {
 
     private ChannelFuture sendInitialPositions(Channel channel, GameState gameState) {
 
+
         InitialPositionsSend championPositionsSend = 
             new InitialPositionsSend(gameState);
         log.info(">>> Send loading initial positions message");
@@ -57,6 +61,8 @@ public class GameInititalLoadingMessageHandler {
     private ChannelFuture sendChampionInitialStats(Channel channel, GameState gameState) {
         // Send message is unicast, need to get all channels in room and send one by one
         Set<Channel> playersInRoom = ChannelManager.getGameChannelsByInnerChannel(channel);
+
+        Set<TroopDB> allTroopDBs = troopService.getAllTroops();
 
         ChannelFuture lastFuture = null;
         for (Channel playerChannel : playersInRoom) {
@@ -68,9 +74,8 @@ public class GameInititalLoadingMessageHandler {
             }
             Integer initGold = gameState.peekGold(slot);
 
-
             ChampionInitialStatsSend championInitialStatsSend = 
-                new ChampionInitialStatsSend(champion, initGold);
+                new ChampionInitialStatsSend(champion, initGold, allTroopDBs);
 
             lastFuture = playerChannel.writeAndFlush(championInitialStatsSend);
         }

@@ -160,6 +160,10 @@ public abstract class Entity implements Attackable {
             return false; // Default value if no attack component is present
         }
     }
+    
+    public boolean setStopAttacking() {
+        return this.setAttackContext(null);
+    }
 
     public AttackContext getAttackContext() {
         if (hasComponent(AttackComponent.class)) {

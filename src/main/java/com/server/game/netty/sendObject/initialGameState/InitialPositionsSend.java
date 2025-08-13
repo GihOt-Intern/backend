@@ -68,7 +68,7 @@ public class InitialPositionsSend implements TLVEncodable {
             dos.writeInt(burgHP);
 
             // Write number of champion positions
-            dos.writeShort(championPositionsData.size());
+            dos.writeShort((short) championPositionsData.size());
 
             // Write each champion's position data
             for (InitialPositionData positionData : championPositionsData) {
@@ -87,8 +87,7 @@ public class InitialPositionsSend implements TLVEncodable {
         return new AMatchBroadcastTarget(channel);
     }
     
-
-
+    
 
     //************* InitialPositionData class *************//
     @Data

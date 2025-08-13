@@ -215,6 +215,7 @@ public class Troop extends DependentEntity implements SkillReceivable {
         // Note: TroopManager.checkAndHandleAllTroopDeaths() will handle the cleanup in the next game tick
         log.info("Troop {} has died and will be cleaned up in next game tick", this.getStringId());
 
-        this.stopAttacking();
+        this.getGameStateService().setStopAttacking(this);
+        this.getGameStateService().setStopMoving(this, true);
     }
 }

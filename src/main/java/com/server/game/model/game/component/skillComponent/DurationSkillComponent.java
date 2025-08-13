@@ -78,7 +78,8 @@ public abstract class DurationSkillComponent extends SkillComponent {
             log.info("Using skill, but champion is attacking, stopping attack for champion {}.",
                 this.skillOwner.getName());
 
-            skillOwner.stopAttacking();
+            this.getSkillOwner().getGameStateService().setStopAttacking(this.getSkillOwner());
+
         }
 
         long currentTick = this.getCastSkillContext().getCurrentTick();

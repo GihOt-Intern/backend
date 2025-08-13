@@ -151,53 +151,6 @@ public class GameStateService {
         return true;
     }
 
-    /**
-     * Check if a champion has died after taking damage and handle death/respawn logic
-     * @return true if champion died, false otherwise
-     */
-    public boolean checkAndHandleChampionDeath(String gameId, short slot) {
-        GameState gameState = this.getGameStateById(gameId);
-        if (gameState == null) {
-            log.warn("Game state not found for gameId: {}", gameId);
-            return false;
-        }
-
-        Champion champion = gameState.getChampionBySlot(slot);
-        if (champion == null || champion.getCurrentHP() > 0) {
-            return false;
-        }
-
-        SlotState slotState = gameState.getSlotState(slot);
-        if (slotState == null) {
-            return false;
-        }
-
-        slotState.setChampionDead();
-        
-        // Notify clients about the death
-        sendChampionDeathMessage(gameId, slot);
-        scheduleChampionRespawn(gameId, slot, (short) 3);
-
-        return true;
-    }
-
-    private void sendChampionDeathMessage(String gameId, short slot) {
-        String championId = this.getStringIdBySlotId(gameId, slot);
-        if (championId == null) {
-            log.warn("Could not find champion ID for gameId: {}, slot: {}", gameId, slot);
-            return;
-        }
-        
-        EntityDeathSend deathMessage = new EntityDeathSend(championId);
-        Channel channel = ChannelManager.getAnyChannelByGameId(gameId);
-        if (channel != null) {
-            channel.writeAndFlush(deathMessage);
-            //log.info("Sent champion death message for gameId: {}, slot: {}, championId: {}", gameId, slot, championId);
-        } else {
-            log.warn("No channel found for gameId: {} when sending champion death message", gameId);
-        }
-    }
-
     public void sendTowerDeathMessage(String gameId, Tower tower) {
         String towerId = tower.getStringId();
         if (towerId == null) {
@@ -239,7 +192,11 @@ public class GameStateService {
         }
     }
 
-    private void scheduleChampionRespawn(String gameId, short slot, short respawnTime) {
+    public void scheduleChampionRespawn(SlotState slotState, short respawnTime) {
+
+        String gameId = slotState.getGameState().getGameId();
+        short slot = slotState.getSlot();
+
         // Create a unique key for this respawn
         String respawnKey = gameId + ":" + slot;
         
@@ -530,7 +487,7 @@ public class GameStateService {
         for (Champion champion : champions) {
             Entity attackTarget = champion.getAttackTarget();
             if (entity.equals(attackTarget)) {
-                champion.stopAttacking();
+                this.setStopAttacking(champion);
             }
         }
     }
@@ -550,6 +507,22 @@ public class GameStateService {
         }
         mover.setStopMoving(isForced);
     }
+
+    public void setStopAttacking(Entity attacker) {
+        attacker.setStopAttacking();
+    }
+
+
+    public void setChampionDead(Champion champion) {
+        champion.getOwnerSlot().setChampionDead();
+    }
+
+    public void handleStolingGold(Champion victim, Entity killer) {
+        Integer stolenGold = Math.round(victim.getCurrentGold()*0.3f);
+        victim.decreaseGold(stolenGold);
+        killer.increaseGold(stolenGold);
+    }
+
 
     public void sendPositionUpdate(GameState gameState, Entity mover) {
         this.gameStateMessageHandler.sendPositionUpdate(gameState, mover);

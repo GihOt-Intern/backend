@@ -71,6 +71,6 @@ public final class Tower extends Building {
     protected void handleDeath(Entity killer) {
         this.getGameStateService().sendTowerDeathMessage(this.getGameId(), this);
         this.getGameStateService().removeEntity(this.getGameState(), this);
-        this.stopAttacking();
+        this.getGameStateService().setStopAttacking(this);
     }
 }

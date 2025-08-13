@@ -15,6 +15,7 @@ import com.server.game.model.game.context.AttackContext;
 import com.server.game.model.game.context.CastSkillContext;
 import com.server.game.model.game.entityIface.SkillReceivable;
 import com.server.game.resource.model.ChampionDB;
+import com.server.game.service.gameState.GameStateService;
 import com.server.game.util.ChampionEnum;
 
 import lombok.AccessLevel;
@@ -170,19 +171,19 @@ public final class Champion extends DependentEntity implements SkillReceivable {
 
     @Override
     protected void handleDeath(Entity killer) {
-        if (this.isAlive()) { return; }
         log.info("Champion {} is dead, handling death logic...", this.getName());
 
-        this.getGameStateService().checkAndHandleChampionDeath(
-                this.getGameState().getGameId(), this.getOwnerSlot().getSlot());
+        GameStateService gameStateService = this.getGameStateService();
 
+        gameStateService.setChampionDead(this);
 
-        this.stopAttacking();
+        gameStateService.setStopAttacking(this);
+        gameStateService.setStopMoving(this, true);
 
-        Integer stolenGold = Math.round(this.getCurrentGold()*0.3f);
+        gameStateService.handleStolingGold(this, killer);
 
-        killer.increaseGold(stolenGold);
-        this.decreaseGold(stolenGold);
+        gameStateService.scheduleChampionRespawn(this.ownerSlot, (short) 3);
+        gameStateService.sendEntityDeathMessage(this.getGameState(), this.getStringId());
     }
 
 
@@ -192,7 +193,6 @@ public final class Champion extends DependentEntity implements SkillReceivable {
 
     public void updateDurationSkill() {
         if (this.skillComponent instanceof DurationSkillComponent durationSkillComponent) {
-            // log.info("Updating duration skill for champion: {}", this.getName());
             durationSkillComponent.updatePerTick();
         }
     }

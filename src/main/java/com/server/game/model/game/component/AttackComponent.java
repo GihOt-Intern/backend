@@ -66,10 +66,6 @@ public class AttackComponent {
     public boolean isAttacking() {
         return this.attackContext != null && this.attackContext.getTarget() != null;
     }
-    
-    public void stopAttacking() {
-        this.setAttackContext(null);
-    }
 
     private final boolean inAttackWindow(long currentTick) {
         return currentTick >= this.nextAttackTick;
@@ -124,7 +120,7 @@ public class AttackComponent {
         if (ctx.getTarget() == null || !ctx.getTarget().isAlive()) {
             log.info("After performing attack, target is null or dead");
             owner.getGameStateService().setStopMoving(this.owner, true);
-            this.stopAttacking();
+            this.owner.getGameStateService().setStopAttacking(this.owner);
         }
 
         // After performing the attack, update the next attack tick

@@ -91,7 +91,8 @@ public abstract class SkillComponent {
             log.info("Champion {} is attacking and received a skill use request, stopping attack.",
                 this.skillOwner.getName());
 
-            this.skillOwner.stopAttacking();
+            this.getSkillOwner().getGameStateService().setStopAttacking(this.getSkillOwner());
+
         }
 
         this.setCastSkillContext(ctx);
