@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ArcherSkill extends SkillComponent {
 
-    private static final float ARCHER_LENGTH = 10.0f;
+    private static final float ARCHER_LENGTH = 12.0f;
     private static final float ARCHER_WIDTH = 4.0f;
 
     public ArcherSkill(Champion owner, ChampionAbility ability) {
@@ -24,7 +24,7 @@ public class ArcherSkill extends SkillComponent {
     }
 
     private float getDamage() {
-        return 20000f;
+        return this.getSkillOwner().getDamage() * 1.8f;
     }
 
     @Override

@@ -22,7 +22,7 @@ import com.server.game.model.game.entityIface.SkillReceivable;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public final class MageSkill extends DurationSkillComponent {
 
-    static final Float HITBOX_WIDTH = 4f;
+    static final Float HITBOX_WIDTH = 6f;
 
     static final Float DURATION_SECONDS = 3f;
     // damage every half second
@@ -67,7 +67,8 @@ public final class MageSkill extends DurationSkillComponent {
     private float getDamagePerIntervalSeconds() {
         // return 40 + 0.2f * this.getSkillOwner().getDefense();
 
-        return 20000f;
+        // return 150f;
+        return this.getSkillOwner().getDamage() * 1f;
     }
 
     @Override

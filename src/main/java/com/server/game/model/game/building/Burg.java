@@ -8,6 +8,8 @@ import java.util.UUID;
 import com.server.game.model.game.Entity;
 import com.server.game.model.game.GameState;
 import com.server.game.model.game.SlotState;
+import com.server.game.model.game.attackStrategy.BurgAttackStrategy;
+import com.server.game.model.game.component.AttackComponent;
 import com.server.game.model.game.context.AttackContext;
 import com.server.game.resource.model.SlotInfo.BurgDB;
 
@@ -22,6 +24,8 @@ import lombok.experimental.FieldDefaults;
 @Getter
 public final class Burg extends Building {
 
+    final AttackComponent attackComponent;
+
     public Burg(SlotState ownerSlot, GameState gameState, BurgDB burgDB) {
         super("burg_" + ownerSlot.getSlot() + UUID.randomUUID().toString(),
         ownerSlot, gameState,
@@ -29,6 +33,21 @@ public final class Burg extends Building {
         gameState.getGameMap().getBurgDefense(), 
         burgDB.getId(), burgDB.getPosition(),
         burgDB.getWidth(), burgDB.getLength(), burgDB.getRotate());
+
+        this.attackComponent = new AttackComponent(
+            this,
+            gameState.getGameMap().getBurgAttack(),
+            gameState.getGameMap().getBurgAttackSpeed(),
+            gameState.getGameMap().getBurgAttackRange(), 
+            new BurgAttackStrategy()
+        );
+
+        this.addAllComponents();
+    }
+
+    @Override
+    protected void addAllComponents() {
+        this.addComponent(AttackComponent.class, attackComponent);
     }
 
     @Override

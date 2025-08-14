@@ -16,14 +16,17 @@
 
   "max_num_gold_mine_exist": 10,
 
-  "tower_hp": 3000,
-  "tower_attack": 250,
+  "tower_hp": 2500,
+  "tower_attack": 200,
   "tower_defense": 120,
   "tower_attack_speed": 0.8,
   "tower_attack_range": 15.0,
 
-  "burg_hp": 6000,
+  "burg_hp": 3200,
+  "burg_attack": 200,
   "burg_defense": 200,
+  "burg_attack_speed": 0.8,
+  "burg_attack_range": 15.0,
 
   "play_ground": {
     "id": "play_ground_2",

@@ -49,7 +49,10 @@ public class GameMap {
     Float towerAttackRange;
 
     Integer burgHP;
+    Integer burgAttack;
     Integer burgDefense;
+    Float burgAttackSpeed;
+    Float burgAttackRange;
 
 
     Playground playground;
@@ -83,7 +86,10 @@ public class GameMap {
         @JsonProperty("tower_attack_range") Float towerAttackRange,
 
         @JsonProperty("burg_hp") Integer burgHP,
+        @JsonProperty("burg_attack") Integer burgAttack,
         @JsonProperty("burg_defense") Integer burgDefense,
+        @JsonProperty("burg_attack_speed") Float burgAttackSpeed,
+        @JsonProperty("burg_attack_range") Float burgAttackRange,
 
         @JsonProperty("play_ground") Playground playground,
         @JsonProperty("slot_info") List<SlotInfo> slotInfos
@@ -111,7 +117,10 @@ public class GameMap {
 
 
         this.burgHP = burgHP;
+        this.burgAttack = burgAttack;
         this.burgDefense = burgDefense;
+        this.burgAttackSpeed = burgAttackSpeed;
+        this.burgAttackRange = burgAttackRange;
 
         this.playground = playground;
         this.slotInfos = slotInfos;
