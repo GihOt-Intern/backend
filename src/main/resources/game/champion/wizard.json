@@ -13,6 +13,6 @@
   },
   "ability": {
     "name": "Arcane Orb",
-    "cool_down": 0.0
+    "cool_down": 15.0
   }
 }

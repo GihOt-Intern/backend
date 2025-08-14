@@ -28,9 +28,9 @@ public final class MageSkill extends DurationSkillComponent {
     // damage every half second
     static final Float DAMAGE_INTERVAL_SECONDS = .5f;
 
-    static final Float SPEED_SECONDS = 4f;
+    static final Float SPEED_PER_SECONDS = 4f;
 
-    static final Float HITBOX_LENGTH = DURATION_SECONDS * SPEED_SECONDS;
+    static final Float HITBOX_LENGTH = DURATION_SECONDS * SPEED_PER_SECONDS;
 
     static final Float SPEED_TICKS = 
         HITBOX_LENGTH / (Util.seconds2GameTick(DURATION_SECONDS)); // distance per tick
