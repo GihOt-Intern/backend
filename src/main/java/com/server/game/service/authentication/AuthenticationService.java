@@ -74,8 +74,11 @@ public class AuthenticationService {
     }
     
     public User authenticate(AuthenticationRequest request) {
+        User user = userService.validateCredentials(request.getUsername(), request.getPassword());
+        String sessionId = UUID.randomUUID().toString();
+        userService.registerUserSession(user.getId(), sessionId);
         // System.out.println(">>> SIGNER KEY: " + this.signerKey);
-        return userService.validateCredentials(request.getUsername(), request.getPassword());
+        return user;
     }
 
     private SignedJWT verifyToken(String token, boolean isRefresh) {
@@ -142,15 +145,20 @@ public class AuthenticationService {
 
         String jti;
         Date expirationTime;
+        String userId;
 
         try {
             jti = signedJWT.getJWTClaimsSet().getJWTID();  
             expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+            userId = signedJWT.getJWTClaimsSet().getSubject();
         } catch (ParseException e) {
             throw new RuntimeException("Failed to log out", e);
         }
 
         this.addInvalidatedToken(jti, expirationTime);
+
+        userService.removeUserSession(userId);
+        System.out.println(">>> User logged out: " + userId);
     }
 
     public String refreshToken(String token) {

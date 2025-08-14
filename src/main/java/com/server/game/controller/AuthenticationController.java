@@ -54,6 +54,7 @@ public class AuthenticationController {
     public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticate(@Valid @RequestBody AuthenticationRequest request) {
         User user = authenticationService.authenticate(request);
         String token = authenticationService.generateToken(user);
+        System.out.println(">>> User logging with token: " + token);
         AuthenticationResponse response = new AuthenticationResponse(user.getId(), user.getUsername(), token);
         ApiResponse<AuthenticationResponse> apiResponse =
             new ApiResponse<>(HttpStatus.OK.value(), "Authentication successful", response);
@@ -71,6 +72,7 @@ public class AuthenticationController {
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody LogoutRequest request) {
+        System.out.println(">>> Log out with token: " + request.getToken());
         authenticationService.logout(request.getToken());
         ApiResponse<Void> apiResponse =
             new ApiResponse<>(HttpStatus.OK.value(), "Logout successful", null);
