@@ -11,14 +11,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.server.game.model.map.shape.CircleShape;
 
-// Xoay rìu trong 5s, mỗi giây gây sát thương phạm vi xung quanh 1 ô = 40 + 20% DEF		
+// Xoay rìu trong 3.5s, mỗi giây gây sát thương phạm vi xung quanh 
 @Slf4j
 public class MeleeSkill extends DurationSkillComponent {
 
-    private static final float DAMAGE_RADIUS = 5.0f;
+    private static final float DAMAGE_RADIUS = 3.0f;
 
     public MeleeSkill(Champion owner, ChampionAbility ability) {
-        super(owner, ability, 5.0f, 1.0f);
+        super(owner, ability, 3.5f, .5f);
     }
 
     @Override
@@ -42,10 +42,11 @@ public class MeleeSkill extends DurationSkillComponent {
     }
 
 
-    private float getDamagePerSecond() {
+    private float getDamageAtTick() {
         // return 40 + 0.2f * this.getSkillOwner().getDefense();
 
-        return 20000f;
+        // return 20000f;
+        return this.getSkillOwner().getDamage() * .5f;
     }
 
     @Override
@@ -57,7 +58,7 @@ public class MeleeSkill extends DurationSkillComponent {
             DAMAGE_RADIUS
         );
 
-        this.getCastSkillContext().addSkillDamage(this.getDamagePerSecond());
+        this.getCastSkillContext().addSkillDamage(this.getDamageAtTick());
 
         Set<SkillReceivable> hitEntities = this.getSkillOwner().getGameStateService()
             .getSkillReceivableEnemiesInScope(

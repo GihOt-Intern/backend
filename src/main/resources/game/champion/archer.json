@@ -4,11 +4,11 @@
   "role": "Crossbow",
   "stats": {
     "hp": 1200,
-    "defense": 50,
-    "attack": 300,
+    "defense": 60,
+    "attack": 180,
     "move_speed": 5.0,
     "attack_speed": 1.2,
-    "attack_range": 6.5,
+    "attack_range": 8.5,
     "gold_mine_damage": 2
   },
   "ability": {

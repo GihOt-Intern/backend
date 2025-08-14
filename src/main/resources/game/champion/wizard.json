@@ -3,16 +3,16 @@
   "name": "Wizard",
   "role": "Mage",
   "stats": {
-    "hp": 1200,
-    "defense": 40,
-    "attack": 320,
+    "hp": 1300,
+    "defense": 55,
+    "attack": 150,
     "move_speed": 4.0,
     "attack_speed": 1.0,
-    "attack_range": 6.0,
+    "attack_range": 8.0,
     "gold_mine_damage": 2
   },
   "ability": {
     "name": "Arcane Orb",
-    "cool_down": 1.0
+    "cool_down": 0.0
   }
 }

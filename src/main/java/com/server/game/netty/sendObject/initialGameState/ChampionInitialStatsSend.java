@@ -48,9 +48,12 @@ public class ChampionInitialStatsSend implements TLVEncodable {
         this.initGold = initGold;
 
         this.troopCosts = troopDBs.stream()
-            .map(troopDB -> new TroopCostData(
+            .map(troopDB -> { 
+                // System.out.println("TroopDB: " + troopDB.getId() + ", Cost: " + troopDB.getStats().getCost());
+                return new TroopCostData(
                 troopDB.getId(),
-                troopDB.getStats().getCost()))
+                troopDB.getStats().getCost());
+            })
             .collect(Collectors.toSet());
     }
 

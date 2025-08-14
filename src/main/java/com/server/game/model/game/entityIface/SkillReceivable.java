@@ -2,6 +2,8 @@ package com.server.game.model.game.entityIface;
 
 import com.server.game.model.game.context.CastSkillContext;
 
+import lombok.extern.slf4j.Slf4j;
+
 public interface SkillReceivable {
 
     void receiveSkillDamage(CastSkillContext ctx);
@@ -22,7 +24,9 @@ public interface SkillReceivable {
         if (myDefense == null || myDefense <= 0) {
             throw new IllegalArgumentException("Defense must be a positive value");
         }
-        // return skillDamage * (100.0f / (100 * myDefense));
-        return 10f;
+
+        System.out.println(String.format("Skill dmg=%f, defense=%d, actual dmg=%f", skillDamage, myDefense, skillDamage * (100.0f / (100 + myDefense))));
+        return skillDamage * (100.0f / (100 + myDefense));
+        // return 10f;
     }
 }
