@@ -10,6 +10,7 @@ import com.server.game.netty.ChannelManager;
 import com.server.game.netty.sendObject.HeartbeatMessage;
 import com.server.game.service.attack.AttackService;
 import com.server.game.service.castSkill.CastSkillService;
+import com.server.game.service.defense.DefenseService;
 import com.server.game.service.defense.DefensiveStanceService;
 import com.server.game.service.gameState.GameStateService;
 import com.server.game.service.gold.GoldService;
@@ -35,7 +36,7 @@ public class GameLogicScheduler {
     GoldService goldService;
     GameStateService gameStateService;
     DefensiveStanceService defensiveStanceService;
-    TowerDefenseService towerDefenseService;
+    DefenseService defenseService;
     TroopManager troopManager;
     
     /**
@@ -96,7 +97,7 @@ public class GameLogicScheduler {
         for (GameState gameState : gameStateService.getAllActiveGameStates()) {
             try {
                 defensiveStanceService.updateDefensiveStances(gameState);
-                towerDefenseService.updateTowerDefenses(gameState);
+                defenseService.updateDefenses(gameState);
                 // NOTE: Add slower update systems here
                 // - Resource generation
                 // - AI decision making

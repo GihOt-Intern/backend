@@ -85,14 +85,19 @@ public class UserService {
     
         // Check if user is already logged in
         if (activeSessions.containsKey(user.getId())) {
-            // Option 1: Prevent login
-            throw new UnauthorizedException("Account is already logged in from another device");
+            // // Option 1: Prevent login
+            // throw new UnauthorizedException("Account is already logged in from another device");
             
             // Option 2: Force logout previous session (commented out)
-            // String previousSessionId = activeSessions.get(user.getId());
-            // invalidatePreviousSession(previousSessionId);
+            String previousSessionId = activeSessions.get(user.getId());
+            invalidatePreviousSession(previousSessionId);
         }
         return user;
+    }
+
+    private void invalidatePreviousSession(String previousSessionId) {
+        // TODO Auto-generated method stub
+        activeSessions.values().removeIf(sessionId -> sessionId.equals(previousSessionId));
     }
 
     /**
