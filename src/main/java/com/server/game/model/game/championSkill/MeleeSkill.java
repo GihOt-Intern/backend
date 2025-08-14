@@ -46,7 +46,7 @@ public class MeleeSkill extends DurationSkillComponent {
         // return 40 + 0.2f * this.getSkillOwner().getDefense();
 
         // return 20000f;
-        return this.getSkillOwner().getDamage() * .5f;
+        return 40 + this.getSkillOwner().getDefense() * .5f;
     }
 
     @Override

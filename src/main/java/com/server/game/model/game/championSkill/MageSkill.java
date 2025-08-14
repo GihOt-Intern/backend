@@ -24,7 +24,7 @@ public final class MageSkill extends DurationSkillComponent {
 
     static final Float HITBOX_WIDTH = 6f;
 
-    static final Float DURATION_SECONDS = 3f;
+    static final Float DURATION_SECONDS = 3.5f;
     // damage every half second
     static final Float DAMAGE_INTERVAL_SECONDS = .5f;
 
@@ -68,7 +68,7 @@ public final class MageSkill extends DurationSkillComponent {
         // return 40 + 0.2f * this.getSkillOwner().getDefense();
 
         // return 150f;
-        return this.getSkillOwner().getDamage() * 1f;
+        return 10 + this.getSkillOwner().getMaxHP() * .08f;
     }
 
     @Override

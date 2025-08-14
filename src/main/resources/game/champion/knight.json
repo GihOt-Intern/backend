@@ -4,11 +4,11 @@
   "role": "Assassin",
   "stats": {
     "hp": 1200,
-    "defense": 70,
-    "attack": 180,
-    "move_speed": 5.0,
-    "attack_speed": 1.8,
-    "attack_range": 4.0,
+    "defense": 100,
+    "attack": 200,
+    "move_speed": 8.0,
+    "attack_speed": 2.0,
+    "attack_range": 3.5,
     "gold_mine_damage": 2
   },
   "ability": {    

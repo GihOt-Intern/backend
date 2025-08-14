@@ -24,7 +24,7 @@ public class AssassinSkill extends SkillComponent {
 
     private float getDamage() {
         // return 500f;
-        return this.getSkillOwner().getDamage() * 1.8f;
+        return 50f + this.getSkillOwner().getDamage() * .5f;
     }
 
 

@@ -3,12 +3,12 @@
   "name": "Wizard",
   "role": "Mage",
   "stats": {
-    "hp": 1300,
-    "defense": 55,
-    "attack": 150,
+    "hp": 2500,
+    "defense": 30,
+    "attack": 50,
     "move_speed": 4.0,
-    "attack_speed": 1.0,
-    "attack_range": 8.0,
+    "attack_speed": 1.1,
+    "attack_range": 9.0,
     "gold_mine_damage": 2
   },
   "ability": {

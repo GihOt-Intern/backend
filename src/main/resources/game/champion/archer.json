@@ -3,12 +3,12 @@
   "name": "Archer",
   "role": "Crossbow",
   "stats": {
-    "hp": 1200,
-    "defense": 60,
-    "attack": 180,
-    "move_speed": 5.0,
-    "attack_speed": 1.2,
-    "attack_range": 8.5,
+    "hp": 1000,
+    "defense": 30,
+    "attack": 250,
+    "move_speed": 6.5,
+    "attack_speed": 2.2,
+    "attack_range": 15.0,
     "gold_mine_damage": 2
   },
   "ability": {

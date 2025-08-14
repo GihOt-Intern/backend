@@ -4,10 +4,10 @@
   "role": "Tanker",
   "stats": {
     "hp": 1800,
-    "defense": 240,
+    "defense": 250,
     "attack": 130,
     "move_speed": 4.5,
-    "attack_speed": 1.0,
+    "attack_speed": 1.2,
     "attack_range": 3.5,
     "gold_mine_damage": 2
   },
