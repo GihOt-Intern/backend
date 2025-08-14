@@ -49,6 +49,10 @@ public final class Burg extends Building {
     protected void addAllComponents() {
         this.addComponent(AttackComponent.class, attackComponent);
     }
+    
+    public boolean isAttacking() {
+        return attackComponent.getAttackContext() != null;
+    }
 
     @Override
     public boolean receiveAttack(AttackContext ctx) {
