@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.server.game.factory.SkillFactory;
 import com.server.game.model.game.attackStrategy.ChampionAttackStrategy;
+import com.server.game.model.game.building.Building;
 import com.server.game.model.game.component.AttackComponent;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.MovingComponent;
@@ -135,6 +136,12 @@ public final class Champion extends DependentEntity implements SkillReceivable {
 
         // 2. Process the attack and calculate damage
         int actualDamage = (int) this.calculateActualDamage(ctx);
+
+        if (ctx.getAttacker() instanceof Building buildingAttacker) {
+            actualDamage *= 3f;
+        }
+
+
         this.decreaseHP(actualDamage);
 
         // 3. Send health update for the target

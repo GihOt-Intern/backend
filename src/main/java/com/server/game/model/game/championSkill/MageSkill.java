@@ -68,7 +68,7 @@ public final class MageSkill extends DurationSkillComponent {
         // return 40 + 0.2f * this.getSkillOwner().getDefense();
 
         // return 150f;
-        return 10 + this.getSkillOwner().getMaxHP() * .08f;
+        return 10 + this.getSkillOwner().getMaxHP() * .05f;
     }
 
     @Override

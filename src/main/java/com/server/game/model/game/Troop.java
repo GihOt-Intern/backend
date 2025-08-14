@@ -1,6 +1,7 @@
 package com.server.game.model.game;
 
 import com.server.game.model.game.attackStrategy.TroopAttackStrategy;
+import com.server.game.model.game.building.Building;
 import com.server.game.model.game.component.AttackComponent;
 import com.server.game.model.game.component.HealthComponent;
 import com.server.game.model.game.component.MovingComponent;
@@ -173,6 +174,12 @@ public class Troop extends DependentEntity implements SkillReceivable {
     public boolean receiveAttack(AttackContext ctx) {
 
         int actualDamage = (int) this.calculateActualDamage(ctx);
+
+        if (ctx.getAttacker() instanceof Building buildingAttacker) {
+            actualDamage *= 0.3f;
+        }
+
+
         this.decreaseHP(actualDamage);
         log.debug(stringId + " received attack from " + ctx.getAttacker().getStringId() +
             " with actual damage: " + actualDamage);
