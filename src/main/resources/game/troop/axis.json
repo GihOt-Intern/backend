@@ -7,10 +7,10 @@
     "hp": 800,
     "defense": 80,
     "attack": 50,
-    "move_speed": 3.0,
+    "move_speed": 7.0,
     "attack_speed": 0.8,
     "attack_range": 3.0,
-    "detection_range": 5.0,
+    "detection_range": 6.5,
     "cost": 50
   },
   "ability": {

@@ -7,10 +7,10 @@
     "hp": 350,
     "defense": 30,
     "attack": 120,
-    "move_speed": 3.5,
+    "move_speed": 7.5,
     "attack_speed": 1.5,
     "attack_range": 8.5,
-    "detection_range": 8.0,
+    "detection_range": 15.0,
     "cost": 65
   },
   "ability": {
