@@ -7,7 +7,7 @@
     "hp": 800,
     "defense": 80,
     "attack": 50,
-    "move_speed": 7.0,
+    "move_speed": 8.2,
     "attack_speed": 0.8,
     "attack_range": 3.0,
     "detection_range": 6.5,
