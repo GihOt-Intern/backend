@@ -9,7 +9,7 @@
     "move_speed": 4.0,
     "attack_speed": 1.1,
     "attack_range": 9.0,
-    "gold_mine_damage": 2
+    "gold_mine_damage": 3
   },
   "ability": {
     "name": "Arcane Orb",

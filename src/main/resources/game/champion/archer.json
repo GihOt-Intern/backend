@@ -9,7 +9,7 @@
     "move_speed": 6.5,
     "attack_speed": 2.2,
     "attack_range": 15.0,
-    "gold_mine_damage": 2
+    "gold_mine_damage": 1
   },
   "ability": {
     "name": "Piercing Arrow",

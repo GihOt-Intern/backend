@@ -5,8 +5,8 @@
   "initial_gold_each_slot": 150,
   "gold_generated_per_second": 2,
 
-  "small_gold_mine_initial_hp": 5,
-  "large_gold_mine_initial_hp": 8,
+  "small_gold_mine_initial_hp": 10,
+  "large_gold_mine_initial_hp": 25,
   
   "small_gold_mine_capacity": 100,
   "large_gold_mine_capacity": 200,
