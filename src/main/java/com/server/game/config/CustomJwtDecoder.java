@@ -14,8 +14,8 @@ import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
-import com.server.game.exception.UnauthorizedException;
-import com.server.game.service.AuthenticationService;
+import com.server.game.exception.http.UnauthorizedException;
+import com.server.game.service.authentication.AuthenticationService;
 
 import org.springframework.context.annotation.Lazy;
 
@@ -38,6 +38,7 @@ public class CustomJwtDecoder implements JwtDecoder {
         }
         catch (UnauthorizedException e) {
             System.out.println(">>> UnauthorizedException: " + e.getMessage());
+            throw new JwtException("Token validation failed: " + e.getMessage());
         }
 
         System.out.println(">>> HEREEEE");

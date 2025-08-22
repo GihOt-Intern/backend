@@ -12,14 +12,16 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.example</groupId>
-    <artifactId>myapp</artifactId>
+    <groupId>com.server</groupId>
+    <artifactId>game</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>myapp</name>
-    <description>Demo project for Spring Boot</description>
+    <name>game</name>
+    <description>Game server for multiplayer online games</description>
 
     <properties>
         <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -27,11 +29,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
         <dependency>
@@ -110,39 +107,6 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
-        <!-- Protobuf support -->
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>3.21.12</version>
-        </dependency>
-
-
-
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>webjars-locator-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>bootstrap</artifactId>
-            <version>3.3.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>jquery</artifactId>
-            <version>3.1.1-1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>sockjs-client</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>stomp-websocket</artifactId>
-            <version>2.3.3</version>
-        </dependency>
 
 
         <!-- Redis support -->
@@ -150,6 +114,22 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
+
+
+        <!-- Netty for WebSocket -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.109.Final</version>
+        </dependency>
+        
+
+        <!-- AOP support -->
+        <!-- <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency> -->
+
 
     </dependencies>
 
@@ -164,24 +144,7 @@
     </extensions>
 
     <plugins>
-        <!-- Plugin để biên dịch file .proto thành mã Java -->
-        <plugin>
-            <groupId>org.xolstice.maven.plugins</groupId>
-            <artifactId>protobuf-maven-plugin</artifactId>
-            <version>0.6.1</version>
-            <configuration>
-                <!-- Đường dẫn chứa file .proto -->
-                <protoSourceRoot>src/main/proto</protoSourceRoot>
-                <protocArtifact>com.google.protobuf:protoc:3.21.12:exe:${os.detected.classifier}</protocArtifact>
-            </configuration>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>compile</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
+        
 
         <!-- MapStruct + Lombok -->
         <plugin>
@@ -191,6 +154,10 @@
             <configuration>
                 <source>17</source>
                 <target>17</target>
+                <compilerArgs>
+                    <arg>-Xlint:unchecked</arg>
+                    <!-- <arg>-Xlint:deprecation</arg> -->
+                </compilerArgs>
                 <annotationProcessorPaths>
                     <path>
                         <groupId>org.projectlombok</groupId>

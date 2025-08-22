@@ -1,0 +1,18 @@
+{
+  "id": 0,
+  "name": "Axe",
+  "role": "Tanker",
+  "stats": {
+    "hp": 1800,
+    "defense": 240,
+    "attack": 130,
+    "move_speed": 4.5,
+    "attack_speed": 1.0,
+    "attack_range": 3.5,
+    "gold_mine_damage": 2
+  },
+  "ability": {
+    "name": "Whirlwind",
+    "cool_down": 0.0
+  }
+}

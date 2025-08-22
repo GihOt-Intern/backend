@@ -1,22 +1,82 @@
 package com.server.game.util;
 
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import com.server.game.exception.DataNotFoundException;
+import com.server.game.exception.http.DataNotFoundException;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RedisUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public boolean isRedisReady() {
+        try {
+            RedisConnectionFactory connectionFactory = redisTemplate.getConnectionFactory();
+            if (connectionFactory == null) {
+                log.error("Redis connection factory is null");
+                return false;
+            }
+            
+            // Test the connection with a simple ping
+            String pong = connectionFactory.getConnection().ping();
+            boolean isReady = "PONG".equals(pong);
+            
+            if (!isReady) {
+                log.error("Redis ping failed - received: " + pong);
+            }
+            
+            return isReady;
+        } catch (Exception e) {
+            log.error("Redis connection failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Test Redis connection with detailed logging
+     */
+    public void testConnection() {
+        System.out.println("=== Testing Redis Connection ===");
+        try {
+            // Test 1: Basic ping
+            boolean ready = isRedisReady();
+            System.out.println("Redis ready: " + ready);
+            
+            if (ready) {
+                // Test 2: Set and get a test value
+                String testKey = "connection_test";
+                String testValue = "test_value_" + System.currentTimeMillis();
+                
+                set(testKey, testValue);
+                Object retrieved = get(testKey);
+                
+                if (testValue.equals(retrieved)) {
+                    System.out.println("Redis read/write test: PASSED");
+                } else {
+                    log.error("Redis read/write test: FAILED - Expected: " + testValue + ", Got: " + retrieved);
+                }
+                
+                // Cleanup
+                delete(testKey);
+            }
+        } catch (Exception e) {
+            log.error("Redis connection test failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println("=== Redis Connection Test Complete ===");
+    }
 
     // ===== Key-Value =====
     public void set(String key, Object value) {

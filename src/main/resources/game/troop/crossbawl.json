@@ -1,0 +1,35 @@
+{
+  "id": 2,
+  "name": "Crossbawl",
+  "type": "ranged",
+  "role": "Ranged DPS",
+  "stats": {
+    "hp": 500,
+    "defense": 30,
+    "attack": 120,
+    "move_speed": 3.5,
+    "attack_speed": 1.0,
+    "attack_range": 5.5,
+    "detection_range": 7.0,
+    "cost": 60
+  },
+  "ability": {
+    "name": "Piercing Shot",
+    "description": "Fires a shot that penetrates through enemies, dealing damage to all in a line",
+    "cool_down": 12.0,
+    "effect": {
+      "type": "piercing_attack",
+      "damage_multiplier": 1.5,
+      "pierce_range": 6.0,
+      "max_targets": 3
+    }
+  },
+  "ai_behavior": {
+    "aggression": 0.6,
+    "pursuit_range": 6.0,
+    "retreat_health_threshold": 0.4,
+    "group_behavior": "ranged_support",
+    "target_priority": "closest_in_range",
+    "kiting_behavior": true
+  }
+}

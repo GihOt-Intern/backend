@@ -1,9 +1,14 @@
 package com.server.game.exception;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.server.game.apiResponse.ApiResponse;
+
+import com.server.game.exception.http.*;
+import com.server.game.exception.socket.*;
+import com.server.game.netty.sendObject.ErrorSend;
 
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,7 +27,7 @@ import org.springframework.http.HttpStatus;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataNotFoundException.class)
-    public ResponseEntity<ApiResponse<String>> handleUserNotFoundException(DataNotFoundException ex) {
+    public ResponseEntity<ApiResponse<String>> handleDataNotFoundException(DataNotFoundException ex) {
         ApiResponse<String> response = new ApiResponse<>(HttpStatus.NOT_FOUND.value(), ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
@@ -79,10 +84,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        ApiResponse<String> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Request body contains incorrect field(s), please re-check", null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 
     // @ExceptionHandler(Exception.class)
     // public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex) {
     //     ApiResponse<Void> response = new ApiResponse<>(500, ex.getMessage(), null);
     //     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     // }
+
+
+    @ExceptionHandler(SocketException.class)
+    public void handleSocketException(SocketException ex) {
+        ex.getChannel().writeAndFlush(
+            new ErrorSend(ex.getMessage())
+        );
+    }
 }

@@ -4,7 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-
+test.py
 
 ### STS ###
 .apt_generated
@@ -37,13 +37,15 @@ build/
 
 ### Others ###
 .idea/
-node_modules/
-.favorites.json
 **/src/main/resources/env.properties
+**/src/main/resources/docker-env.properties
+**/src/main/resources/vps-env.properties
+**/src/main/resources/publish-env.properties
 **/src/main/resources/META-INF/
 **/src/main/resources/static/
-Dockerfile
+**/docs/pos.md
 logs/
 .env
-
+game_output.log
+nohup.out
 

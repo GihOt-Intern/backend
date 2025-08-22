@@ -1,0 +1,18 @@
+{
+  "id": 1,
+  "name": "Knight",
+  "role": "Assassin",
+  "stats": {
+    "hp": 1200,
+    "defense": 70,
+    "attack": 180,
+    "move_speed": 5.0,
+    "attack_speed": 1.8,
+    "attack_range": 4.0,
+    "gold_mine_damage": 2
+  },
+  "ability": {    
+    "name": "Shadow Dash",
+    "cool_down": 0.0
+  }
+}

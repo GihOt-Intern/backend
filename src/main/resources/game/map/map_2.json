@@ -1,0 +1,122 @@
+{
+  "id": 2,
+  "map_name": "map_2",
+
+  "initial_gold_each_slot": 150,
+  "gold_generated_per_second": 2,
+
+  "small_gold_mine_initial_hp": 5,
+  "large_gold_mine_initial_hp": 8,
+  
+  "small_gold_mine_capacity": 100,
+  "large_gold_mine_capacity": 200,
+  
+  "gold_mine_first_generation_seconds": 60.0,
+  "gold_mine_generation_interval_seconds": 60.0,
+
+  "max_num_gold_mine_exist": 10,
+
+  "tower_hp": 2500,
+  "tower_attack": 200,
+  "tower_defense": 120,
+  "tower_attack_speed": 0.8,
+  "tower_attack_range": 15.0,
+
+  "burg_hp": 3200,
+  "burg_attack": 200,
+  "burg_defense": 200,
+  "burg_attack_speed": 0.8,
+  "burg_attack_range": 15.0,
+
+  "play_ground": {
+    "id": "play_ground_2",
+    "position": { "x": 0 ,"y": 0 },
+    "size": { "width": 42.35, "length": 42.35 }
+  },
+
+
+  "slot_info": [
+    {
+      "slot": 0,
+
+      "spawn_position": {
+        "id": "spawn_point_01",
+        "position": { "x": -25, "y": 0 },
+        "rotate": 90.0
+      },
+
+      "burg": {
+        "id": "burg_01",
+        "position": { "x": -100 ,"y": 0 },
+        "size": { "width": 11.13, "length": 11.13 },
+        "rotate": 90.0
+      },
+
+      "towers": [
+        {
+          "id": "tower_01",
+          "position": { "x": -56, "y": 11 },
+          "size": { "width": 5, "length": 5 },
+          "rotate": 90.0
+        },
+        {
+          "id": "tower_02",
+          "position": { "x": -56, "y": -11 },
+          "size": { "width": 5, "length": 5 },
+          "rotate": 270.0
+        }
+      ],
+
+      "minion_positions": [
+        { "x": -50, "y": 14 },
+        { "x": -38, "y": 14 },
+        { "x": -50, "y": -14 },
+        { "x": -38, "y": -14 }
+      ]
+    },
+
+
+    {
+      "slot": 1,
+      
+      "spawn_position": {
+        "id": "spawn_point_11",
+        "position": { "x": -25, "y": 10 },
+        "rotate": 270.0
+      },
+
+      "burg": {
+        "id": "burg_11",
+        "position": { "x": 100, "y": 0 },
+        "size": { "width": 11.13, "length": 11.13 },
+        "rotate": -90.0
+      },
+
+      
+
+      "towers": [
+        {
+          "id": "tower_11",
+          "type": "tower",
+          "position": { "x": 56, "y": 11 },
+          "size": { "width": 5, "length": 5 },
+          "rotate": 90.0
+        },
+        {
+          "id": "tower_12",
+          "type": "tower",
+          "position": { "x": 56, "y": -11 },
+          "size": { "width": 5, "length": 5 },
+          "rotate": 270.0
+        }
+      ],
+
+      "minion_positions": [
+        { "x": 50, "y": 14 },
+        { "x": 38, "y": 14 },
+        { "x": 50, "y": -14 },
+        { "x": 38, "y": -14 }
+      ]
+    }
+  ]
+}

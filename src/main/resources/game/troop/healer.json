@@ -1,0 +1,38 @@
+{
+  "id": 3,
+  "name": "Healer",
+  "type": "support",
+  "role": "Support/Healer",
+  "stats": {
+    "hp": 400,
+    "defense": 30,
+    "attack": 100,
+    "move_speed": 3.4,
+    "attack_speed": 0.9,
+    "attack_range": 5.2,
+    "detection_range": 6.0,
+    "healing_power": 80,
+    "healing_range": 3.0,
+    "cost": 55
+  },
+  "ability": {
+    "name": "Group Heal",
+    "description": "Heals all friendly units in a large area",
+    "cool_down": 18.0,
+    "effect": {
+      "type": "area_heal",
+      "heal_amount": 150,
+      "heal_radius": 5.0,
+      "max_targets": 8
+    }
+  },
+  "ai_behavior": {
+    "aggression": 0.3,
+    "pursuit_range": 4.0,
+    "retreat_health_threshold": 0.5,
+    "group_behavior": "support_healer",
+    "target_priority": "heal_allies_first",
+    "healing_threshold": 0.7,
+    "stay_behind_frontline": true
+  }
+}
